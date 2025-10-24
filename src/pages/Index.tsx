@@ -12,6 +12,9 @@ import wslLogo from "@/assets/wsl-logo.png";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
 import property3 from "@/assets/property-3.jpg";
+import furniture1 from "@/assets/furniture-1.jpg";
+import furniture2 from "@/assets/furniture-2.jpg";
+import furniture3 from "@/assets/furniture-3.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -73,6 +76,7 @@ const Index = () => {
             <button onClick={() => scrollToSection("properties")} className="hover:text-gold transition-smooth">Properties</button>
             <button onClick={() => scrollToSection("about")} className="hover:text-gold transition-smooth">About</button>
             <button onClick={() => scrollToSection("services")} className="hover:text-gold transition-smooth">Services</button>
+            <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
             <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
             <Button 
               onClick={handleSignOut}
@@ -209,6 +213,47 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Furniture Section */}
+      <section id="furniture" className="py-20 px-4 bg-secondary/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-playfair font-bold mb-4">
+              Luxury <span className="text-gold">Furniture</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Premium furniture pieces to complement your luxury living
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <PropertyCard
+              image={furniture1}
+              title="Comfortable Twin Set Bed"
+              location="Abuja, FCT Nigeria"
+              description="Experience ultimate comfort with this luxurious twin set bed, crafted with premium materials and elegant design to transform your bedroom into a sanctuary of relaxation."
+              price="Starting Price: ₦2.5 Million"
+              onInquire={() => handleInquire("Comfortable Twin Set Bed")}
+            />
+            <PropertyCard
+              image={furniture2}
+              title="Royalty Dining Set"
+              location="Abuja, FCT Nigeria"
+              description="Elevate your dining experience with this exquisite royalty dining set, featuring sophisticated craftsmanship and timeless elegance perfect for hosting memorable gatherings."
+              price="Starting Price: ₦2.5 Million"
+              onInquire={() => handleInquire("Royalty Dining Set")}
+            />
+            <PropertyCard
+              image={furniture3}
+              title="Exquisite Luxury Cushions"
+              location="Abuja, FCT Nigeria"
+              description="Add a touch of opulence to your living space with these exquisite luxury cushions, meticulously designed with premium fabrics to provide both comfort and aesthetic appeal."
+              price="Starting Price: ₦2.5 Million"
+              onInquire={() => handleInquire("Exquisite Luxury Cushions")}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <ContactForm />
 
@@ -234,6 +279,7 @@ const Index = () => {
                 <button onClick={() => scrollToSection("properties")} className="block hover:text-gold transition-smooth">Properties</button>
                 <button onClick={() => scrollToSection("about")} className="block hover:text-gold transition-smooth">About</button>
                 <button onClick={() => scrollToSection("services")} className="block hover:text-gold transition-smooth">Services</button>
+                <button onClick={() => scrollToSection("furniture")} className="block hover:text-gold transition-smooth">Furniture</button>
                 <button onClick={() => scrollToSection("contact")} className="block hover:text-gold transition-smooth">Contact</button>
               </div>
             </div>
