@@ -311,7 +311,7 @@ const Index = () => {
                 </a>
               </div>
               <p className="text-sm text-muted-foreground">
-                word2wealthagency@gmail.com
+                mailwaro.online@gmail.com
               </p>
             </div>
           </div>

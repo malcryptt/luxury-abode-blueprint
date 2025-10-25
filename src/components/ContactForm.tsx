@@ -79,8 +79,8 @@ const ContactForm = () => {
                   <Mail className="w-5 h-5 text-gold mt-1" />
                   <div>
                     <p className="font-semibold">Email</p>
-                    <a href="mailto:word2wealthagency@gmail.com" className="text-muted-foreground hover:text-gold transition-smooth">
-                      word2wealthagency@gmail.com
+                    <a href="mailto:mailwaro.online@gmail.com" className="text-muted-foreground hover:text-gold transition-smooth">
+                      mailwaro.online@gmail.com
                     </a>
                   </div>
                 </div>
