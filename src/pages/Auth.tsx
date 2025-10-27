@@ -103,16 +103,18 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="text-center space-y-4">
-          <img 
-            src={wslLogo} 
-            alt="WSL Properties" 
-            className="w-24 h-24 mx-auto"
-          />
-          <h1 className="text-4xl font-playfair font-bold">
+        <div className="text-center space-y-6">
+          <div className="flex justify-center">
+            <img 
+              src={wslLogo} 
+              alt="WSL Properties" 
+              className="w-32 h-32 object-contain drop-shadow-[0_0_20px_rgba(197,154,76,0.3)]"
+            />
+          </div>
+          <h1 className="text-4xl font-playfair font-bold tracking-wide">
             <span className="text-gold">WSL</span> Properties
           </h1>
-          <p className="text-muted-foreground">Sign in to continue</p>
+          <p className="text-muted-foreground text-sm tracking-wider uppercase">Luxury Real Estate</p>
         </div>
 
         <div className="luxury-card p-8 space-y-6">
