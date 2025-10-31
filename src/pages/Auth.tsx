@@ -112,7 +112,7 @@ const Auth = () => {
             />
           </div>
           <h1 className="text-4xl font-playfair font-bold tracking-wide">
-            <span className="text-gold">WSL</span> Properties
+            WSL Realty
           </h1>
           <p className="text-muted-foreground text-sm tracking-wider uppercase">Luxury Real Estate</p>
         </div>
