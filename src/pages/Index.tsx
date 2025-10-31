@@ -66,9 +66,9 @@ const Index = () => {
       <header className="fixed top-0 w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={wslLogo} alt="WSL Properties" className="w-12 h-12" />
+            <img src={wslLogo} alt="WSL Realty" className="w-12 h-12" />
             <h1 className="text-2xl font-playfair font-bold">
-              <span className="text-gold">WSL</span> Properties
+              WSL Realty
             </h1>
           </div>
           <nav className="hidden md:flex items-center gap-6">
@@ -160,10 +160,10 @@ const Index = () => {
       <section id="about" className="py-20 px-4 bg-secondary/30">
         <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-playfair font-bold">
-            About <span className="text-gold">WSL Properties</span>
+            About <span className="text-gold">WSL Realty</span>
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            WSL Properties is dedicated to redefining residential luxury. We combine expertise, 
+            WSL Realty is dedicated to redefining residential luxury. We combine expertise, 
             innovation, and exceptional service to help you find your dream home or manage your 
             investments effortlessly. Our commitment to excellence ensures every client receives 
             personalized attention and access to Abuja's most prestigious properties.
@@ -263,9 +263,9 @@ const Index = () => {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <img src={wslLogo} alt="WSL Properties" className="w-10 h-10" />
+                <img src={wslLogo} alt="WSL Realty" className="w-10 h-10" />
                 <h3 className="text-xl font-playfair font-bold">
-                  <span className="text-gold">WSL</span> Properties
+                  WSL Realty
                 </h3>
               </div>
               <p className="text-muted-foreground">
@@ -317,7 +317,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} WSL Properties. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} WSL Realty. All rights reserved.</p>
           </div>
         </div>
       </footer>
