@@ -108,8 +108,7 @@ const Auth = () => {
             <img 
               src={wslLogo} 
               alt="WSL Properties" 
-              className="w-32 h-32 object-contain drop-shadow-[0_0_20px_rgba(197,154,76,0.3)] mix-blend-lighten"
-              style={{ filter: 'contrast(1.2) brightness(1.1)' }}
+              className="w-32 h-32 object-contain drop-shadow-[0_0_20px_rgba(197,154,76,0.3)]"
             />
           </div>
           <h1 className="text-4xl font-playfair font-bold tracking-wide">
