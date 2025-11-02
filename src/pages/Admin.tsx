@@ -111,7 +111,15 @@ const Admin = () => {
       return;
     }
 
-    const contentMap: any = {};
+    const contentMap: any = {
+      hero: { title: "", subtitle: "" },
+      about: { title: "", description: "" },
+      contact: { phone: "", email: "", address: "", whatsapp: "" },
+      properties: [],
+      services: [],
+      furniture: [],
+    };
+    
     data?.forEach((item) => {
       contentMap[item.section] = item.content;
     });
