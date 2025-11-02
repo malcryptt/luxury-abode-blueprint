@@ -26,6 +26,7 @@ const Index = () => {
     contact: { phone: "+234 901 088 3999", email: "mailwaro.online@gmail.com", address: "Gwarinpa, 900108, FCT Nigeria", whatsapp: "2349010883999" },
     properties: [],
     services: [],
+    furniture: [],
   });
 
   useEffect(() => {
@@ -301,30 +302,46 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <PropertyCard
-              image={furniture1}
-              title="Comfortable Twin Set Bed"
-              location="Abuja, FCT Nigeria"
-              description="Experience ultimate comfort with this luxurious twin set bed, crafted with premium materials and elegant design to transform your bedroom into a sanctuary of relaxation."
-              price="Starting Price: ₦2.5 Million"
-              onInquire={() => handleInquire("Comfortable Twin Set Bed")}
-            />
-            <PropertyCard
-              image={furniture2}
-              title="Royalty Dining Set"
-              location="Abuja, FCT Nigeria"
-              description="Elevate your dining experience with this exquisite royalty dining set, featuring sophisticated craftsmanship and timeless elegance perfect for hosting memorable gatherings."
-              price="Starting Price: ₦2.5 Million"
-              onInquire={() => handleInquire("Royalty Dining Set")}
-            />
-            <PropertyCard
-              image={furniture3}
-              title="Exquisite Luxury Cushions"
-              location="Abuja, FCT Nigeria"
-              description="Add a touch of opulence to your living space with these exquisite luxury cushions, meticulously designed with premium fabrics to provide both comfort and aesthetic appeal."
-              price="Starting Price: ₦2.5 Million"
-              onInquire={() => handleInquire("Exquisite Luxury Cushions")}
-            />
+            {websiteContent.furniture && websiteContent.furniture.length > 0 ? (
+              websiteContent.furniture.map((item: any) => (
+                <PropertyCard
+                  key={item.id}
+                  image={item.image}
+                  title={item.title}
+                  location={item.location}
+                  description={item.description}
+                  price={item.price}
+                  onInquire={() => handleInquire(item.title)}
+                />
+              ))
+            ) : (
+              <>
+                <PropertyCard
+                  image={furniture1}
+                  title="Comfortable Twin Set Bed"
+                  location="Abuja, FCT Nigeria"
+                  description="Experience ultimate comfort with this luxurious twin set bed, crafted with premium materials and elegant design to transform your bedroom into a sanctuary of relaxation."
+                  price="Starting Price: ₦2.5 Million"
+                  onInquire={() => handleInquire("Comfortable Twin Set Bed")}
+                />
+                <PropertyCard
+                  image={furniture2}
+                  title="Royalty Dining Set"
+                  location="Abuja, FCT Nigeria"
+                  description="Elevate your dining experience with this exquisite royalty dining set, featuring sophisticated craftsmanship and timeless elegance perfect for hosting memorable gatherings."
+                  price="Starting Price: ₦2.5 Million"
+                  onInquire={() => handleInquire("Royalty Dining Set")}
+                />
+                <PropertyCard
+                  image={furniture3}
+                  title="Exquisite Luxury Cushions"
+                  location="Abuja, FCT Nigeria"
+                  description="Add a touch of opulence to your living space with these exquisite luxury cushions, meticulously designed with premium fabrics to provide both comfort and aesthetic appeal."
+                  price="Starting Price: ₦2.5 Million"
+                  onInquire={() => handleInquire("Exquisite Luxury Cushions")}
+                />
+              </>
+            )}
           </div>
         </div>
       </section>

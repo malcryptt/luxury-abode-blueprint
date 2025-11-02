@@ -18,6 +18,15 @@ interface Property {
   price: string;
 }
 
+interface Furniture {
+  id: string;
+  image: string;
+  title: string;
+  location: string;
+  description: string;
+  price: string;
+}
+
 interface Service {
   id: string;
   icon: string;
@@ -42,6 +51,7 @@ interface WebsiteContent {
   };
   properties: Property[];
   services: Service[];
+  furniture: Furniture[];
 }
 
 const Admin = () => {
@@ -55,6 +65,7 @@ const Admin = () => {
     contact: { phone: "", email: "", address: "", whatsapp: "" },
     properties: [],
     services: [],
+    furniture: [],
   });
 
   useEffect(() => {
@@ -504,6 +515,141 @@ const Admin = () => {
             >
               <Save className="w-4 h-4 mr-2" />
               Save Services
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Furniture Section Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Luxury Furniture</CardTitle>
+            <CardDescription>Edit featured furniture items (images, titles, locations, descriptions, prices)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {content.furniture.map((item, index) => (
+              <div key={item.id} className="p-4 border border-border rounded-lg space-y-4">
+                <h4 className="font-semibold">Furniture Item {index + 1}</h4>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Furniture Image</label>
+                  {item.image && (
+                    <div className="relative w-full h-48 mb-2 rounded-lg overflow-hidden">
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const handleFurnitureUpload = async (file: File, furnitureIndex: number) => {
+                            try {
+                              const fileExt = file.name.split('.').pop();
+                              const fileName = `${Math.random()}.${fileExt}`;
+                              const filePath = `${fileName}`;
+
+                              const { error: uploadError } = await supabase.storage
+                                .from('property-images')
+                                .upload(filePath, file);
+
+                              if (uploadError) {
+                                toast.error("Failed to upload image");
+                                return;
+                              }
+
+                              const { data } = supabase.storage
+                                .from('property-images')
+                                .getPublicUrl(filePath);
+
+                              const newFurniture = [...content.furniture];
+                              newFurniture[furnitureIndex].image = data.publicUrl;
+                              setContent({ ...content, furniture: newFurniture });
+
+                              toast.success("Image uploaded successfully!");
+                            } catch (error) {
+                              toast.error("Error uploading image");
+                            }
+                          };
+                          handleFurnitureUpload(file, index);
+                        }
+                      }}
+                      className="bg-secondary border-border"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Or enter image URL below:</p>
+                  <Input
+                    value={item.image}
+                    onChange={(e) => {
+                      const newFurniture = [...content.furniture];
+                      newFurniture[index].image = e.target.value;
+                      setContent({ ...content, furniture: newFurniture });
+                    }}
+                    className="bg-secondary border-border mt-1"
+                    placeholder="https://... or /src/assets/..."
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Title</label>
+                  <Input
+                    value={item.title}
+                    onChange={(e) => {
+                      const newFurniture = [...content.furniture];
+                      newFurniture[index].title = e.target.value;
+                      setContent({ ...content, furniture: newFurniture });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Location</label>
+                  <Input
+                    value={item.location}
+                    onChange={(e) => {
+                      const newFurniture = [...content.furniture];
+                      newFurniture[index].location = e.target.value;
+                      setContent({ ...content, furniture: newFurniture });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Description</label>
+                  <Textarea
+                    value={item.description}
+                    onChange={(e) => {
+                      const newFurniture = [...content.furniture];
+                      newFurniture[index].description = e.target.value;
+                      setContent({ ...content, furniture: newFurniture });
+                    }}
+                    className="bg-secondary border-border"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Price</label>
+                  <Input
+                    value={item.price}
+                    onChange={(e) => {
+                      const newFurniture = [...content.furniture];
+                      newFurniture[index].price = e.target.value;
+                      setContent({ ...content, furniture: newFurniture });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              onClick={() => handleSave("furniture")}
+              className="bg-gold hover:bg-gold-light text-charcoal"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Furniture
             </Button>
           </CardContent>
         </Card>
