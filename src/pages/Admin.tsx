@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 
 interface Property {
@@ -120,6 +120,35 @@ const Admin = () => {
     }
 
     toast.success(`${section.charAt(0).toUpperCase() + section.slice(1)} content updated!`);
+  };
+
+  const handleImageUpload = async (file: File, propertyIndex: number) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('property-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        toast.error("Failed to upload image");
+        return;
+      }
+
+      const { data } = supabase.storage
+        .from('property-images')
+        .getPublicUrl(filePath);
+
+      const newProperties = [...content.properties];
+      newProperties[propertyIndex].image = data.publicUrl;
+      setContent({ ...content, properties: newProperties });
+
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      toast.error("Error uploading image");
+    }
   };
 
   if (loading) {
@@ -325,7 +354,28 @@ const Admin = () => {
               <div key={property.id} className="p-4 border border-border rounded-lg space-y-4">
                 <h4 className="font-semibold">Property {index + 1}</h4>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Image Path</label>
+                  <label className="text-sm font-medium mb-2 block">Property Image</label>
+                  {property.image && (
+                    <div className="relative w-full h-48 mb-2 rounded-lg overflow-hidden">
+                      <img 
+                        src={property.image} 
+                        alt={property.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file, index);
+                      }}
+                      className="bg-secondary border-border"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Or enter image URL below:</p>
                   <Input
                     value={property.image}
                     onChange={(e) => {
@@ -333,8 +383,8 @@ const Admin = () => {
                       newProperties[index].image = e.target.value;
                       setContent({ ...content, properties: newProperties });
                     }}
-                    className="bg-secondary border-border"
-                    placeholder="/src/assets/property-1.jpg"
+                    className="bg-secondary border-border mt-1"
+                    placeholder="https://... or /src/assets/..."
                   />
                 </div>
                 <div>
