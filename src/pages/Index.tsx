@@ -19,6 +19,12 @@ import furniture3 from "@/assets/furniture-3.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [websiteContent, setWebsiteContent] = useState({
+    hero: { title: "Where Luxury Finds a Home", subtitle: "Experience unparalleled elegance in Abuja's finest residential properties" },
+    about: { title: "About WSL Realty", description: "WSL Realty is dedicated to redefining residential luxury. We combine expertise, innovation, and exceptional service to help you find your dream home or manage your investments effortlessly. Our commitment to excellence ensures every client receives personalized attention and access to Abuja's most prestigious properties." },
+    contact: { phone: "+234 901 088 3999", email: "mailwaro.online@gmail.com", address: "Gwarinpa, 900108, FCT Nigeria", whatsapp: "2349010883999" },
+  });
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -26,6 +32,11 @@ const Index = () => {
         setUser(session?.user ?? null);
         if (!session?.user) {
           navigate("/auth");
+        } else {
+          setTimeout(() => {
+            checkAdminStatus(session.user.id);
+            loadWebsiteContent();
+          }, 0);
         }
       }
     );
@@ -34,11 +45,39 @@ const Index = () => {
       setUser(session?.user ?? null);
       if (!session?.user) {
         navigate("/auth");
+      } else {
+        checkAdminStatus(session.user.id);
+        loadWebsiteContent();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    setIsAdmin(!!data);
+  };
+
+  const loadWebsiteContent = async () => {
+    const { data } = await supabase
+      .from("website_content")
+      .select("section, content");
+
+    if (data) {
+      const contentMap: any = {};
+      data.forEach((item) => {
+        contentMap[item.section] = item.content;
+      });
+      setWebsiteContent((prev) => ({ ...prev, ...contentMap }));
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -78,6 +117,16 @@ const Index = () => {
             <button onClick={() => scrollToSection("services")} className="hover:text-gold transition-smooth">Services</button>
             <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
             <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
+            {isAdmin && (
+              <Button 
+                onClick={() => navigate("/admin")}
+                variant="outline"
+                size="sm"
+                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+              >
+                Admin
+              </Button>
+            )}
             <Button 
               onClick={handleSignOut}
               variant="outline"
@@ -101,10 +150,10 @@ const Index = () => {
         </div>
         <div className="relative z-10 text-center space-y-6 px-4 animate-fade-in">
           <h2 className="text-5xl md:text-7xl font-playfair font-bold">
-            Where Luxury Finds a <span className="text-gold">Home</span>
+            {websiteContent.hero.title}
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-            Experience unparalleled elegance in Abuja's finest residential properties
+            {websiteContent.hero.subtitle}
           </p>
           <Button 
             onClick={() => scrollToSection("properties")}
@@ -160,13 +209,10 @@ const Index = () => {
       <section id="about" className="py-20 px-4 bg-secondary/30">
         <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-playfair font-bold">
-            About <span className="text-gold">WSL Realty</span>
+            {websiteContent.about.title}
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            WSL Realty is dedicated to redefining residential luxury. We combine expertise, 
-            innovation, and exceptional service to help you find your dream home or manage your 
-            investments effortlessly. Our commitment to excellence ensures every client receives 
-            personalized attention and access to Abuja's most prestigious properties.
+            {websiteContent.about.description}
           </p>
         </div>
       </section>
@@ -255,7 +301,7 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <ContactForm />
+      <ContactForm contactInfo={websiteContent.contact} />
 
       {/* Footer */}
       <footer className="bg-secondary/30 border-t border-border py-12 px-4">
@@ -311,7 +357,7 @@ const Index = () => {
                 </a>
               </div>
               <p className="text-sm text-muted-foreground">
-                mailwaro.online@gmail.com
+                {websiteContent.contact.email}
               </p>
             </div>
           </div>

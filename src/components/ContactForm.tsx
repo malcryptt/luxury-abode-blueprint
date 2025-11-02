@@ -13,7 +13,22 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required").max(1000, "Message must be less than 1000 characters"),
 });
 
-const ContactForm = () => {
+interface ContactFormProps {
+  contactInfo?: {
+    phone: string;
+    email: string;
+    address: string;
+    whatsapp: string;
+  };
+}
+
+const ContactForm = ({ contactInfo }: ContactFormProps) => {
+  const info = contactInfo || {
+    phone: "+234 901 088 3999",
+    email: "mailwaro.online@gmail.com",
+    address: "Gwarinpa, 900108, FCT Nigeria",
+    whatsapp: "2349010883999",
+  };
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,10 +45,10 @@ const ContactForm = () => {
       const validatedData = contactSchema.parse(formData);
       
       const whatsappMessage = encodeURIComponent(
-        `New Inquiry from WSL Properties Website\n\nName: ${validatedData.name}\nEmail: ${validatedData.email}\nPhone: ${validatedData.phone}\n\nMessage:\n${validatedData.message}`
+        `New Inquiry from WSL Realty Website\n\nName: ${validatedData.name}\nEmail: ${validatedData.email}\nPhone: ${validatedData.phone}\n\nMessage:\n${validatedData.message}`
       );
       
-      window.open(`https://wa.me/2349010883999?text=${whatsappMessage}`, "_blank");
+      window.open(`https://wa.me/${info.whatsapp}?text=${whatsappMessage}`, "_blank");
       
       toast.success("Message sent! We'll get back to you soon.");
       setFormData({ name: "", email: "", phone: "", message: "" });
@@ -70,8 +85,8 @@ const ContactForm = () => {
                   <Phone className="w-5 h-5 text-gold mt-1" />
                   <div>
                     <p className="font-semibold">Phone</p>
-                    <a href="tel:+2349010883999" className="text-muted-foreground hover:text-gold transition-smooth">
-                      +234 901 088 3999
+                    <a href={`tel:${info.phone.replace(/\s/g, '')}`} className="text-muted-foreground hover:text-gold transition-smooth">
+                      {info.phone}
                     </a>
                   </div>
                 </div>
@@ -79,8 +94,8 @@ const ContactForm = () => {
                   <Mail className="w-5 h-5 text-gold mt-1" />
                   <div>
                     <p className="font-semibold">Email</p>
-                    <a href="mailto:mailwaro.online@gmail.com" className="text-muted-foreground hover:text-gold transition-smooth">
-                      mailwaro.online@gmail.com
+                    <a href={`mailto:${info.email}`} className="text-muted-foreground hover:text-gold transition-smooth">
+                      {info.email}
                     </a>
                   </div>
                 </div>
@@ -88,14 +103,14 @@ const ContactForm = () => {
                   <MapPin className="w-5 h-5 text-gold mt-1" />
                   <div>
                     <p className="font-semibold">Address</p>
-                    <p className="text-muted-foreground">Gwarinpa, 900108, FCT Nigeria</p>
+                    <p className="text-muted-foreground">{info.address}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <Button 
-              onClick={() => window.open("https://wa.me/2349010883999", "_blank")}
+              onClick={() => window.open(`https://wa.me/${info.whatsapp}`, "_blank")}
               className="w-full bg-gold hover:bg-gold-light text-charcoal font-semibold py-6 text-lg transition-smooth"
             >
               Quick WhatsApp Contact

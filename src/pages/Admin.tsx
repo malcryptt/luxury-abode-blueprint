@@ -1,0 +1,301 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { ArrowLeft, Save } from "lucide-react";
+import { User } from "@supabase/supabase-js";
+
+interface WebsiteContent {
+  hero: {
+    title: string;
+    subtitle: string;
+  };
+  about: {
+    title: string;
+    description: string;
+  };
+  contact: {
+    phone: string;
+    email: string;
+    address: string;
+    whatsapp: string;
+  };
+}
+
+const Admin = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState<WebsiteContent>({
+    hero: { title: "", subtitle: "" },
+    about: { title: "", description: "" },
+    contact: { phone: "", email: "", address: "", whatsapp: "" },
+  });
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        navigate("/auth");
+        return;
+      }
+
+      setUser(session.user);
+
+      // Check if user has admin role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleData) {
+        toast.error("Access denied. Admin privileges required.");
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+      await loadContent();
+      setLoading(false);
+    };
+
+    checkAdminAccess();
+  }, [navigate]);
+
+  const loadContent = async () => {
+    const { data, error } = await supabase
+      .from("website_content")
+      .select("section, content");
+
+    if (error) {
+      toast.error("Failed to load content");
+      return;
+    }
+
+    const contentMap: any = {};
+    data?.forEach((item) => {
+      contentMap[item.section] = item.content;
+    });
+
+    setContent(contentMap);
+  };
+
+  const handleSave = async (section: keyof WebsiteContent) => {
+    const { error } = await supabase
+      .from("website_content")
+      .update({ content: content[section] })
+      .eq("section", section);
+
+    if (error) {
+      toast.error(`Failed to save ${section} content`);
+      return;
+    }
+
+    toast.success(`${section.charAt(0).toUpperCase() + section.slice(1)} content updated!`);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Site
+            </Button>
+            <h1 className="text-2xl font-playfair font-bold">Admin Dashboard</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">{user?.email}</p>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+        {/* Hero Section Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Hero Section</CardTitle>
+            <CardDescription>Edit the main hero section content</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Title</label>
+              <Input
+                value={content.hero.title}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    hero: { ...content.hero, title: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Subtitle</label>
+              <Textarea
+                value={content.hero.subtitle}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    hero: { ...content.hero, subtitle: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+                rows={3}
+              />
+            </div>
+            <Button
+              onClick={() => handleSave("hero")}
+              className="bg-gold hover:bg-gold-light text-charcoal"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Hero Section
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* About Section Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>About Section</CardTitle>
+            <CardDescription>Edit the about section content</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Title</label>
+              <Input
+                value={content.about.title}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    about: { ...content.about, title: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Description</label>
+              <Textarea
+                value={content.about.description}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    about: { ...content.about, description: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+                rows={6}
+              />
+            </div>
+            <Button
+              onClick={() => handleSave("about")}
+              className="bg-gold hover:bg-gold-light text-charcoal"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save About Section
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Contact Section Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+            <CardDescription>Edit contact details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Phone</label>
+              <Input
+                value={content.contact.phone}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    contact: { ...content.contact, phone: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Email</label>
+              <Input
+                value={content.contact.email}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    contact: { ...content.contact, email: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">WhatsApp Number (with country code)</label>
+              <Input
+                value={content.contact.whatsapp}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    contact: { ...content.contact, whatsapp: e.target.value },
+                  })
+                }
+                placeholder="2349010883999"
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Address</label>
+              <Textarea
+                value={content.contact.address}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    contact: { ...content.contact, address: e.target.value },
+                  })
+                }
+                className="bg-secondary border-border"
+                rows={3}
+              />
+            </div>
+            <Button
+              onClick={() => handleSave("contact")}
+              className="bg-gold hover:bg-gold-light text-charcoal"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Contact Information
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+};
+
+export default Admin;
