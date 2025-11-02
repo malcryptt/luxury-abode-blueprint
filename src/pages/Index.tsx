@@ -306,7 +306,7 @@ const Index = () => {
               websiteContent.furniture.map((item: any) => (
                 <PropertyCard
                   key={item.id}
-                  image={item.image}
+                  image={item.images?.[0] || item.image || furniture1}
                   title={item.title}
                   location={item.location}
                   description={item.description}

@@ -20,7 +20,7 @@ interface Property {
 
 interface Furniture {
   id: string;
-  image: string;
+  images: string[];
   title: string;
   location: string;
   description: string;
@@ -539,24 +539,40 @@ const Admin = () => {
               <div key={item.id} className="p-4 border border-border rounded-lg space-y-4">
                 <h4 className="font-semibold">Furniture Item {index + 1}</h4>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Furniture Image</label>
-                  {item.image && (
-                    <div className="relative w-full h-48 mb-2 rounded-lg overflow-hidden">
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
-                        className="w-full h-full object-cover"
-                      />
+                  <label className="text-sm font-medium mb-2 block">Furniture Images</label>
+                  {item.images && item.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2">
+                      {item.images.map((image, imageIndex) => (
+                        <div key={imageIndex} className="relative w-full h-32 rounded-lg overflow-hidden group">
+                          <img 
+                            src={image} 
+                            alt={`${item.title} - ${imageIndex + 1}`} 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={() => {
+                              const newFurniture = [...content.furniture];
+                              newFurniture[index].images = newFurniture[index].images.filter((_, i) => i !== imageIndex);
+                              setContent({ ...content, furniture: newFurniture });
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <div className="flex gap-2">
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const handleFurnitureUpload = async (file: File, furnitureIndex: number) => {
+                      multiple
+                      onChange={async (e) => {
+                        const files = e.target.files;
+                        if (files) {
+                          for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
                             try {
                               const fileExt = file.name.split('.').pop();
                               const fileName = `${Math.random()}.${fileExt}`;
@@ -568,7 +584,7 @@ const Admin = () => {
 
                               if (uploadError) {
                                 toast.error("Failed to upload image");
-                                return;
+                                continue;
                               }
 
                               const { data } = supabase.storage
@@ -576,31 +592,23 @@ const Admin = () => {
                                 .getPublicUrl(filePath);
 
                               const newFurniture = [...content.furniture];
-                              newFurniture[furnitureIndex].image = data.publicUrl;
+                              if (!newFurniture[index].images) {
+                                newFurniture[index].images = [];
+                              }
+                              newFurniture[index].images.push(data.publicUrl);
                               setContent({ ...content, furniture: newFurniture });
 
                               toast.success("Image uploaded successfully!");
                             } catch (error) {
                               toast.error("Error uploading image");
                             }
-                          };
-                          handleFurnitureUpload(file, index);
+                          }
                         }
                       }}
                       className="bg-secondary border-border"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Or enter image URL below:</p>
-                  <Input
-                    value={item.image}
-                    onChange={(e) => {
-                      const newFurniture = [...content.furniture];
-                      newFurniture[index].image = e.target.value;
-                      setContent({ ...content, furniture: newFurniture });
-                    }}
-                    className="bg-secondary border-border mt-1"
-                    placeholder="https://... or /src/assets/..."
-                  />
+                  <p className="text-xs text-muted-foreground mt-1">Select multiple images to upload</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Title</label>
@@ -663,7 +671,7 @@ const Admin = () => {
                       furniture: [
                         {
                           id: "1",
-                          image: "",
+                          images: [],
                           title: "",
                           location: "",
                           description: "",
@@ -686,7 +694,7 @@ const Admin = () => {
                   onClick={() => {
                     const newItem = {
                       id: `${Date.now()}`,
-                      image: "",
+                      images: [],
                       title: "",
                       location: "",
                       description: "",
