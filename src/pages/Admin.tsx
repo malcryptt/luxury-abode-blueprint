@@ -534,7 +534,8 @@ const Admin = () => {
             <CardDescription>Edit featured furniture items (images, titles, locations, descriptions, prices)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {content.furniture.map((item, index) => (
+            {content.furniture && content.furniture.length > 0 ? (
+              content.furniture.map((item, index) => (
               <div key={item.id} className="p-4 border border-border rounded-lg space-y-4">
                 <h4 className="font-semibold">Furniture Item {index + 1}</h4>
                 <div>
@@ -651,14 +652,65 @@ const Admin = () => {
                   />
                 </div>
               </div>
-            ))}
-            <Button
-              onClick={() => handleSave("furniture")}
-              className="bg-gold hover:bg-gold-light text-charcoal"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save Furniture
-            </Button>
+            ))
+            ) : (
+              <div className="text-center p-8 border border-dashed border-border rounded-lg">
+                <p className="text-muted-foreground mb-4">No furniture items yet. Add your first item!</p>
+                <Button
+                  onClick={() => {
+                    setContent({
+                      ...content,
+                      furniture: [
+                        {
+                          id: "1",
+                          image: "",
+                          title: "",
+                          location: "",
+                          description: "",
+                          price: ""
+                        }
+                      ]
+                    });
+                  }}
+                  variant="outline"
+                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+                >
+                  Add Furniture Item
+                </Button>
+              </div>
+            )}
+            
+            {content.furniture && content.furniture.length > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    const newItem = {
+                      id: `${Date.now()}`,
+                      image: "",
+                      title: "",
+                      location: "",
+                      description: "",
+                      price: ""
+                    };
+                    setContent({
+                      ...content,
+                      furniture: [...content.furniture, newItem]
+                    });
+                  }}
+                  variant="outline"
+                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+                >
+                  Add Another Item
+                </Button>
+                <Button
+                  onClick={() => handleSave("furniture")}
+                  className="bg-gold hover:bg-gold-light text-charcoal"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Furniture
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
