@@ -9,6 +9,22 @@ import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 
+interface Property {
+  id: string;
+  image: string;
+  title: string;
+  location: string;
+  description: string;
+  price: string;
+}
+
+interface Service {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+}
+
 interface WebsiteContent {
   hero: {
     title: string;
@@ -24,6 +40,8 @@ interface WebsiteContent {
     address: string;
     whatsapp: string;
   };
+  properties: Property[];
+  services: Service[];
 }
 
 const Admin = () => {
@@ -35,6 +53,8 @@ const Admin = () => {
     hero: { title: "", subtitle: "" },
     about: { title: "", description: "" },
     contact: { phone: "", email: "", address: "", whatsapp: "" },
+    properties: [],
+    services: [],
   });
 
   useEffect(() => {
@@ -91,7 +111,7 @@ const Admin = () => {
   const handleSave = async (section: keyof WebsiteContent) => {
     const { error } = await supabase
       .from("website_content")
-      .update({ content: content[section] })
+      .update({ content: content[section] as any })
       .eq("section", section);
 
     if (error) {
@@ -290,6 +310,150 @@ const Admin = () => {
             >
               <Save className="w-4 h-4 mr-2" />
               Save Contact Information
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Properties Section Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Featured Properties</CardTitle>
+            <CardDescription>Edit featured properties (images, titles, locations, descriptions, prices)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {content.properties.map((property, index) => (
+              <div key={property.id} className="p-4 border border-border rounded-lg space-y-4">
+                <h4 className="font-semibold">Property {index + 1}</h4>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Image Path</label>
+                  <Input
+                    value={property.image}
+                    onChange={(e) => {
+                      const newProperties = [...content.properties];
+                      newProperties[index].image = e.target.value;
+                      setContent({ ...content, properties: newProperties });
+                    }}
+                    className="bg-secondary border-border"
+                    placeholder="/src/assets/property-1.jpg"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Title</label>
+                  <Input
+                    value={property.title}
+                    onChange={(e) => {
+                      const newProperties = [...content.properties];
+                      newProperties[index].title = e.target.value;
+                      setContent({ ...content, properties: newProperties });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Location</label>
+                  <Input
+                    value={property.location}
+                    onChange={(e) => {
+                      const newProperties = [...content.properties];
+                      newProperties[index].location = e.target.value;
+                      setContent({ ...content, properties: newProperties });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Description</label>
+                  <Textarea
+                    value={property.description}
+                    onChange={(e) => {
+                      const newProperties = [...content.properties];
+                      newProperties[index].description = e.target.value;
+                      setContent({ ...content, properties: newProperties });
+                    }}
+                    className="bg-secondary border-border"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Price</label>
+                  <Input
+                    value={property.price}
+                    onChange={(e) => {
+                      const newProperties = [...content.properties];
+                      newProperties[index].price = e.target.value;
+                      setContent({ ...content, properties: newProperties });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              onClick={() => handleSave("properties")}
+              className="bg-gold hover:bg-gold-light text-charcoal"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Properties
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Services Section Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Our Expertise Services</CardTitle>
+            <CardDescription>Edit the services displayed in Our Expertise section</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {content.services.map((service, index) => (
+              <div key={service.id} className="p-4 border border-border rounded-lg space-y-4">
+                <h4 className="font-semibold">Service {index + 1}</h4>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Icon (lucide-react name)</label>
+                  <Input
+                    value={service.icon}
+                    onChange={(e) => {
+                      const newServices = [...content.services];
+                      newServices[index].icon = e.target.value;
+                      setContent({ ...content, services: newServices });
+                    }}
+                    className="bg-secondary border-border"
+                    placeholder="Home, Building, Key, etc."
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Title</label>
+                  <Input
+                    value={service.title}
+                    onChange={(e) => {
+                      const newServices = [...content.services];
+                      newServices[index].title = e.target.value;
+                      setContent({ ...content, services: newServices });
+                    }}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Description</label>
+                  <Textarea
+                    value={service.description}
+                    onChange={(e) => {
+                      const newServices = [...content.services];
+                      newServices[index].description = e.target.value;
+                      setContent({ ...content, services: newServices });
+                    }}
+                    className="bg-secondary border-border"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              onClick={() => handleSave("services")}
+              className="bg-gold hover:bg-gold-light text-charcoal"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Services
             </Button>
           </CardContent>
         </Card>

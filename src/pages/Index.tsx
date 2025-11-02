@@ -20,10 +20,12 @@ const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [websiteContent, setWebsiteContent] = useState({
+  const [websiteContent, setWebsiteContent] = useState<any>({
     hero: { title: "Where Luxury Finds a Home", subtitle: "Experience unparalleled elegance in Abuja's finest residential properties" },
     about: { title: "About WSL Realty", description: "WSL Realty is dedicated to redefining residential luxury. We combine expertise, innovation, and exceptional service to help you find your dream home or manage your investments effortlessly. Our commitment to excellence ensures every client receives personalized attention and access to Abuja's most prestigious properties." },
     contact: { phone: "+234 901 088 3999", email: "mailwaro.online@gmail.com", address: "Gwarinpa, 900108, FCT Nigeria", whatsapp: "2349010883999" },
+    properties: [],
+    services: [],
   });
 
   useEffect(() => {
@@ -177,30 +179,46 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <PropertyCard
-              image={property1}
-              title="Modern Villa"
-              location="Abuja, FCT Nigeria"
-              description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring expansive living spaces, fully furnished and secure living space."
-              price="Starting Price: ₦300 Million"
-              onInquire={() => handleInquire("Modern Villa")}
-            />
-            <PropertyCard
-              image={property2}
-              title="Luxury Penthouse"
-              location="Abuja, FCT Nigeria"
-              description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring panoramic views, a private pool, and smart home amenities."
-              price="Starting Price: ₦300 Million"
-              onInquire={() => handleInquire("Luxury Penthouse")}
-            />
-            <PropertyCard
-              image={property3}
-              title="Executive Estate"
-              location="Abuja, FCT Nigeria"
-              description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring seamless indoor-outdoor flow, every detail is crafted to perfection."
-              price="Starting Price: ₦300 Million"
-              onInquire={() => handleInquire("Executive Estate")}
-            />
+            {websiteContent.properties && websiteContent.properties.length > 0 ? (
+              websiteContent.properties.map((property: any) => (
+                <PropertyCard
+                  key={property.id}
+                  image={property.image}
+                  title={property.title}
+                  location={property.location}
+                  description={property.description}
+                  price={property.price}
+                  onInquire={() => handleInquire(property.title)}
+                />
+              ))
+            ) : (
+              <>
+                <PropertyCard
+                  image={property1}
+                  title="Modern Villa"
+                  location="Abuja, FCT Nigeria"
+                  description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring expansive living spaces, fully furnished and secure living space."
+                  price="Starting Price: ₦300 Million"
+                  onInquire={() => handleInquire("Modern Villa")}
+                />
+                <PropertyCard
+                  image={property2}
+                  title="Luxury Penthouse"
+                  location="Abuja, FCT Nigeria"
+                  description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring panoramic views, a private pool, and smart home amenities."
+                  price="Starting Price: ₦300 Million"
+                  onInquire={() => handleInquire("Luxury Penthouse")}
+                />
+                <PropertyCard
+                  image={property3}
+                  title="Executive Estate"
+                  location="Abuja, FCT Nigeria"
+                  description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring seamless indoor-outdoor flow, every detail is crafted to perfection."
+                  price="Starting Price: ₦300 Million"
+                  onInquire={() => handleInquire("Executive Estate")}
+                />
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -237,24 +255,35 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="luxury-card p-6 space-y-4 animate-slide-up">
-              <h3 className="text-2xl font-playfair font-semibold text-gold">Buying & Selling</h3>
-              <p className="text-muted-foreground">
-                Seamless property transactions with expert guidance throughout your journey to homeownership.
-              </p>
-            </div>
-            <div className="luxury-card p-6 space-y-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-              <h3 className="text-2xl font-playfair font-semibold text-gold">Renting</h3>
-              <p className="text-muted-foreground">
-                Curated residential options to fit your lifestyle, from luxury apartments to executive estates.
-              </p>
-            </div>
-            <div className="luxury-card p-6 space-y-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <h3 className="text-2xl font-playfair font-semibold text-gold">Property Management</h3>
-              <p className="text-muted-foreground">
-                Hassle-free management for your valuable assets with dedicated professional oversight.
-              </p>
-            </div>
+            {websiteContent.services && websiteContent.services.length > 0 ? (
+              websiteContent.services.map((service: any, idx: number) => (
+                <div key={service.id} className="luxury-card p-6 space-y-4 animate-slide-up" style={{ animationDelay: `${idx * 0.1}s` }}>
+                  <h3 className="text-2xl font-playfair font-semibold text-gold">{service.title}</h3>
+                  <p className="text-muted-foreground">{service.description}</p>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="luxury-card p-6 space-y-4 animate-slide-up">
+                  <h3 className="text-2xl font-playfair font-semibold text-gold">Buying & Selling</h3>
+                  <p className="text-muted-foreground">
+                    Seamless property transactions with expert guidance throughout your journey to homeownership.
+                  </p>
+                </div>
+                <div className="luxury-card p-6 space-y-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+                  <h3 className="text-2xl font-playfair font-semibold text-gold">Renting</h3>
+                  <p className="text-muted-foreground">
+                    Curated residential options to fit your lifestyle, from luxury apartments to executive estates.
+                  </p>
+                </div>
+                <div className="luxury-card p-6 space-y-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+                  <h3 className="text-2xl font-playfair font-semibold text-gold">Property Management</h3>
+                  <p className="text-muted-foreground">
+                    Hassle-free management for your valuable assets with dedicated professional oversight.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
