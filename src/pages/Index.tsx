@@ -110,44 +110,48 @@ const Index = () => {
               WSL Realty
             </h1>
           </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <button onClick={() => scrollToSection("hero")} className="hover:text-gold transition-smooth">Home</button>
-            <button onClick={() => scrollToSection("properties")} className="hover:text-gold transition-smooth">Properties</button>
-            <button onClick={() => scrollToSection("about")} className="hover:text-gold transition-smooth">About</button>
-            <button onClick={() => scrollToSection("services")} className="hover:text-gold transition-smooth">Services</button>
-            <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
-            <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
-            {isAdmin && (
-              <Button 
-                onClick={() => navigate("/admin")}
-                variant="outline"
-                size="sm"
-                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-              >
-                Admin
-              </Button>
-            )}
-            {user ? (
-              <Button 
-                onClick={handleSignOut}
-                variant="outline"
-                size="sm"
-                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            ) : (
-              <Button 
-                onClick={() => navigate("/auth")}
-                variant="outline"
-                size="sm"
-                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-              >
-                Sign In
-              </Button>
-            )}
-          </nav>
+          <div className="flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-6">
+              <button onClick={() => scrollToSection("hero")} className="hover:text-gold transition-smooth">Home</button>
+              <button onClick={() => scrollToSection("properties")} className="hover:text-gold transition-smooth">Properties</button>
+              <button onClick={() => scrollToSection("about")} className="hover:text-gold transition-smooth">About</button>
+              <button onClick={() => scrollToSection("services")} className="hover:text-gold transition-smooth">Services</button>
+              <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
+              <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
+            </nav>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button 
+                  onClick={() => navigate("/admin")}
+                  variant="outline"
+                  size="sm"
+                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+                >
+                  Admin
+                </Button>
+              )}
+              {user ? (
+                <Button 
+                  onClick={handleSignOut}
+                  variant="outline"
+                  size="sm"
+                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => navigate("/auth")}
+                  variant="outline"
+                  size="sm"
+                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+                >
+                  Sign In
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
