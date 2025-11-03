@@ -16,6 +16,7 @@ const authSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const [isSignIn, setIsSignIn] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +41,39 @@ const Auth = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const emailSchema = z.string().trim().email("Invalid email address");
+      const validatedEmail = emailSchema.parse(email);
+      
+      const redirectUrl = `${window.location.origin}/auth`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Password reset email sent! Check your inbox.");
+      setIsForgotPassword(false);
+      setIsSignIn(true);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,52 +152,90 @@ const Auth = () => {
         </div>
 
         <div className="luxury-card p-8 space-y-6">
-          <form onSubmit={handleAuth} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-secondary border-border focus:border-gold"
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="bg-secondary border-border focus:border-gold"
-            />
-            
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full bg-gold hover:bg-gold-light text-charcoal font-semibold py-6 transition-smooth"
-            >
-              {isLoading ? "Loading..." : isSignIn ? "Sign In" : "Sign Up"}
-            </Button>
-          </form>
+          {isForgotPassword ? (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-semibold mb-2">Reset Password</h2>
+                <p className="text-sm text-muted-foreground">Enter your email to receive a password reset link</p>
+              </div>
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="bg-secondary border-border focus:border-gold"
+              />
+              
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full bg-gold hover:bg-gold-light text-charcoal font-semibold py-6 transition-smooth"
+              >
+                {isLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
 
-          <div className="space-y-2 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignIn(!isSignIn)}
-              className="text-gold hover:text-gold-light transition-smooth text-sm"
-            >
-              {isSignIn ? "Need an account? Sign Up" : "Already have an account? Sign In"}
-            </button>
-            {isSignIn && (
               <button
                 type="button"
-                onClick={() => toast.info("Please contact support to reset your password")}
-                className="block w-full text-muted-foreground hover:text-foreground transition-smooth text-sm"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setIsSignIn(true);
+                }}
+                className="block w-full text-gold hover:text-gold-light transition-smooth text-sm"
               >
-                Forgot Password?
+                Back to Sign In
               </button>
-            )}
-          </div>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleAuth} className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-secondary border-border focus:border-gold"
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="bg-secondary border-border focus:border-gold"
+                />
+                
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="w-full bg-gold hover:bg-gold-light text-charcoal font-semibold py-6 transition-smooth"
+                >
+                  {isLoading ? "Loading..." : isSignIn ? "Sign In" : "Sign Up"}
+                </Button>
+              </form>
+
+              <div className="space-y-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setIsSignIn(!isSignIn)}
+                  className="text-gold hover:text-gold-light transition-smooth text-sm"
+                >
+                  {isSignIn ? "Need an account? Sign Up" : "Already have an account? Sign In"}
+                </button>
+                {isSignIn && (
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="block w-full text-muted-foreground hover:text-foreground transition-smooth text-sm"
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
