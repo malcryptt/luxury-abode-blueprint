@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { ArrowLeft, Save, Upload, X, Trash2, UserPlus } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 
 interface Property {
@@ -67,6 +68,8 @@ const Admin = () => {
     services: [],
     furniture: [],
   });
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; user_id: string; email: string }>>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -95,6 +98,7 @@ const Admin = () => {
 
       setIsAdmin(true);
       await loadContent();
+      await loadAdminUsers();
       setLoading(false);
     };
 
@@ -125,6 +129,99 @@ const Admin = () => {
     });
 
     setContent(contentMap);
+  };
+
+  const loadAdminUsers = async () => {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("id, user_id, role")
+      .eq("role", "admin");
+
+    if (error) {
+      toast.error("Failed to load admin users");
+      return;
+    }
+
+    // Fetch email addresses from auth.users metadata
+    const usersWithEmails = await Promise.all(
+      data.map(async (admin) => {
+        const { data: { user: authUser } } = await supabase.auth.admin.getUserById(admin.user_id);
+        return {
+          ...admin,
+          email: authUser?.email || "Unknown"
+        };
+      })
+    );
+
+    setAdminUsers(usersWithEmails);
+  };
+
+  const handleAddAdmin = async () => {
+    if (!newAdminEmail.trim()) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    // Get user by email using RPC or query
+    const { data, error: userError } = await supabase.auth.admin.listUsers();
+    
+    if (userError || !data) {
+      toast.error("Failed to search for user");
+      return;
+    }
+
+    const targetUser = data.users.find((u: any) => u.email === newAdminEmail.trim());
+
+    if (!targetUser) {
+      toast.error("User not found. They must sign up first.");
+      return;
+    }
+
+    // Check if already admin
+    const { data: existingRole } = await supabase
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", targetUser.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (existingRole) {
+      toast.error("User is already an admin");
+      return;
+    }
+
+    // Add admin role
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: targetUser.id, role: "admin" });
+
+    if (error) {
+      toast.error("Failed to add admin role");
+      return;
+    }
+
+    toast.success(`${newAdminEmail} is now an admin`);
+    setNewAdminEmail("");
+    await loadAdminUsers();
+  };
+
+  const handleRemoveAdmin = async (roleId: string, email: string) => {
+    if (!confirm(`Remove admin access from ${email}?`)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("user_roles")
+      .delete()
+      .eq("id", roleId);
+
+    if (error) {
+      toast.error("Failed to remove admin role");
+      return;
+    }
+
+    toast.success(`Admin access removed from ${email}`);
+    await loadAdminUsers();
   };
 
   const handleSave = async (section: keyof WebsiteContent) => {
@@ -203,6 +300,60 @@ const Admin = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+        {/* Admin Management Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Management</CardTitle>
+            <CardDescription>Add or remove admin users</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="Enter email address"
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                className="bg-secondary border-border"
+              />
+              <Button
+                onClick={handleAddAdmin}
+                className="bg-gold hover:bg-gold-light text-charcoal"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Admin
+              </Button>
+            </div>
+
+            <div className="border border-border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {adminUsers.map((admin) => (
+                    <TableRow key={admin.id}>
+                      <TableCell>{admin.email}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveAdmin(admin.id, admin.email)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Hero Section Editor */}
         <Card>
           <CardHeader>
