@@ -34,12 +34,9 @@ const Index = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
-        if (!session?.user) {
-          navigate("/auth");
-        } else {
+        if (session?.user) {
           setTimeout(() => {
             checkAdminStatus(session.user.id);
-            loadWebsiteContent();
           }, 0);
         }
       }
@@ -47,13 +44,12 @@ const Index = () => {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (!session?.user) {
-        navigate("/auth");
-      } else {
+      if (session?.user) {
         checkAdminStatus(session.user.id);
-        loadWebsiteContent();
       }
     });
+
+    loadWebsiteContent();
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -70,16 +66,20 @@ const Index = () => {
   };
 
   const loadWebsiteContent = async () => {
-    const { data } = await supabase
-      .from("website_content")
-      .select("section, content");
+    try {
+      const { data } = await supabase
+        .from("website_content")
+        .select("section, content");
 
-    if (data) {
-      const contentMap: any = {};
-      data.forEach((item) => {
-        contentMap[item.section] = item.content;
-      });
-      setWebsiteContent((prev) => ({ ...prev, ...contentMap }));
+      if (data) {
+        const contentMap: any = {};
+        data.forEach((item) => {
+          contentMap[item.section] = item.content;
+        });
+        setWebsiteContent((prev) => ({ ...prev, ...contentMap }));
+      }
+    } catch (error) {
+      console.error("Error loading content:", error);
     }
   };
 
@@ -98,10 +98,6 @@ const Index = () => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
   };
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen">
@@ -131,15 +127,26 @@ const Index = () => {
                 Admin
               </Button>
             )}
-            <Button 
-              onClick={handleSignOut}
-              variant="outline"
-              size="sm"
-              className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
+            {user ? (
+              <Button 
+                onClick={handleSignOut}
+                variant="outline"
+                size="sm"
+                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => navigate("/auth")}
+                variant="outline"
+                size="sm"
+                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+              >
+                Sign In
+              </Button>
+            )}
           </nav>
         </div>
       </header>
