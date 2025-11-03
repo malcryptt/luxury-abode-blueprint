@@ -7,6 +7,7 @@ import ContactForm from "@/components/ContactForm";
 import { toast } from "sonner";
 import { LogOut, Phone, Facebook, Instagram } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import wslLogo from "@/assets/wsl-logo.png";
 import property1 from "@/assets/property-1.jpg";
@@ -179,7 +180,60 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <ScrollArea className="w-full md:hidden">
+            <div className="flex gap-6 pb-4">
+              {websiteContent.properties && websiteContent.properties.length > 0 ? (
+                websiteContent.properties.map((property: any) => (
+                  <div key={property.id} className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={property.image}
+                      title={property.title}
+                      location={property.location}
+                      description={property.description}
+                      price={property.price}
+                      onInquire={() => handleInquire(property.title)}
+                    />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={property1}
+                      title="Modern Villa"
+                      location="Abuja, FCT Nigeria"
+                      description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring expansive living spaces, fully furnished and secure living space."
+                      price="Starting Price: ₦300 Million"
+                      onInquire={() => handleInquire("Modern Villa")}
+                    />
+                  </div>
+                  <div className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={property2}
+                      title="Luxury Penthouse"
+                      location="Abuja, FCT Nigeria"
+                      description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring panoramic views, a private pool, and smart home amenities."
+                      price="Starting Price: ₦300 Million"
+                      onInquire={() => handleInquire("Luxury Penthouse")}
+                    />
+                  </div>
+                  <div className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={property3}
+                      title="Executive Estate"
+                      location="Abuja, FCT Nigeria"
+                      description="Experience modern elegance in this stunning luxury home, where sophisticated design meets ultimate comfort. Featuring seamless indoor-outdoor flow, every detail is crafted to perfection."
+                      price="Starting Price: ₦300 Million"
+                      onInquire={() => handleInquire("Executive Estate")}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {websiteContent.properties && websiteContent.properties.length > 0 ? (
               websiteContent.properties.map((property: any) => (
                 <PropertyCard
@@ -301,7 +355,60 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <ScrollArea className="w-full md:hidden">
+            <div className="flex gap-6 pb-4">
+              {websiteContent.furniture && websiteContent.furniture.length > 0 ? (
+                websiteContent.furniture.map((item: any) => (
+                  <div key={item.id} className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={item.images?.[0] || item.image || furniture1}
+                      title={item.title}
+                      location={item.location}
+                      description={item.description}
+                      price={item.price}
+                      onInquire={() => handleInquire(item.title)}
+                    />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={furniture1}
+                      title="Comfortable Twin Set Bed"
+                      location="Abuja, FCT Nigeria"
+                      description="Experience ultimate comfort with this luxurious twin set bed, crafted with premium materials and elegant design to transform your bedroom into a sanctuary of relaxation."
+                      price="Starting Price: ₦2.5 Million"
+                      onInquire={() => handleInquire("Comfortable Twin Set Bed")}
+                    />
+                  </div>
+                  <div className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={furniture2}
+                      title="Royalty Dining Set"
+                      location="Abuja, FCT Nigeria"
+                      description="Elevate your dining experience with this exquisite royalty dining set, featuring sophisticated craftsmanship and timeless elegance perfect for hosting memorable gatherings."
+                      price="Starting Price: ₦2.5 Million"
+                      onInquire={() => handleInquire("Royalty Dining Set")}
+                    />
+                  </div>
+                  <div className="w-[85vw] flex-shrink-0">
+                    <PropertyCard
+                      image={furniture3}
+                      title="Exquisite Luxury Cushions"
+                      location="Abuja, FCT Nigeria"
+                      description="Add a touch of opulence to your living space with these exquisite luxury cushions, meticulously designed with premium fabrics to provide both comfort and aesthetic appeal."
+                      price="Starting Price: ₦2.5 Million"
+                      onInquire={() => handleInquire("Exquisite Luxury Cushions")}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {websiteContent.furniture && websiteContent.furniture.length > 0 ? (
               websiteContent.furniture.map((item: any) => (
                 <PropertyCard
