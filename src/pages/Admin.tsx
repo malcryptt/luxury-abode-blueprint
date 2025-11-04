@@ -132,6 +132,8 @@ const Admin = () => {
   };
 
   const loadAdminUsers = async () => {
+    // We'll need to create an edge function to fetch users by IDs
+    // For now, we'll just show user IDs
     const { data, error } = await supabase
       .from("user_roles")
       .select("id, user_id, role")
@@ -142,38 +144,18 @@ const Admin = () => {
       return;
     }
 
-    // Fetch email addresses from auth.users metadata
-    const usersWithEmails = await Promise.all(
-      data.map(async (admin) => {
-        const { data: { user: authUser } } = await supabase.auth.admin.getUserById(admin.user_id);
-        return {
-          ...admin,
-          email: authUser?.email || "Unknown"
-        };
-      })
-    );
+    // Just display user_id for now since we can't fetch emails from client
+    const usersData = data.map((admin) => ({
+      ...admin,
+      email: admin.user_id
+    }));
 
-    setAdminUsers(usersWithEmails);
+    setAdminUsers(usersData);
   };
 
   const handleAddAdmin = async () => {
     if (!newAdminEmail.trim()) {
-      toast.error("Please enter an email address");
-      return;
-    }
-
-    // Get user by email using RPC or query
-    const { data, error: userError } = await supabase.auth.admin.listUsers();
-    
-    if (userError || !data) {
-      toast.error("Failed to search for user");
-      return;
-    }
-
-    const targetUser = data.users.find((u: any) => u.email === newAdminEmail.trim());
-
-    if (!targetUser) {
-      toast.error("User not found. They must sign up first.");
+      toast.error("Please enter a user ID");
       return;
     }
 
@@ -181,7 +163,7 @@ const Admin = () => {
     const { data: existingRole } = await supabase
       .from("user_roles")
       .select("id")
-      .eq("user_id", targetUser.id)
+      .eq("user_id", newAdminEmail.trim())
       .eq("role", "admin")
       .maybeSingle();
 
@@ -193,14 +175,15 @@ const Admin = () => {
     // Add admin role
     const { error } = await supabase
       .from("user_roles")
-      .insert({ user_id: targetUser.id, role: "admin" });
+      .insert({ user_id: newAdminEmail.trim(), role: "admin" });
 
     if (error) {
-      toast.error("Failed to add admin role");
+      console.error("Error adding admin:", error);
+      toast.error("Failed to add admin role. Make sure the user ID exists.");
       return;
     }
 
-    toast.success(`${newAdminEmail} is now an admin`);
+    toast.success("Admin role added successfully!");
     setNewAdminEmail("");
     await loadAdminUsers();
   };
@@ -282,20 +265,22 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Site
-            </Button>
-            <h1 className="text-2xl font-playfair font-bold">Admin Dashboard</h1>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/")}
+                className="border-gold text-gold hover:bg-gold hover:text-charcoal"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Site
+              </Button>
+              <h1 className="text-xl sm:text-2xl font-playfair font-bold">Admin Dashboard</h1>
+            </div>
+            <p className="text-sm text-muted-foreground break-all">{user?.email}</p>
           </div>
-          <p className="text-sm text-muted-foreground">{user?.email}</p>
         </div>
       </header>
 
@@ -307,35 +292,37 @@ const Admin = () => {
             <CardDescription>Add or remove admin users</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
-                type="email"
-                placeholder="Enter email address"
+                type="text"
+                placeholder="Enter user ID (get from user profile)"
                 value={newAdminEmail}
                 onChange={(e) => setNewAdminEmail(e.target.value)}
-                className="bg-secondary border-border"
+                className="bg-secondary border-border flex-1"
               />
               <Button
                 onClick={handleAddAdmin}
-                className="bg-gold hover:bg-gold-light text-charcoal"
+                className="bg-gold hover:bg-gold-light text-charcoal whitespace-nowrap"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Add Admin
               </Button>
             </div>
 
-            <div className="border border-border rounded-lg">
+            <div className="border border-border rounded-lg overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Email</TableHead>
+                    <TableHead>User ID</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {adminUsers.map((admin) => (
                     <TableRow key={admin.id}>
-                      <TableCell>{admin.email}</TableCell>
+                      <TableCell className="font-mono text-xs sm:text-sm break-all max-w-[200px] sm:max-w-none">
+                        {admin.email}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
