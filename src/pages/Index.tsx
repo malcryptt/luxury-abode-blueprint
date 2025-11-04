@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import PropertyCard from "@/components/PropertyCard";
 import ContactForm from "@/components/ContactForm";
 import { toast } from "sonner";
-import { LogOut, Phone, Facebook, Instagram } from "lucide-react";
+import { LogOut, Phone, Facebook, Instagram, Menu } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import heroImage from "@/assets/hero-luxury-home.jpg";
@@ -21,6 +22,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [websiteContent, setWebsiteContent] = useState<any>({
     hero: { title: "Where Luxury Finds a Home", subtitle: "Experience unparalleled elegance in Abuja's finest residential properties" },
     about: { title: "About WSL Realty", description: "WSL Realty is dedicated to redefining residential luxury. We combine expertise, innovation, and exceptional service to help you find your dream home or manage your investments effortlessly. Our commitment to excellence ensures every client receives personalized attention and access to Abuja's most prestigious properties." },
@@ -97,6 +99,7 @@ const Index = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -111,8 +114,10 @@ const Index = () => {
                 WSL Realty
               </h1>
             </div>
-            <div className="flex items-center gap-2 sm:gap-6">
-              <nav className="hidden md:flex items-center gap-6">
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <nav className="flex items-center gap-6">
                 <button onClick={() => scrollToSection("hero")} className="hover:text-gold transition-smooth">Home</button>
                 <button onClick={() => scrollToSection("properties")} className="hover:text-gold transition-smooth">Properties</button>
                 <button onClick={() => scrollToSection("about")} className="hover:text-gold transition-smooth">About</button>
@@ -120,13 +125,13 @@ const Index = () => {
                 <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
                 <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
               </nav>
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2">
                 {isAdmin && (
                   <Button 
                     onClick={() => navigate("/admin")}
                     variant="outline"
                     size="sm"
-                    className="border-gold text-gold hover:bg-gold hover:text-charcoal text-xs sm:text-sm px-2 sm:px-3"
+                    className="border-gold text-gold hover:bg-gold hover:text-charcoal"
                   >
                     Admin
                   </Button>
@@ -136,23 +141,112 @@ const Index = () => {
                     onClick={handleSignOut}
                     variant="outline"
                     size="sm"
-                    className="border-gold text-gold hover:bg-gold hover:text-charcoal text-xs sm:text-sm px-2 sm:px-3"
+                    className="border-gold text-gold hover:bg-gold hover:text-charcoal"
                   >
-                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Sign Out</span>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
                   </Button>
                 ) : (
                   <Button 
                     onClick={() => navigate("/auth")}
                     variant="outline"
                     size="sm"
-                    className="border-gold text-gold hover:bg-gold hover:text-charcoal text-xs sm:text-sm px-2 sm:px-3"
+                    className="border-gold text-gold hover:bg-gold hover:text-charcoal"
                   >
                     Sign In
                   </Button>
                 )}
               </div>
             </div>
+
+            {/* Mobile Menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-64 bg-background border-border">
+                <nav className="flex flex-col gap-4 mt-8">
+                  <button 
+                    onClick={() => scrollToSection("hero")} 
+                    className="text-left py-2 px-4 hover:bg-secondary rounded-md transition-smooth"
+                  >
+                    Home
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection("properties")} 
+                    className="text-left py-2 px-4 hover:bg-secondary rounded-md transition-smooth"
+                  >
+                    Properties
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection("about")} 
+                    className="text-left py-2 px-4 hover:bg-secondary rounded-md transition-smooth"
+                  >
+                    About
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection("services")} 
+                    className="text-left py-2 px-4 hover:bg-secondary rounded-md transition-smooth"
+                  >
+                    Services
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection("furniture")} 
+                    className="text-left py-2 px-4 hover:bg-secondary rounded-md transition-smooth"
+                  >
+                    Furniture
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection("contact")} 
+                    className="text-left py-2 px-4 hover:bg-secondary rounded-md transition-smooth"
+                  >
+                    Contact
+                  </button>
+                  
+                  <div className="border-t border-border my-2" />
+                  
+                  {isAdmin && (
+                    <Button 
+                      onClick={() => {
+                        navigate("/admin");
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="border-gold text-gold hover:bg-gold hover:text-charcoal justify-start"
+                    >
+                      Admin Dashboard
+                    </Button>
+                  )}
+                  
+                  {user ? (
+                    <Button 
+                      onClick={() => {
+                        handleSignOut();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="border-gold text-gold hover:bg-gold hover:text-charcoal justify-start"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => {
+                        navigate("/auth");
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="border-gold text-gold hover:bg-gold hover:text-charcoal justify-start"
+                    >
+                      Sign In
+                    </Button>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
