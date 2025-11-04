@@ -103,53 +103,55 @@ const Index = () => {
     <div className="min-h-screen">
       {/* Header */}
       <header className="fixed top-0 w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={wslLogo} alt="WSL Realty" className="w-12 h-12" />
-            <h1 className="text-2xl font-playfair font-bold">
-              WSL Realty
-            </h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <nav className="hidden md:flex items-center gap-6">
-              <button onClick={() => scrollToSection("hero")} className="hover:text-gold transition-smooth">Home</button>
-              <button onClick={() => scrollToSection("properties")} className="hover:text-gold transition-smooth">Properties</button>
-              <button onClick={() => scrollToSection("about")} className="hover:text-gold transition-smooth">About</button>
-              <button onClick={() => scrollToSection("services")} className="hover:text-gold transition-smooth">Services</button>
-              <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
-              <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
-            </nav>
-            <div className="flex items-center gap-2">
-              {isAdmin && (
-                <Button 
-                  onClick={() => navigate("/admin")}
-                  variant="outline"
-                  size="sm"
-                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-                >
-                  Admin
-                </Button>
-              )}
-              {user ? (
-                <Button 
-                  onClick={handleSignOut}
-                  variant="outline"
-                  size="sm"
-                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => navigate("/auth")}
-                  variant="outline"
-                  size="sm"
-                  className="border-gold text-gold hover:bg-gold hover:text-charcoal"
-                >
-                  Sign In
-                </Button>
-              )}
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img src={wslLogo} alt="WSL Realty" className="w-10 h-10 sm:w-12 sm:h-12" />
+              <h1 className="text-lg sm:text-2xl font-playfair font-bold">
+                WSL Realty
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-6">
+              <nav className="hidden md:flex items-center gap-6">
+                <button onClick={() => scrollToSection("hero")} className="hover:text-gold transition-smooth">Home</button>
+                <button onClick={() => scrollToSection("properties")} className="hover:text-gold transition-smooth">Properties</button>
+                <button onClick={() => scrollToSection("about")} className="hover:text-gold transition-smooth">About</button>
+                <button onClick={() => scrollToSection("services")} className="hover:text-gold transition-smooth">Services</button>
+                <button onClick={() => scrollToSection("furniture")} className="hover:text-gold transition-smooth">Furniture</button>
+                <button onClick={() => scrollToSection("contact")} className="hover:text-gold transition-smooth">Contact</button>
+              </nav>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {isAdmin && (
+                  <Button 
+                    onClick={() => navigate("/admin")}
+                    variant="outline"
+                    size="sm"
+                    className="border-gold text-gold hover:bg-gold hover:text-charcoal text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    Admin
+                  </Button>
+                )}
+                {user ? (
+                  <Button 
+                    onClick={handleSignOut}
+                    variant="outline"
+                    size="sm"
+                    className="border-gold text-gold hover:bg-gold hover:text-charcoal text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Sign Out</span>
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => navigate("/auth")}
+                    variant="outline"
+                    size="sm"
+                    className="border-gold text-gold hover:bg-gold hover:text-charcoal text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    Sign In
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
