@@ -9,6 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Save, Upload, X, Trash2, UserPlus } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Property {
   id: string;
@@ -70,6 +74,10 @@ const Admin = () => {
   });
   const [adminUsers, setAdminUsers] = useState<Array<{ id: string; user_id: string; email: string }>>([]);
   const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<{ id: string; email: string } | null>(null);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -132,77 +140,51 @@ const Admin = () => {
   };
 
   const loadAdminUsers = async () => {
-    // We'll need to create an edge function to fetch users by IDs
-    // For now, we'll just show user IDs
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("id, user_id, role")
-      .eq("role", "admin");
-
-    if (error) {
+    const { data, error } = await supabase.functions.invoke("manage-admins", { body: { action: "list" } });
+    if (error || data?.error) {
       toast.error("Failed to load admin users");
       return;
     }
-
-    // Just display user_id for now since we can't fetch emails from client
-    const usersData = data.map((admin) => ({
-      ...admin,
-      email: admin.user_id
-    }));
-
-    setAdminUsers(usersData);
+    setAdminUsers(data.admins);
+    setMyUserId(data.me);
   };
 
   const handleAddAdmin = async () => {
-    if (!newAdminEmail.trim()) {
-      toast.error("Please enter a user ID");
+    const email = newAdminEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email");
       return;
     }
-
-    // Check if already admin
-    const { data: existingRole } = await supabase
-      .from("user_roles")
-      .select("id")
-      .eq("user_id", newAdminEmail.trim())
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (existingRole) {
-      toast.error("User is already an admin");
+    if (newAdminPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
-
-    // Add admin role
-    const { error } = await supabase
-      .from("user_roles")
-      .insert({ user_id: newAdminEmail.trim(), role: "admin" });
-
-    if (error) {
-      console.error("Error adding admin:", error);
-      toast.error("Failed to add admin role. Make sure the user ID exists.");
+    setAddingAdmin(true);
+    const { data, error } = await supabase.functions.invoke("manage-admins", {
+      body: { action: "add", email, password: newAdminPassword },
+    });
+    setAddingAdmin(false);
+    if (error || data?.error) {
+      toast.error(data?.error ?? "Failed to add admin");
       return;
     }
-
-    toast.success("Admin role added successfully!");
+    toast.success(`${email} is now an admin`);
     setNewAdminEmail("");
+    setNewAdminPassword("");
     await loadAdminUsers();
   };
 
-  const handleRemoveAdmin = async (roleId: string, email: string) => {
-    if (!confirm(`Remove admin access from ${email}?`)) {
+  const handleRemoveAdmin = async () => {
+    if (!pendingRemove) return;
+    const { id, email } = pendingRemove;
+    setPendingRemove(null);
+    const { data, error } = await supabase.functions.invoke("manage-admins", {
+      body: { action: "remove", roleId: id },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error ?? "Failed to remove admin");
       return;
     }
-
-    const { error } = await supabase
-      .from("user_roles")
-      .delete()
-      .eq("id", roleId);
-
-    if (error) {
-      toast.error("Failed to remove admin role");
-      return;
-    }
-
     toast.success(`Admin access removed from ${email}`);
     await loadAdminUsers();
   };
@@ -294,50 +276,84 @@ const Admin = () => {
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-2">
               <Input
-                type="text"
-                placeholder="Enter user ID (get from user profile)"
+                type="email"
+                placeholder="Admin email"
                 value={newAdminEmail}
                 onChange={(e) => setNewAdminEmail(e.target.value)}
                 className="bg-secondary border-border flex-1"
               />
+              <Input
+                type="password"
+                placeholder="Password (min 8 characters)"
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
+                autoComplete="new-password"
+                className="bg-secondary border-border flex-1"
+              />
               <Button
                 onClick={handleAddAdmin}
+                disabled={addingAdmin}
                 className="bg-gold hover:bg-gold-light text-charcoal whitespace-nowrap"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                Add Admin
+                {addingAdmin ? "Adding..." : "Add Admin"}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Passwords are stored securely (hashed) and can't be viewed after adding.
+            </p>
 
             <div className="border border-border rounded-lg overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User ID</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Password</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {adminUsers.map((admin) => (
                     <TableRow key={admin.id}>
-                      <TableCell className="font-mono text-xs sm:text-sm break-all max-w-[200px] sm:max-w-none">
-                        {admin.email}
-                      </TableCell>
+                      <TableCell className="text-xs sm:text-sm break-all">{admin.email}</TableCell>
+                      <TableCell className="text-muted-foreground tracking-widest">••••••••</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveAdmin(admin.id, admin.email)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {admin.user_id !== myUserId && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setPendingRemove({ id: admin.id, email: admin.email })}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
+
+            <AlertDialog open={!!pendingRemove} onOpenChange={(o) => !o && setPendingRemove(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove this admin?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {pendingRemove?.email} will no longer be able to edit the website.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRemoveAdmin}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Yes, remove
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
 
