@@ -50,7 +50,7 @@ const Auth = () => {
       const emailSchema = z.string().trim().email("Invalid email address");
       const validatedEmail = emailSchema.parse(email);
       
-      const redirectUrl = `${window.location.origin}/auth`;
+      const redirectUrl = `${window.location.origin}/reset-password`;
       
       const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
         redirectTo: redirectUrl,
