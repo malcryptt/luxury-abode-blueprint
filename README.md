@@ -43,6 +43,6 @@ WSL Realty is deployed on **Vercel** for fast, global content delivery and zero-
 
 WSL Realty is one of many products delivered by DevLuxe to help businesses make a powerful first impression online.
 
-> Built with passion. Delivered with precision. — *ZexLabs Agency*
+> Built by red teamers. Secured before it ships.— *ZexLabs Agency*
 > 
-> Built by red teamers. Secured before it ships.
+
