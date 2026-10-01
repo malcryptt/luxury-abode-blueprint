@@ -1,8 +1,8 @@
 # WSL Realty — Where Luxury Finds a Home
 
-> Designed & Developed by **DevLuxe Agency**
+> Designed & Developed by **Zexlabs**
 
-**Live URL**: https://luxury-abode-blueprint.vercel.app/
+**Live URL**: https://wslproperties.com.ng/
 
 WSL Realty is a premium real estate platform built to connect discerning clients with luxury properties. Clean, elegant, and built for a high-end audience — the platform reflects the same quality as the homes it showcases.
 
@@ -13,11 +13,11 @@ WSL Realty is a premium real estate platform built to connect discerning clients
 WSL Realty was built to elevate the property browsing experience. From curated listings to a refined user interface, every detail is designed to communicate trust, luxury, and professionalism.
 
 **Core Features:**
-- 🏡 Luxury property listings and showcases
-- 🔍 Intuitive property search and filtering
-- 📱 Fully responsive across all devices
-- 🎨 Elegant, high-end UI/UX design
-- ⚡ Fast, optimized performance
+-  Luxury property listings and showcases
+-  Intuitive property search and filtering
+-  Fully responsive across all devices
+-  Elegant, high-end UI/UX design
+-  Fast, optimized performance
 
 ---
 
@@ -37,10 +37,12 @@ WSL Realty is deployed on **Vercel** for fast, global content delivery and zero-
 
 ---
 
-## About DevLuxe Agency
+## About Zexlabs
 
-**DevLuxe Agency** is a premium digital agency specializing in high-performance web applications, real estate platforms, and modern UI/UX design.
+**ZexLabs** is a premium digital and cyber security agency that specializes in high-performance web and mobile applications, offensive security, AI and automation,IT and infrastructure.
 
 WSL Realty is one of many products delivered by DevLuxe to help businesses make a powerful first impression online.
 
-> Built with passion. Delivered with precision. — *DevLuxe Agency*
+> Built with passion. Delivered with precision. — *ZexLabs Agency*
+> 
+> Built by red teamers. Secured before it ships.
