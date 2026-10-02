@@ -8,6 +8,8 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import { SiteLayout } from "./components/site/SiteLayout";
+import * as P from "./pages/site/Pages";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +20,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route element={<SiteLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<P.About />} />
+            <Route path="/properties" element={<P.Properties />} />
+            <Route path="/properties/:slug" element={<P.PropertyDetail />} />
+            <Route path="/furniture" element={<P.Furniture />} />
+            <Route path="/previous-jobs" element={<P.PreviousJobs />} />
+            <Route path="/project-updates" element={<P.ProjectUpdates />} />
+            <Route path="/arya-luxe" element={<P.AryaLuxe />} />
+            <Route path="/contact" element={<P.Contact />} />
+          </Route>
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/reset-password" element={<ResetPassword />} />
