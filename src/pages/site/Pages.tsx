@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowUpRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
-import { useSiteContent, placeholders as ph, whatsappLink, SiteProperty } from "@/lib/siteContent";
+import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty } from "@/lib/siteContent";
+import { EnquiryButton } from "@/components/site/EnquiryDialog";
+import { EnquiryForm } from "@/components/site/EnquiryForm";
 import NotFound from "@/pages/NotFound";
 
 const stages = ["Foundation", "Block Work", "Ceiling", "Windows", "Finishing", "Handover"];
@@ -82,7 +82,9 @@ export function PropertyDetail() {
     <section className="detail"><img className="detail-image" src={p.image} alt={p.title} />
       <div className="detail-copy"><span className="eyebrow">Featured property</span><h1>{p.title}</h1><p className="detail-loc"><MapPin size={16} /> {p.location}</p>
         <strong className="detail-price">{p.price}</strong><p>{p.description}</p>
-        <div className="hero-actions"><Button asChild><a href={whatsappLink(c.contact.whatsapp, `Hello, I'm interested in ${p.title} (${p.location}).`)} target="_blank" rel="noreferrer">Enquire Now <MessageCircle size={16} /></a></Button><Link className="text-link" to="/properties">Back to Properties</Link></div></div>
+        <div className="hero-actions"><EnquiryButton topic={`${p.title} (${p.location})`} heading={p.title} source={`property:${p.slug}`} />
+          <a className="text-link" href={whatsappLink(c.contact.whatsapp, `Hello, I'm interested in ${p.title} (${p.location}).`)} target="_blank" rel="noreferrer">Chat on WhatsApp <MessageCircle size={14} /></a>
+          <Link className="text-link" to="/properties">Back to Properties</Link></div></div>
     </section>
     {others.length > 0 && <section className="section tinted"><SectionIntro eyebrow="More homes" title="You may also like" /><div className="property-grid scroll-x">{others.map(o => <PropertyTile key={o.id} p={o} />)}</div></section>}
   </>;
@@ -98,7 +100,7 @@ export function Furniture() {
         <div className="property-image"><img src={f.images[0]} alt={f.title} loading="lazy" /></div>
         <div className="property-info"><div><h3>{f.title}</h3><p>{f.location}</p></div><strong>{f.price}</strong></div>
         <p className="card-desc">{f.description}</p>
-        <a className="text-link small" href={whatsappLink(c.contact.whatsapp, `Hello, I'm interested in the ${f.title}.`)} target="_blank" rel="noreferrer">Enquire Now <ArrowUpRight size={14} /></a>
+        <EnquiryButton look="link" topic={`the ${f.title}`} heading={f.title} source={`furniture:${slugify(f.title)}`} />
       </article>))}</div></section>
   </>;
 }
@@ -147,27 +149,18 @@ export function AryaLuxe() {
         <div><span className="eyebrow">Stage 0{sel + 1}</span><h3>{stages[sel]}</h3><p>{sel < CURRENT_STAGE ? "This stage is complete." : sel === CURRENT_STAGE ? "Work on this stage is in progress." : "This stage is upcoming."}</p></div></div>
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Interested?" title="Register your interest" text="Units are limited. Speak to our team about pricing and availability." />
-      <Button asChild><a href={whatsappLink(c.contact.whatsapp, "Hello, I'd like to register interest in Arya Luxe.")} target="_blank" rel="noreferrer">Register Interest</a></Button></section>
+      <EnquiryButton label="Register Interest" topic="Arya Luxe (Gwarinpa, Abuja)" heading="Arya Luxe" source="project:arya-luxe" defaultMessage="Hello, I'd like to register my interest in Arya Luxe." /></section>
   </>;
 }
 
 export function Contact() {
   const c = useSiteContent();
-  const [f, setF] = useState({ name: "", phone: "", email: "", interest: "", message: "" });
-  const send = (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = `Name: ${f.name}\nPhone: ${f.phone}\nEmail: ${f.email}\nInterested In: ${f.interest}\n\n${f.message}`;
-    window.open(whatsappLink(c.contact.whatsapp, text), "_blank");
-  };
-  const field = (k: keyof typeof f, label: string, type = "text") => <label className="form-field">{label}<Input required={k === "name" || k === "phone"} maxLength={200} type={type} value={f[k]} onChange={e => setF({ ...f, [k]: e.target.value })} /></label>;
   return <>
     <Seo route="/contact" />
     <PageHero eyebrow="Start a conversation" title="Contact Us" text="For property enquiries, project information or partnerships, our team is ready to help." />
     <section className="contact-section">
       <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={`tel:${c.contact.phone}`}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>
-      <form onSubmit={send}>{field("name", "Full Name")}{field("phone", "Phone Number", "tel")}{field("email", "Email Address", "email")}{field("interest", "Interested In")}
-        <label className="form-field">Message<Textarea maxLength={1000} value={f.message} onChange={e => setF({ ...f, message: e.target.value })} /></label>
-        <Button type="submit">Send Enquiry</Button></form>
+      <EnquiryForm source="contact_page" whatsapp={c.contact.whatsapp} showInterest />
     </section>
   </>;
 }

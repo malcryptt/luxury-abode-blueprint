@@ -1,0 +1,146 @@
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Save, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { db } from "@/lib/db";
+import { fetchSiteContent, type SiteContent } from "@/lib/siteContent";
+
+type Hero = SiteContent["hero"];
+type About = SiteContent["about"];
+type Contact = SiteContent["contact"];
+type Service = SiteContent["services"][number];
+
+/** Writes one section. Upsert, so it also works when the row does not exist yet. */
+async function saveSection(section: string, content: unknown) {
+  const { error } = await db.from("website_content").upsert({ section, content }, { onConflict: "section" });
+  if (error) throw error;
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return <label className="adm-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
+}
+
+function SaveBar({ busy, dirty, label }: { busy: boolean; dirty: boolean; label: string }) {
+  return (
+    <div className="adm-actions">
+      <button type="submit" className="adm-btn" disabled={busy || !dirty}><Save size={16} /> {busy ? "Saving…" : label}</button>
+      {!dirty && !busy && <span className="adm-muted">No changes to save</span>}
+    </div>
+  );
+}
+
+/** Shared behaviour for one editable section: local draft, dirty flag, save + refresh the public site cache. */
+function useSection<T>(section: string, initial: T | undefined) {
+  const qc = useQueryClient();
+  const [draft, setDraft] = useState<T | undefined>(initial);
+  const [saved, setSaved] = useState<T | undefined>(initial);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { setDraft(initial); setSaved(initial); }, [initial]);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const save = async (e: React.FormEvent, ok: string) => {
+    e.preventDefault();
+    if (draft === undefined) return;
+    setBusy(true);
+    try {
+      await saveSection(section, draft);
+      setSaved(draft);
+      qc.invalidateQueries({ queryKey: ["site-content"] });
+      toast.success(ok);
+    } catch {
+      toast.error("Could not save. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return { draft: (draft ?? initial) as T, setDraft: setDraft as (v: T) => void, dirty, busy, save };
+}
+
+export default function Content() {
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin", "site-content"], queryFn: fetchSiteContent });
+
+  const hero = useSection<Hero>("hero", data?.hero);
+  const about = useSection<About>("about", data?.about);
+  const contact = useSection<Contact>("contact", data?.contact);
+  const services = useSection<Service[]>("services", data?.services);
+
+  if (isLoading) return <p className="adm-muted">Loading…</p>;
+  if (isError || !data)
+    return (
+      <div className="adm-err" role="alert">
+        <span>The page text could not be loaded.</span>
+        <button className="adm-btn small" onClick={() => refetch()}>Retry</button>
+      </div>
+    );
+
+  const saveContact = (e: React.FormEvent) => {
+    const c = contact.draft;
+    if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email.trim())) { e.preventDefault(); return toast.error("Enter a valid email address"); }
+    if (c.phone.replace(/\D/g, "").length < 7) { e.preventDefault(); return toast.error("Enter a valid phone number"); }
+    if (!/^\d{8,15}$/.test(c.whatsapp.replace(/\D/g, ""))) { e.preventDefault(); return toast.error("Enter the WhatsApp number with country code, e.g. 2348028081047"); }
+    contact.save(e, "Contact details updated");
+  };
+
+  return (
+    <>
+      <div className="adm-head">
+        <div>
+          <h1>Page text</h1>
+          <p>Edit the words and contact details shown across the website. Changes go live as soon as you save.</p>
+        </div>
+      </div>
+
+      <form className="adm-panel" onSubmit={(e) => hero.save(e, "Home page headline updated")}>
+        <h2>Home page headline</h2>
+        <p className="sub">The large headline and line of text at the top of the home page.</p>
+        <div className="adm-grid">
+          <Field label="Headline"><input type="text" maxLength={120} value={hero.draft.title} onChange={(e) => hero.setDraft({ ...hero.draft, title: e.target.value })} /></Field>
+          <Field label="Supporting text"><textarea rows={3} maxLength={300} value={hero.draft.subtitle} onChange={(e) => hero.setDraft({ ...hero.draft, subtitle: e.target.value })} /></Field>
+        </div>
+        <SaveBar busy={hero.busy} dirty={hero.dirty} label="Save headline" />
+      </form>
+
+      <form className="adm-panel" onSubmit={(e) => about.save(e, "About text updated")}>
+        <h2>About the company</h2>
+        <p className="sub">Used on the About page and in search results.</p>
+        <div className="adm-grid">
+          <Field label="Title"><input type="text" maxLength={120} value={about.draft.title} onChange={(e) => about.setDraft({ ...about.draft, title: e.target.value })} /></Field>
+          <Field label="Description"><textarea rows={6} maxLength={2000} value={about.draft.description} onChange={(e) => about.setDraft({ ...about.draft, description: e.target.value })} /></Field>
+        </div>
+        <SaveBar busy={about.busy} dirty={about.dirty} label="Save about text" />
+      </form>
+
+      <form className="adm-panel" onSubmit={saveContact} noValidate>
+        <h2>Contact details</h2>
+        <p className="sub">Shown in the footer, on the Contact page and used for the WhatsApp buttons.</p>
+        <div className="adm-grid two">
+          <Field label="Phone number"><input type="text" inputMode="tel" maxLength={30} value={contact.draft.phone} onChange={(e) => contact.setDraft({ ...contact.draft, phone: e.target.value })} /></Field>
+          <Field label="Email address"><input type="email" maxLength={255} value={contact.draft.email} onChange={(e) => contact.setDraft({ ...contact.draft, email: e.target.value })} /></Field>
+          <Field label="WhatsApp number" hint="With country code and no + or spaces, e.g. 2348028081047"><input type="text" inputMode="numeric" maxLength={20} value={contact.draft.whatsapp} onChange={(e) => contact.setDraft({ ...contact.draft, whatsapp: e.target.value })} /></Field>
+          <Field label="Address"><input type="text" maxLength={200} value={contact.draft.address} onChange={(e) => contact.setDraft({ ...contact.draft, address: e.target.value })} /></Field>
+        </div>
+        <SaveBar busy={contact.busy} dirty={contact.dirty} label="Save contact details" />
+      </form>
+
+      <form className="adm-panel" onSubmit={(e) => {
+        if (services.draft.some((x) => !x.title.trim() || !x.description.trim())) { e.preventDefault(); return toast.error("Give every value a title and a description, or remove it"); }
+        services.save(e, "Values updated");
+      }}>
+        <h2>What we stand for</h2>
+        <p className="sub">The values shown on the About page. Leave this empty to show the standard three.</p>
+        <div className="adm-grid">
+          {services.draft.map((s, i) => (
+            <div key={s.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
+              <Field label={`Value ${i + 1} title`}><input type="text" maxLength={80} value={s.title} onChange={(e) => services.setDraft(services.draft.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} /></Field>
+              <Field label="Description"><textarea rows={2} maxLength={400} value={s.description} onChange={(e) => services.setDraft(services.draft.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} /></Field>
+              <div><button type="button" className="adm-btn small ghost" onClick={() => services.setDraft(services.draft.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button></div>
+            </div>
+          ))}
+        </div>
+        <div className="adm-actions">
+          <button type="button" className="adm-btn ghost" onClick={() => services.setDraft([...services.draft, { id: `${Date.now()}`, title: "", description: "" }])}><Plus size={16} /> Add a value</button>
+          <button type="submit" className="adm-btn" disabled={services.busy || !services.dirty}><Save size={16} /> {services.busy ? "Saving…" : "Save values"}</button>
+        </div>
+      </form>
+    </>
+  );
+}

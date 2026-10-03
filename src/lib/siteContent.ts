@@ -40,22 +40,21 @@ const defaults: SiteContent = {
 
 const fallbackImgs = [property1, property2, property3];
 
-export function useSiteContent() {
-  const { data } = useQuery({
-    queryKey: ["site-content"],
-    queryFn: async () => {
-      const { data } = await supabase.from("website_content").select("section, content");
-      const c: any = structuredClone(defaults);
-      data?.forEach((row: any) => {
-        const v = row.content;
-        if (v == null) return;
-        if (Array.isArray(v)) { if (v.length) c[row.section] = v; }
-        else if (typeof v === "object") c[row.section] = { ...c[row.section], ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
-      });
-      return c as SiteContent;
-    },
-    staleTime: 60_000,
+/** Code defaults overlaid with whatever the team has saved in the database. */
+export async function fetchSiteContent(): Promise<SiteContent> {
+  const { data } = await supabase.from("website_content").select("section, content");
+  const c: any = structuredClone(defaults);
+  data?.forEach((row: any) => {
+    const v = row.content;
+    if (v == null) return;
+    if (Array.isArray(v)) { if (v.length) c[row.section] = v; }
+    else if (typeof v === "object") c[row.section] = { ...c[row.section], ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
   });
+  return c as SiteContent;
+}
+
+export function useSiteContent() {
+  const { data } = useQuery({ queryKey: ["site-content"], queryFn: fetchSiteContent, staleTime: 60_000 });
   const content = data ?? defaults;
   const properties = content.properties.map((p, i) => ({ ...p, slug: p.slug || slugify(p.title || `property-${i + 1}`), image: p.image || fallbackImgs[i % 3] }));
   const furniture = content.furniture.map((f, i) => ({ ...f, images: f.images?.length ? f.images : [[furniture1, furniture2, furniture3][i % 3]] }));

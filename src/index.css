@@ -188,3 +188,29 @@
 /* Buttons: sharp sans-serif, a little larger and easier to tap */
 .wsl-site .inline-flex.items-center.justify-center:not(.mobile-menu) { font-size: 15px; font-weight: 500; letter-spacing: .01em; min-height: 48px; padding-left: 26px; padding-right: 26px; }
 .desktop-nav a, .mobile-nav a, .text-link, .eyebrow, .form-field { font-family: inherit; }
+
+/* ---------------------------------------------------------------------------
+   Enquiry form (Contact page and the Enquire dialog)
+--------------------------------------------------------------------------- */
+.enq-form { display: grid; gap: 14px; align-content: start; position: relative; }
+.form-field > span:first-child b { color: #9a7950; font-weight: 600; }
+.enq-input { width: 100%; background: transparent; border: 0; border-bottom: 1px solid #b9a98d; border-radius: 0; padding: 10px 0 12px; color: var(--navy); font-size: 16px; letter-spacing: 0; text-transform: none; outline: none; box-shadow: none; transition: border-color .2s; }
+.enq-input:focus, .enq-input:focus-visible { border-bottom-color: #9a7950; box-shadow: none; outline: none; }
+.enq-input[aria-invalid="true"] { border-bottom-color: #b3463d; }
+textarea.enq-input { min-height: 96px; resize: vertical; line-height: 1.6; }
+.field-error { color: #a53a31; font-size: 13px; letter-spacing: 0; text-transform: none; font-weight: 500; }
+.enq-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.enq-form .enq-submit, .contact-section form .enq-submit { justify-self: start; margin-top: 8px; border-radius: 0; background: var(--navy); color: white; min-height: 48px; padding: 0 28px; font-size: 15px; font-weight: 500; }
+.enq-form .enq-submit:hover { background: #223a58; }
+
+.enq-sent { display: grid; gap: 12px; justify-items: start; align-content: start; color: var(--navy); }
+.enq-sent svg { color: #9a7950; }
+.enq-sent h3 { font-size: 30px; margin: 0; }
+.enq-sent p { color: #59616b; line-height: 1.7; margin: 0; max-width: 460px; font-size: 16px; }
+.enq-sent-actions { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 8px; }
+.enq-sent .inline-flex { border-radius: 0; background: var(--navy); color: white; min-height: 48px; padding: 0 26px; font-size: 15px; font-weight: 500; }
+
+.enq-dialog { background: var(--paper); color: var(--ink); border-radius: 0; max-width: 520px; max-height: 92vh; overflow-y: auto; padding: clamp(24px, 4vw, 36px); }
+.enq-dialog h2 { font-family: 'Libre Baskerville', Georgia, serif; font-weight: 500; font-size: 26px; line-height: 1.25; color: var(--navy); letter-spacing: -0.02em; }
+.enq-dialog p { color: #59616b; font-size: 15px; line-height: 1.6; }
+.enq-dialog .text-link { color: var(--navy); }

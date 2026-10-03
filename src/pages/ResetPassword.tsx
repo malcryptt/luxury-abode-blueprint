@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import "@/pages/admin/admin.css";
+import { useNoIndex } from "@/components/site/Seo";
 import { toast } from "sonner";
 
 const ResetPassword = () => {
+  useNoIndex("Set a new password");
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -31,31 +32,22 @@ const ResetPassword = () => {
     setIsLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Password updated! You're signed in.");
-    navigate("/");
+    navigate("/admin");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md luxury-card p-8 space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-playfair font-bold mb-2">Set New Password</h1>
-          <p className="text-sm text-muted-foreground">
-            {ready ? "Choose a new password for your account." : "Open this page from the reset link in your email."}
-          </p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input type="password" placeholder="New password" value={password}
-            onChange={(e) => setPassword(e.target.value)} required disabled={!ready}
-            className="bg-secondary border-border focus:border-gold" />
-          <Input type="password" placeholder="Confirm new password" value={confirm}
-            onChange={(e) => setConfirm(e.target.value)} required disabled={!ready}
-            className="bg-secondary border-border focus:border-gold" />
-          <Button type="submit" disabled={isLoading || !ready}
-            className="w-full bg-gold hover:bg-gold-light text-charcoal font-semibold py-6 transition-smooth">
-            {isLoading ? "Saving..." : "Save New Password"}
-          </Button>
-        </form>
-      </div>
+    <div className="adm adm-auth">
+      <form className="adm-auth-card" onSubmit={handleSubmit} noValidate>
+        <h1>Set a new password</h1>
+        <p className="adm-muted" style={{ margin: 0, textAlign: "center" }}>
+          {ready ? "Choose a new password for your account." : "Open this page from the reset link in your email."}
+        </p>
+        <label className="adm-field"><span>New password</span>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={!ready} autoComplete="new-password" /></label>
+        <label className="adm-field"><span>Confirm new password</span>
+          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required disabled={!ready} autoComplete="new-password" /></label>
+        <button type="submit" disabled={isLoading || !ready} className="adm-btn">{isLoading ? "Saving…" : "Save new password"}</button>
+      </form>
     </div>
   );
 };

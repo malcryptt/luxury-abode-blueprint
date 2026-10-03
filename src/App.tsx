@@ -2,10 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import Enquiries from "./pages/admin/Enquiries";
+import Content from "./pages/admin/Content";
+import Team from "./pages/admin/Team";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import { SiteLayout } from "./components/site/SiteLayout";
@@ -35,7 +39,13 @@ const App = () => (
           </Route>
           {/* Private application area: separate from the public layout */}
           <Route path="/auth" element={<Auth />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="enquiries" element={<Enquiries />} />
+            <Route path="content" element={<Content />} />
+            <Route path="team" element={<Team />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Route>
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
