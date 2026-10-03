@@ -27,7 +27,7 @@ export function Home() {
   return <>
     <Seo route="/" />
     <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" /><div className="hero-shade" />
-      <div className="hero-copy"><span className="eyebrow light">WSL PROPERTIES / ABUJA</span><h1>{c.hero.title}</h1><p>{c.hero.subtitle}</p>
+      <div className="hero-copy"><h1>{c.hero.title}</h1><p>{c.hero.subtitle}</p>
         <div className="hero-actions"><Button asChild><Link to="/properties">View Properties <ArrowUpRight size={16} /></Link></Button><Link className="text-link light" to="/project-updates">See Our Progress</Link></div></div>
     </section>
     <section className="section"><SectionIntro eyebrow="Available now" title="Featured properties" text="Explore our available properties." />

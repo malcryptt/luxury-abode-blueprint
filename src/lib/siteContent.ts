@@ -22,7 +22,7 @@ export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
 const defaults: SiteContent = {
-  hero: { title: "Luxury homes, built with craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
+  hero: { title: "Luxury Homes, Built With Craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
   about: { title: "About WSL Properties", description: "WSL Properties is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
   contact: { phone: "+234 901 088 3999", email: "mailwaro.online@gmail.com", address: "Abuja, Nigeria", whatsapp: "2349010883999" },
   properties: [
