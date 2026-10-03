@@ -48,9 +48,10 @@ export function SiteLayout() {
           {links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>{l}</NavLink>)}
         </nav>
         <div className="header-right">
-          {signedIn
-            ? <button className="text-link" onClick={() => supabase.auth.signOut()}>Sign Out</button>
-            : <Link className="text-link" to="/auth">Sign In</Link>}
+          {signedIn && <>
+            <Link className="text-link" to="/admin">Admin</Link>
+            <button className="text-link" onClick={() => supabase.auth.signOut()}>Sign Out</button>
+          </>}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" className="mobile-menu" aria-label="Open menu"><Menu /></Button></SheetTrigger>
             <SheetContent><nav className="mobile-nav">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}</nav></SheetContent>
