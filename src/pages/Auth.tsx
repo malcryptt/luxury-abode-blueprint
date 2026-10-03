@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { z } from "zod";
 import wslLogo from "@/assets/wsl-logo.png";
+import { useNoIndex } from "@/components/site/Seo";
 
 const authSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
@@ -15,6 +16,7 @@ const authSchema = z.object({
 // Staff sign-in only. Accounts are created by an admin from the dashboard,
 // so there is deliberately no public sign-up here.
 const Auth = () => {
+  useNoIndex("Team sign in");
   const navigate = useNavigate();
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
