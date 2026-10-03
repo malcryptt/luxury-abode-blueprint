@@ -20,7 +20,19 @@ const ROLE_HELP: Record<StaffRole, string> = {
 
 async function call<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke("manage-admins", { body });
-  if (error || data?.error) throw new Error(data?.error ?? "Something went wrong");
+  if (error) {
+    // When the server refuses a request, supabase-js hides the reason in the error's response. Show it.
+    let message = "Something went wrong. Please try again.";
+    const res = (error as { context?: Response }).context;
+    if (res && typeof res.json === "function") {
+      try {
+        const reason = await res.json();
+        if (typeof reason?.error === "string" && reason.error) message = reason.error;
+      } catch { /* keep the generic message */ }
+    }
+    throw new Error(message);
+  }
+  if (data?.error) throw new Error(data.error);
   return data as T;
 }
 

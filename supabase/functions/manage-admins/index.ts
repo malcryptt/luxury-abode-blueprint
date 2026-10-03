@@ -38,12 +38,14 @@ Deno.serve(async (req) => {
       const role = body.role === "editor" ? "editor" : "admin";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) return json({ error: "Invalid email" }, 400);
       if (password.length < 8 || password.length > 72) return json({ error: "Password must be 8–72 characters" }, 400);
+      // "Add" only enrols new people. Changing your own access is never allowed from here.
+      if (email === (user.email ?? "").toLowerCase()) return json({ error: "You are already on the team" }, 400);
 
       let userId: string | undefined;
       const { data: created, error: createErr } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
       if (created?.user) userId = created.user.id;
       else {
-        // user may already exist — find them and set the given password
+        // An account with this email already exists (for example someone who signed up earlier): find it.
         let page = 1;
         while (!userId && page < 50) {
           const { data } = await admin.auth.admin.listUsers({ page, perPage: 200 });
@@ -53,10 +55,17 @@ Deno.serve(async (req) => {
           page++;
         }
         if (!userId) return json({ error: createErr?.message ?? "Could not create user" }, 400);
+        if (userId === user.id) return json({ error: "You are already on the team" }, 400);
+
+        // Someone who is already on the team keeps their password; their role is changed from the list.
+        const { data: existing, error: existingErr } = await admin
+          .from("user_roles").select("id").eq("user_id", userId).in("role", ["admin", "editor"]).limit(1);
+        if (existingErr) throw existingErr;
+        if (existing && existing.length > 0) {
+          return json({ error: "That person is already on the team. Change their role from the list instead." }, 409);
+        }
         await admin.auth.admin.updateUserById(userId, { password, email_confirm: true });
       }
-      // One staff role per person: swap any existing one for the chosen role.
-      await admin.from("user_roles").delete().eq("user_id", userId).in("role", ["admin", "editor"]);
       const { error } = await admin.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
       if (error) throw error;
       return json({ ok: true });
