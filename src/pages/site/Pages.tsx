@@ -25,7 +25,7 @@ function PropertyTile({ p }: { p: SiteProperty }) {
 export function Home() {
   const c = useSiteContent();
   return <>
-    <Seo title="Luxury Homes in Abuja" description="WSL Properties develops luxury homes in Abuja, built with craft — from Arya Luxe in Gwarinpa to bespoke furniture." />
+    <Seo route="/" />
     <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" /><div className="hero-shade" />
       <div className="hero-copy"><span className="eyebrow light">WSL PROPERTIES / ABUJA</span><h1>{c.hero.title}</h1><p>{c.hero.subtitle}</p>
         <div className="hero-actions"><Button asChild><Link to="/properties">View Properties <ArrowUpRight size={16} /></Link></Button><Link className="text-link light" to="/project-updates">See Our Progress</Link></div></div>
@@ -50,7 +50,7 @@ export function Home() {
 export function About() {
   const c = useSiteContent();
   return <>
-    <Seo title="About Us" description="The story of WSL Properties — a Nigerian developer with roots in craftsmanship and bespoke furniture." />
+    <Seo route="/about" />
     <PageHero eyebrow="Company" title="About WSL Properties" text="A property developer with roots in making." />
     <section className="section about-section"><div className="about-image"><img src={ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
@@ -65,7 +65,7 @@ export function About() {
 export function Properties() {
   const c = useSiteContent();
   return <>
-    <Seo title="Properties" description="Browse available luxury properties from WSL Properties in Abuja." />
+    <Seo route="/properties" />
     <PageHero eyebrow="A considered collection" title="Properties" text="Explore our available properties." />
     <section className="section"><div className="property-grid">{c.properties.map(p => <PropertyTile key={p.id} p={p} />)}</div></section>
   </>;
@@ -78,7 +78,7 @@ export function PropertyDetail() {
   if (!p) return <NotFound />;
   const others = c.properties.filter(x => x.slug !== slug).slice(0, 3);
   return <>
-    <Seo title={p.title} description={`${p.title} in ${p.location}. ${p.description}`.slice(0, 158)} />
+    <Seo property={p} />
     <section className="detail"><img className="detail-image" src={p.image} alt={p.title} />
       <div className="detail-copy"><span className="eyebrow">Featured property</span><h1>{p.title}</h1><p className="detail-loc"><MapPin size={16} /> {p.location}</p>
         <strong className="detail-price">{p.price}</strong><p>{p.description}</p>
@@ -91,7 +91,7 @@ export function PropertyDetail() {
 export function Furniture() {
   const c = useSiteContent();
   return <>
-    <Seo title="Furniture" description="Bespoke luxury furniture handcrafted by WSL Properties." />
+    <Seo route="/furniture" />
     <PageHero eyebrow="Handcrafted" title="Furniture" text="Bespoke pieces made with the same care as our homes." />
     <section className="section"><div className="property-grid scroll-x">{c.furniture.map(f => (
       <article key={f.id} className="property-card">
@@ -108,7 +108,7 @@ export function PreviousJobs() {
   const items = [ph.property1, ph.furniture1, ph.property2, ph.furniture2, ph.property3, ph.furniture3].map((src, i) => ({ src, cat: i % 2 ? "Furniture" : "Builds" }));
   const shown = filter === "All" ? items : items.filter(i => i.cat === filter);
   return <>
-    <Seo title="Previous Jobs" description="A portfolio of homes, interiors and furniture completed by WSL Properties." />
+    <Seo route="/previous-jobs" />
     <PageHero eyebrow="Portfolio" title="Previous Jobs" text="A selection of spaces, details and objects from our previous work." />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
       <div className="filter-tabs">{["All", "Builds", "Furniture"].map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
@@ -124,7 +124,7 @@ const updates = [
 
 export function ProjectUpdates() {
   return <>
-    <Seo title="Project Updates" description="Construction progress reports from WSL Properties developments, including Arya Luxe in Gwarinpa." />
+    <Seo route="/project-updates" />
     <PageHero eyebrow="Construction journal" title="Project Updates" text="Real progress, documented from the ground up." />
     <section className="section"><SectionIntro eyebrow="Project update" title="Latest updates" />
       <div className="update-list">{updates.map(u => (
@@ -139,7 +139,7 @@ export function AryaLuxe() {
   const [sel, setSel] = useState(CURRENT_STAGE);
   const c = useSiteContent();
   return <>
-    <Seo title="Arya Luxe, Gwarinpa" description="Arya Luxe — a private collection of contemporary residences being built by WSL Properties in Gwarinpa, Abuja." />
+    <Seo route="/arya-luxe" />
     <PageHero eyebrow="Gwarinpa, Abuja · 2025—26" title="Arya Luxe" text="A private collection of contemporary residences, built with clarity, quality and a long view." image={ph.property1} />
     <section className="section"><SectionIntro eyebrow="Current stage" title="Follow the build" text="Follow the construction of Arya Luxe." />
       <div className="stage-tabs">{stages.map((s, i) => <button key={s} className={`${sel === i ? "active" : ""} ${i <= CURRENT_STAGE ? "done" : ""}`} onClick={() => setSel(i)}><span>0{i + 1}</span>{s}</button>)}</div>
@@ -161,7 +161,7 @@ export function Contact() {
   };
   const field = (k: keyof typeof f, label: string, type = "text") => <label className="form-field">{label}<Input required={k === "name" || k === "phone"} maxLength={200} type={type} value={f[k]} onChange={e => setF({ ...f, [k]: e.target.value })} /></label>;
   return <>
-    <Seo title="Contact Us" description="Contact WSL Properties for property enquiries, project information and partnerships in Abuja." />
+    <Seo route="/contact" />
     <PageHero eyebrow="Start a conversation" title="Contact Us" text="For property enquiries, project information or partnerships, our team is ready to help." />
     <section className="contact-section">
       <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={`tel:${c.contact.phone}`}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>

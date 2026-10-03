@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Save, Upload, X, Trash2, UserPlus } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import { useNoIndex } from "@/components/site/Seo";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -60,6 +61,7 @@ interface WebsiteContent {
 }
 
 const Admin = () => {
+  useNoIndex("Admin");
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);

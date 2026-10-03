@@ -30,12 +30,13 @@ const App = () => (
             <Route path="/project-updates" element={<P.ProjectUpdates />} />
             <Route path="/arya-luxe" element={<P.AryaLuxe />} />
             <Route path="/contact" element={<P.Contact />} />
+            {/* Unknown public URLs keep the site header and footer */}
+            <Route path="*" element={<NotFound />} />
           </Route>
+          {/* Private application area: separate from the public layout */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
