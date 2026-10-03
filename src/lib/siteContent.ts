@@ -23,8 +23,8 @@ export const placeholders = { property1, property2, property3, furniture1, furni
 
 const defaults: SiteContent = {
   hero: { title: "Luxury Homes, Built With Craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
-  about: { title: "About WSL Properties", description: "WSL Properties is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
-  contact: { phone: "+234 901 088 3999", email: "mailwaro.online@gmail.com", address: "Abuja, Nigeria", whatsapp: "2349010883999" },
+  about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
+  contact: { phone: "08028081047", email: "Warosynergylimited@gmail.com", address: "Abuja, Nigeria", whatsapp: "2348028081047" },
   properties: [
     { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "A private collection of contemporary residences currently under construction.", price: "Price on request", image: property1 },
     { id: "2", slug: "4-bedroom-smart-home", title: "4 Bedroom Smart Home", location: "Gwarinpa, Abuja", description: "A fully automated family home with premium finishes throughout.", price: "₦95,000,000", image: property2 },

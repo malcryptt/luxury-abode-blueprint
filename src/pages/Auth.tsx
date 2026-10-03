@@ -99,11 +99,11 @@ const Auth = () => {
           <div className="flex justify-center">
             <img
               src={wslLogo}
-              alt="WSL Properties"
+              alt="WSL Realty"
               className="w-32 h-32 object-contain drop-shadow-[0_0_20px_rgba(197,154,76,0.3)]"
             />
           </div>
-          <h1 className="text-4xl font-playfair font-bold tracking-wide">WSL Properties</h1>
+          <h1 className="text-4xl font-playfair font-medium tracking-wide">WSL Realty</h1>
           <p className="text-muted-foreground text-sm tracking-wider uppercase">Team sign in</p>
         </div>
 

@@ -22,7 +22,7 @@ export function SiteLayout() {
   return (
     <div className="wsl-site">
       <header className="site-header">
-        <Link className="wordmark" to="/"><img src={logo} alt="WSL Properties" /><span>WSL <b>PROPERTIES</b></span></Link>
+        <Link className="wordmark" to="/"><img src={logo} alt="WSL Realty" /><span>WSL <b>REALTY</b></span></Link>
         <nav className="desktop-nav" aria-label="Primary">
           {links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>{l}</NavLink>)}
         </nav>
@@ -39,14 +39,14 @@ export function SiteLayout() {
       </header>
       <main className="page-fade" key={pathname}><Outlet /></main>
       <footer className="site-footer">
-        <div><Link className="wordmark" to="/"><img src={logo} alt="" /><span>WSL <b>PROPERTIES</b></span></Link><p>Luxury homes, built with craft. Abuja, Nigeria.</p></div>
+        <div><Link className="wordmark" to="/"><img src={logo} alt="" /><span>WSL <b>REALTY</b></span></Link><p>Luxury homes, built with craft. Abuja, Nigeria.</p></div>
         <nav aria-label="Footer">{links.map(([l, to]) => <Link key={to} to={to}>{l}</Link>)}</nav>
         <div className="socials">
           <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
           <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
           <Link className="text-link" to="/contact">Enquire Now <ArrowUpRight size={14} /></Link>
         </div>
-        <small>© {new Date().getFullYear()} WSL Properties. All rights reserved.</small>
+        <small>© {new Date().getFullYear()} WSL Realty. All rights reserved.</small>
       </footer>
     </div>
   );

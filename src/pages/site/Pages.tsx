@@ -40,7 +40,7 @@ export function Home() {
         <div className="progress-meta"><span>Current stage</span><strong>{stages[CURRENT_STAGE]}</strong></div>
         <Link className="text-link" to="/arya-luxe">Follow The Build <ArrowUpRight size={16} /></Link></div>
     </section>
-    <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Properties" />
+    <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Realty" />
       <div className="value-grid">{[["Craft", "A heritage in bespoke furniture shapes every finish."], ["Clarity", "Transparent progress updates at every stage."], ["Longevity", "Homes built with materials and methods that last."]].map(([t, d]) => <div key={t}><h3>{t}</h3><p>{d}</p></div>)}</div>
       <div className="section-link"><Button asChild><Link to="/contact">Enquire Now</Link></Button></div>
     </section>
@@ -51,7 +51,7 @@ export function About() {
   const c = useSiteContent();
   return <>
     <Seo route="/about" />
-    <PageHero eyebrow="Company" title="About WSL Properties" text="A property developer with roots in making." />
+    <PageHero eyebrow="Company" title="About WSL Realty" text="A property developer with roots in making." />
     <section className="section about-section"><div className="about-image"><img src={ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
         <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><b>0{i + 1}</b><span>{t}</span></div>)}</div></div>

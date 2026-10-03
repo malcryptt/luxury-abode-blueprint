@@ -490,7 +490,7 @@ const Admin = () => {
                     contact: { ...content.contact, whatsapp: e.target.value },
                   })
                 }
-                placeholder="2349010883999"
+                placeholder="2348028081047"
                 className="bg-secondary border-border"
               />
             </div>

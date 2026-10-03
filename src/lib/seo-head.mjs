@@ -3,15 +3,15 @@
 // Plain .mjs (with a .d.mts beside it) so Node can import it without a compiler.
 
 export const SITE_URL = "https://wslproperties.com.ng";
-export const SITE_NAME = "WSL Properties";
+export const SITE_NAME = "WSL Realty";
 export const DEFAULT_IMAGE = "/og-default.jpg";
-export const HOME_TITLE = "WSL Properties | Luxury Homes in Abuja";
+export const HOME_TITLE = "WSL Realty | Luxury Homes in Abuja";
 
 export const STATIC_ROUTES = [
   {
     path: "/",
     title: "Luxury Homes in Abuja",
-    description: "WSL Properties develops luxury homes in Abuja, built with craft — from Arya Luxe in Gwarinpa to bespoke furniture.",
+    description: "WSL Realty develops luxury homes in Abuja, built with craft — from Arya Luxe in Gwarinpa to bespoke furniture.",
     crumb: "Home",
     changefreq: "weekly",
     priority: "1.0",
@@ -19,7 +19,7 @@ export const STATIC_ROUTES = [
   {
     path: "/about",
     title: "About Us",
-    description: "The story of WSL Properties — a Nigerian developer with roots in craftsmanship and bespoke furniture.",
+    description: "The story of WSL Realty — a Nigerian developer with roots in craftsmanship and bespoke furniture.",
     crumb: "About Us",
     changefreq: "monthly",
     priority: "0.7",
@@ -27,7 +27,7 @@ export const STATIC_ROUTES = [
   {
     path: "/properties",
     title: "Properties",
-    description: "Browse available luxury homes and apartments from WSL Properties in Abuja, including Gwarinpa and Jabi, with prices and enquiry details.",
+    description: "Browse available luxury homes and apartments from WSL Realty in Abuja, including Gwarinpa and Jabi, with prices and enquiry details.",
     crumb: "Properties",
     changefreq: "weekly",
     priority: "0.9",
@@ -35,7 +35,7 @@ export const STATIC_ROUTES = [
   {
     path: "/furniture",
     title: "Furniture",
-    description: "Bespoke luxury furniture handcrafted by WSL Properties in Abuja: beds, dining sets and finishing pieces made with the same care as our homes.",
+    description: "Bespoke luxury furniture handcrafted by WSL Realty in Abuja: beds, dining sets and finishing pieces made with the same care as our homes.",
     crumb: "Furniture",
     changefreq: "monthly",
     priority: "0.6",
@@ -43,7 +43,7 @@ export const STATIC_ROUTES = [
   {
     path: "/previous-jobs",
     title: "Previous Jobs",
-    description: "A portfolio of homes, interiors and bespoke furniture completed by WSL Properties in Abuja.",
+    description: "A portfolio of homes, interiors and bespoke furniture completed by WSL Realty in Abuja.",
     crumb: "Previous Jobs",
     changefreq: "monthly",
     priority: "0.6",
@@ -51,7 +51,7 @@ export const STATIC_ROUTES = [
   {
     path: "/project-updates",
     title: "Project Updates",
-    description: "Construction progress reports from WSL Properties developments, including Arya Luxe in Gwarinpa.",
+    description: "Construction progress reports from WSL Realty developments, including Arya Luxe in Gwarinpa.",
     crumb: "Project Updates",
     changefreq: "weekly",
     priority: "0.7",
@@ -59,7 +59,7 @@ export const STATIC_ROUTES = [
   {
     path: "/arya-luxe",
     title: "Arya Luxe, Gwarinpa",
-    description: "Arya Luxe is a private collection of contemporary residences being built by WSL Properties in Gwarinpa, Abuja. Follow the build stage by stage.",
+    description: "Arya Luxe is a private collection of contemporary residences being built by WSL Realty in Gwarinpa, Abuja. Follow the build stage by stage.",
     crumb: "Arya Luxe",
     changefreq: "weekly",
     priority: "0.8",
@@ -67,7 +67,7 @@ export const STATIC_ROUTES = [
   {
     path: "/contact",
     title: "Contact Us",
-    description: "Contact WSL Properties for property enquiries, project information and partnerships in Abuja.",
+    description: "Contact WSL Realty for property enquiries, project information and partnerships in Abuja.",
     crumb: "Contact",
     changefreq: "yearly",
     priority: "0.7",
