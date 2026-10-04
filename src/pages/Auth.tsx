@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/integrations/firebase/client";
+import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, type User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/integrations/firebase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 import wslLogo from "@/assets/wsl-logo.png";
@@ -13,8 +14,19 @@ const authSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// Staff sign-in only. Accounts are created by an admin from the dashboard,
-// so there is deliberately no public sign-up here.
+/** Team members go to the dashboard, everyone else to their enquiries inbox. */
+async function homeFor(user: User): Promise<string> {
+  try {
+    const snap = await getDoc(doc(db, "staff", user.uid));
+    const role = snap.exists() ? snap.data().role : null;
+    return role === "admin" || role === "editor" ? "/admin" : "/inbox";
+  } catch {
+    return "/inbox";
+  }
+}
+
+// One sign-in page for the team and for customers. Team accounts are created by an admin from the dashboard;
+// customers create their own account here to follow their enquiries.
 const Auth = () => {
   useNoIndex("Sign in");
   const navigate = useNavigate();
@@ -22,8 +34,10 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [confirm, setConfirm] = useState("");
 
-  useEffect(() => onAuthStateChanged(auth, (user) => { if (user) navigate("/admin"); }), [navigate]);
+  useEffect(() => onAuthStateChanged(auth, async (user) => { if (user) navigate(await homeFor(user)); }), [navigate]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +48,7 @@ const Auth = () => {
         // Don't reveal whether an address has an account.
         if ((err as { code?: string }).code !== "auth/user-not-found") throw err;
       }
-      toast.success("If that email belongs to a team member, a reset link is on its way.");
+      toast.success("If that email has an account, a reset link is on its way.");
       setIsForgotPassword(false);
     } catch (error) {
       if (error instanceof z.ZodError) toast.error(error.errors[0].message);
@@ -49,17 +63,27 @@ const Auth = () => {
     setIsLoading(true);
     try {
       const validated = authSchema.parse({ email, password });
-      await signInWithEmailAndPassword(auth, validated.email, validated.password);
+      if (creating) {
+        if (validated.password !== confirm) { toast.error("The two passwords do not match"); return; }
+        const cred = await createUserWithEmailAndPassword(auth, validated.email, validated.password);
+        sendEmailVerification(cred.user).catch(() => {});
+        toast.success("Account created. We sent a link to confirm your email.");
+        navigate("/inbox");
+        return;
+      }
+      const cred = await signInWithEmailAndPassword(auth, validated.email, validated.password);
       toast.success("Welcome back!");
-      navigate("/admin");
+      navigate(await homeFor(cred.user));
     } catch (error) {
       if (error instanceof z.ZodError) toast.error(error.errors[0].message);
       else {
         const code = (error as { code?: string }).code ?? "";
-        if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") toast.error("Invalid email or password");
+        if (code === "auth/email-already-in-use") toast.error("That email already has an account. Sign in instead.");
+        else if (code === "auth/weak-password") toast.error("Choose a stronger password (at least 6 characters)");
+        else if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") toast.error("Invalid email or password");
         else if (code === "auth/too-many-requests") toast.error("Too many attempts. Please wait a few minutes and try again.");
         else if (code === "auth/network-request-failed") toast.error("No connection. Check your internet and try again.");
-        else toast.error("Could not sign in. Please try again.");
+        else toast.error(creating ? "Could not create the account. Please try again." : "Could not sign in. Please try again.");
       }
     } finally {
       setIsLoading(false);
@@ -71,7 +95,7 @@ const Auth = () => {
       <div className="adm-auth-card">
         <img src={wslLogo} alt="WSL Realty" />
         <h1>WSL Realty</h1>
-        <p className="sub">Sign in</p>
+        <p className="sub">{creating && !isForgotPassword ? "Create an account" : "Sign in"}</p>
 
         {isForgotPassword ? (
           <form onSubmit={handleForgotPassword} className="adm-grid" noValidate>
@@ -86,9 +110,12 @@ const Auth = () => {
             <label className="adm-field"><span>Email address</span>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
             <label className="adm-field"><span>Password</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" /></label>
-            <button type="submit" disabled={isLoading} className="adm-btn">{isLoading ? "Signing in…" : "Sign in"}</button>
-            <button type="button" className="link" onClick={() => setIsForgotPassword(true)}>Forgot password?</button>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={creating ? "new-password" : "current-password"} /></label>
+            {creating && <label className="adm-field"><span>Confirm password</span>
+              <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required autoComplete="new-password" /></label>}
+            <button type="submit" disabled={isLoading} className="adm-btn">{isLoading ? (creating ? "Creating…" : "Signing in…") : creating ? "Create account" : "Sign in"}</button>
+            {!creating && <button type="button" className="link" onClick={() => setIsForgotPassword(true)}>Forgot password?</button>}
+            <button type="button" className="link" onClick={() => { setCreating(!creating); setConfirm(""); }}>{creating ? "Already have an account? Sign in" : "New here? Create an account to follow your enquiries"}</button>
           </form>
         )}
         <a className="back" href="/">← Back to website</a>

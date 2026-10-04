@@ -3,17 +3,18 @@ import {
   addDoc, collection, deleteDoc, doc, getCountFromServer, getDocs, limit as fsLimit, orderBy, query, serverTimestamp,
   Timestamp, updateDoc, where, type DocumentData, type QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { db } from "@/integrations/firebase/client";
+import { auth, db } from "@/integrations/firebase/client";
 import type { EnquiryRow, EnquiryStatus } from "@/lib/db";
 
-const col = () => collection(db, "enquiries");
+export const col = () => collection(db, "enquiries");
 
-const toRow = (d: QueryDocumentSnapshot<DocumentData>): EnquiryRow => {
+export const toRow = (d: QueryDocumentSnapshot<DocumentData>): EnquiryRow => {
   const x = d.data();
   const created = x.created_at?.toDate?.() ?? new Date();
   return {
     id: d.id, name: x.name ?? "", phone: x.phone ?? "", email: x.email ?? null, interest: x.interest ?? null, message: x.message ?? null,
     source: x.source ?? "", status: x.status ?? "new", notes: x.notes ?? null, handled_by: x.handled_by ?? null,
+    user_id: x.user_id ?? null, seen_at: x.seen_at?.toDate?.().toISOString() ?? null, seen_by: x.seen_by ?? null,
     created_at: created.toISOString(), updated_at: created.toISOString(),
   };
 };
@@ -79,6 +80,7 @@ export async function submitEnquiry(data: EnquiryInput, source: string): Promise
         status: "new",
         notes: null,
         handled_by: null,
+        user_id: auth.currentUser?.uid ?? null,
         created_at: serverTimestamp(),
       }),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
@@ -134,7 +136,7 @@ export async function fetchRecentEnquiries(limit = 5): Promise<EnquiryRow[]> {
 
 export async function updateEnquiry(
   id: string,
-  patch: { status?: EnquiryStatus; notes?: string | null },
+  patch: { status?: EnquiryStatus; notes?: string | null; seen_at?: unknown; seen_by?: string },
   userId?: string,
 ): Promise<void> {
   await updateDoc(doc(db, "enquiries", id), { ...patch, ...(userId ? { handled_by: userId } : {}) });

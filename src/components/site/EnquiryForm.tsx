@@ -10,6 +10,8 @@ import {
   type EnquiryInput,
 } from "@/lib/enquiries";
 import { whatsappLink } from "@/lib/siteContent";
+import { auth } from "@/integrations/firebase/client";
+import { Link } from "react-router-dom";
 
 interface EnquiryFormProps {
   /** Where the enquiry came from; shown in the admin inbox, e.g. "contact_page" or "property:arya-luxe". */
@@ -33,7 +35,7 @@ type Phase = "idle" | "sending" | "sent";
  * WhatsApp with the same details, so a lead is never lost if either one fails.
  */
 export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMessage = "", submitLabel = "Send Enquiry", onClose }: EnquiryFormProps) {
-  const [values, setValues] = useState<EnquiryInput>({ ...emptyEnquiry, message: defaultMessage });
+  const [values, setValues] = useState<EnquiryInput>({ ...emptyEnquiry, email: auth.currentUser?.email ?? "", message: defaultMessage });
   const [errors, setErrors] = useState<EnquiryErrors>({});
   const [honeypot, setHoneypot] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
@@ -92,6 +94,7 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
         ) : (
           <p>We could not save your details on our site just now, but WhatsApp should have opened so you can message us directly. If it did not, use the button below.</p>
         )}
+        {saved && auth.currentUser && <p><Link className="text-link" to="/inbox">Follow this enquiry in your inbox</Link></p>}
         <div className="enq-sent-actions">
           {waUrl && (
             <Button asChild>

@@ -9,6 +9,7 @@ import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import NotFound from "@/pages/NotFound";
 import { useProject, stageImage, formatDate } from "@/lib/projects";
+import { useSession } from "@/lib/staff";
 
 
 function PropertyTile({ p }: { p: SiteProperty }) {
@@ -163,6 +164,7 @@ export function AryaLuxe() {
 
 export function Contact() {
   const c = useSiteContent();
+  const { user } = useSession();
   return <>
     <Seo route="/contact" />
     <PageHero eyebrow="Start a conversation" title="Contact Us" text="For property enquiries, project information or partnerships, our team is ready to help." />
@@ -170,5 +172,8 @@ export function Contact() {
       <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={`tel:${c.contact.phone}`}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>
       <EnquiryForm source="contact_page" whatsapp={c.contact.whatsapp} showInterest />
     </section>
+    <section className="contact-inbox"><div><h2>Follow your enquiry</h2>
+      <p>{user ? "Open your inbox to see when our team has seen your enquiry, read our replies and write back." : "Create an account or sign in before you send an enquiry, and you can follow it here: see when we have read it and read our replies."}</p></div>
+      <Button asChild variant="outline"><Link to={user ? "/inbox" : "/auth"}>{user ? "Open your inbox" : "Sign in or create an account"}</Link></Button></section>
   </>;
 }

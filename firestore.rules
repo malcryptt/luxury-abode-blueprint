@@ -56,9 +56,14 @@ service cloud.firestore {
       allow write: if isStaff();
     }
 
-    // Enquiries: anyone may create a well-formed one; only staff can read or manage them.
+    // Enquiries: anyone may create a well-formed one. A signed-in customer's enquiry carries their uid, so they
+    // can read their own enquiry and its conversation. Staff read and manage all of them.
     match /enquiries/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'interest', 'message', 'source', 'status', 'notes', 'handled_by', 'created_at'])
+      function isOwner() { return signedIn() && resource.data.get('user_id', null) == request.auth.uid; }
+
+      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'interest', 'message', 'source', 'status', 'notes', 'handled_by', 'created_at', 'user_id'])
+        && request.resource.data.keys().hasAll(['name', 'phone', 'email', 'interest', 'message', 'source', 'status', 'notes', 'handled_by', 'created_at'])
+        && (request.resource.data.get('user_id', null) == null || (signedIn() && request.resource.data.user_id == request.auth.uid))
         && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 100
         && request.resource.data.phone is string && request.resource.data.phone.size() >= 5 && request.resource.data.phone.size() <= 30
         && (request.resource.data.email == null || (request.resource.data.email is string && request.resource.data.email.size() <= 255))
@@ -69,12 +74,29 @@ service cloud.firestore {
         && request.resource.data.notes == null
         && request.resource.data.handled_by == null
         && request.resource.data.created_at == request.time;
-      allow read: if isStaff();
+      allow read: if isStaff() || isOwner();
       allow update: if isStaff()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'notes', 'handled_by'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'notes', 'handled_by', 'seen_at', 'seen_by'])
         && request.resource.data.status in ['new', 'contacted', 'closed']
         && (request.resource.data.notes == null || (request.resource.data.notes is string && request.resource.data.notes.size() <= 2000));
       allow delete: if isAdmin();
+
+      // The conversation: replies from the team and follow-ups from the customer.
+      match /messages/{mid} {
+        function ownsEnquiry() { return signedIn() && get(/databases/$(database)/documents/enquiries/$(id)).data.get('user_id', null) == request.auth.uid; }
+
+        allow read: if isStaff() || ownsEnquiry();
+        allow create: if request.resource.data.keys().hasOnly(['from', 'text', 'author', 'created_at', 'seen_at'])
+          && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 2000
+          && request.resource.data.author is string && request.resource.data.author.size() <= 120
+          && request.resource.data.seen_at == null
+          && request.resource.data.created_at == request.time
+          && ((request.resource.data.from == 'staff' && isStaff()) || (request.resource.data.from == 'customer' && ownsEnquiry()));
+        // The other side marks a message as seen; nothing else may change.
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen_at'])
+          && ((resource.data.from == 'customer' && isStaff()) || (resource.data.from == 'staff' && ownsEnquiry()));
+        allow delete: if isAdmin();
+      }
     }
 
     match /{document=**} {

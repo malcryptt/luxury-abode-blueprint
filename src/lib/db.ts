@@ -92,6 +92,9 @@ export interface EnquiryRow {
   status: EnquiryStatus;
   notes: string | null;
   handled_by: string | null;
+  user_id: string | null;
+  seen_at: string | null;
+  seen_by: string | null;
   created_at: string;
   updated_at: string;
 }
