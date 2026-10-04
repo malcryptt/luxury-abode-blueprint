@@ -54,10 +54,10 @@ export function About() {
     <PageHero eyebrow="Company" title="About WSL Realty" text="A property developer with roots in making." />
     <section className="section about-section"><div className="about-image"><img src={ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
-        <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><b>0{i + 1}</b><span>{t}</span></div>)}</div></div>
+        <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><span>{t}</span></div>)}</div></div>
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Values" title="What we stand for" />
-      <div className="value-grid">{(c.services.length ? c.services : [{ id: "a", title: "Quality", description: "No shortcuts on materials or workmanship." }, { id: "b", title: "Integrity", description: "Honest pricing and honest timelines." }, { id: "c", title: "Design", description: "Considered spaces made for real living." }]).map(s => <div key={s.id}><h3>{s.title}</h3><p>{s.description}</p></div>)}</div>
+      <div className="value-grid">{c.services.map(s => <div key={s.id}><h3>{s.title}</h3><p>{s.description}</p></div>)}</div>
     </section>
   </>;
 }
@@ -106,15 +106,17 @@ export function Furniture() {
 }
 
 export function PreviousJobs() {
+  const c = useSiteContent();
   const [filter, setFilter] = useState("All");
-  const items = [ph.property1, ph.furniture1, ph.property2, ph.furniture2, ph.property3, ph.furniture3].map((src, i) => ({ src, cat: i % 2 ? "Furniture" : "Builds" }));
-  const shown = filter === "All" ? items : items.filter(i => i.cat === filter);
+  const shown = filter === "All" ? c.jobs : c.jobs.filter(j => j.category === filter);
   return <>
     <Seo route="/previous-jobs" />
     <PageHero eyebrow="Portfolio" title="Previous Jobs" text="A selection of spaces, details and objects from our previous work." />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
       <div className="filter-tabs">{["All", "Builds", "Furniture"].map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
-      <div className="media-grid">{shown.map((m, i) => <div key={m.src} className={`media-item media-${i}`}><img src={m.src} alt={`WSL ${m.cat}`} loading="lazy" /></div>)}</div>
+      {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
+      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img"><img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" /></div>
+        <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
     </section>
   </>;
 }

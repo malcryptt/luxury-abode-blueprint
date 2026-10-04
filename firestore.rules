@@ -32,10 +32,15 @@ service cloud.firestore {
     }
 
     // Editable page text (hero, about, contact, values, ...).
+    // Lists have a maximum size: properties 25, furniture 30, previous jobs 30.
+    function listWithin(n) { return request.resource.data.value is list && request.resource.data.value.size() <= n; }
     match /content/{section} {
       allow read: if true;
-      allow write: if isStaff();
+      allow write: if isStaff() && !(section in ['properties', 'furniture', 'jobs']);
     }
+    match /content/properties { allow read: if true; allow write: if isStaff() && listWithin(25); }
+    match /content/furniture { allow read: if true; allow write: if isStaff() && listWithin(30); }
+    match /content/jobs { allow read: if true; allow write: if isStaff() && listWithin(30); }
 
     // Projects such as Arya Luxe, with their build stages stored on the document.
     match /projects/{slug} {

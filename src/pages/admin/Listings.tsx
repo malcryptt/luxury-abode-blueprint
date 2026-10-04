@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
 import { ImagePicker } from "@/components/admin/ImagePicker";
-import { fetchSiteContent, placeholders, slugify, type SiteFurniture, type SiteProperty } from "@/lib/siteContent";
+import { LIMITS, fetchSiteContent, placeholders, slugify, type SiteFurniture, type SiteJob, type SiteProperty } from "@/lib/siteContent";
 
-type Kind = "properties" | "furniture";
-type Item = (SiteProperty & { images?: string[] }) | SiteFurniture;
+type Kind = "properties" | "furniture" | "jobs";
+type Item = (SiteProperty & { images?: string[] }) | SiteFurniture | (SiteJob & { price?: string });
 
 const bundled = new Set<string>(Object.values(placeholders));
 const newId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -23,8 +23,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
   const qc = useQueryClient();
   const isProp = kind === "properties";
-  const noun = isProp ? "property" : "furniture item";
-  const toDraft = (list: Item[]): Item[] => list.map((x) => (isProp
+  const single = kind !== "furniture"; // one photo per item (furniture can have several)
+  const hasPrice = kind !== "jobs";
+  const noun = { properties: "property", furniture: "furniture item", jobs: "previous job" }[kind];
+  const max = LIMITS[kind];
+  const toDraft = (list: Item[]): Item[] => list.map((x) => (single
     ? { ...x, image: cleanImage((x as SiteProperty).image) }
     : { ...x, images: ((x as SiteFurniture).images ?? []).map(cleanImage).filter(Boolean) }) as Item);
 
@@ -34,10 +37,12 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
   useEffect(() => { const d = toDraft(initial); setDraft(d); setSaved(d); }, [initial]); // eslint-disable-line react-hooks/exhaustive-deps
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
 
-  const patch = (i: number, p: Partial<SiteProperty & SiteFurniture>) => setDraft(draft.map((x, j) => (j === i ? { ...x, ...p } : x)) as Item[]);
+  const patch = (i: number, p: Partial<SiteProperty & SiteFurniture & SiteJob>) => setDraft(draft.map((x, j) => (j === i ? { ...x, ...p } : x)) as Item[]);
   const add = () => setDraft([...draft, (isProp
     ? { id: newId(), slug: "", title: "", location: "", description: "", price: "", image: "" }
-    : { id: newId(), title: "", location: "", description: "", price: "", images: [] }) as Item]);
+    : kind === "jobs"
+      ? { id: newId(), category: "Builds", title: "", location: "", description: "", image: "" }
+      : { id: newId(), title: "", location: "", description: "", price: "", images: [] }) as Item]);
   const move = (i: number, d: number) => {
     const j = i + d;
     if (j < 0 || j >= draft.length) return;
@@ -48,7 +53,16 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (draft.some((x) => !x.title.trim())) return toast.error(`Give every ${noun} a title, or remove it`);
+    for (const [n, x] of draft.entries()) {
+      const label = x.title.trim() || `${noun} ${n + 1}`;
+      const photos = single ? [(x as SiteProperty).image] : (x as SiteFurniture).images;
+      if (!x.title.trim()) return toast.error(`Give ${noun} ${n + 1} a title, or remove it`);
+      if (!x.location.trim()) return toast.error(`"${label}" needs a location`);
+      if (hasPrice && !(x as SiteProperty).price?.trim()) return toast.error(`"${label}" needs a price`);
+      if (!x.description.trim()) return toast.error(`"${label}" needs a description`);
+      if (!x.hidden && !photos.some(Boolean)) return toast.error(`"${label}" needs a photo (or hide it until it has one)`);
+      if (!single && photos.some((p) => p === "")) return toast.error(`"${label}" has an empty photo slot. Add a photo or remove the slot`);
+    }
     const used = new Set<string>();
     const out = draft.map((x) => {
       const item = { ...x, title: x.title.trim() } as Item & { slug?: string; hidden?: boolean };
@@ -68,7 +82,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
       setDraft(out); setSaved(out);
       qc.invalidateQueries({ queryKey: ["site-content"] });
       qc.invalidateQueries({ queryKey: ["admin", "listings"] });
-      toast.success(isProp ? "Properties updated" : "Furniture updated");
+      toast.success({ properties: "Properties updated", furniture: "Furniture updated", jobs: "Previous jobs updated" }[kind]);
     } catch {
       toast.error("Could not save. Please try again.");
     } finally {
@@ -86,11 +100,12 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
           <div className="adm-grid two">
             <Field label="Title"><input type="text" maxLength={100} value={x.title} onChange={(e) => patch(i, { title: e.target.value })} /></Field>
             <Field label="Location"><input type="text" maxLength={100} value={x.location} onChange={(e) => patch(i, { location: e.target.value })} /></Field>
-            <Field label="Price" hint='Free text, e.g. "₦95,000,000" or "Price on request"'><input type="text" maxLength={60} value={x.price} onChange={(e) => patch(i, { price: e.target.value })} /></Field>
+            {hasPrice && <Field label="Price" hint='Free text, e.g. "₦95,000,000" or "Price on request"'><input type="text" maxLength={60} value={(x as SiteProperty).price} onChange={(e) => patch(i, { price: e.target.value })} /></Field>}
+            {kind === "jobs" && <Field label="Type"><select value={(x as SiteJob).category} onChange={(e) => patch(i, { category: e.target.value as SiteJob["category"] })}><option value="Builds">Build</option><option value="Furniture">Furniture</option></select></Field>}
           </div>
           <div className="adm-grid" style={{ marginTop: 14 }}>
             <Field label="Description"><textarea rows={3} maxLength={1000} value={x.description} onChange={(e) => patch(i, { description: e.target.value })} /></Field>
-            {isProp ? (
+            {single ? (
               <ImagePicker label="Photo" value={(x as SiteProperty).image} onChange={(url) => patch(i, { image: url })} />
             ) : (
               <>
@@ -115,7 +130,8 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
         </div>
       ))}
       <div className="adm-actions">
-        <button type="button" className="adm-btn ghost" onClick={add}><Plus size={16} /> Add {isProp ? "a property" : "a furniture item"}</button>
+        <button type="button" className="adm-btn ghost" onClick={add} disabled={draft.length >= max}><Plus size={16} /> Add a {noun}</button>
+        <span className="adm-muted">{draft.length} of {max} used</span>
         <button type="submit" className="adm-btn" disabled={busy || !dirty}><Save size={16} /> {busy ? "Saving…" : "Save changes"}</button>
         {!dirty && !busy && <span className="adm-muted">No changes to save</span>}
       </div>
@@ -141,14 +157,15 @@ export default function Listings() {
       <div className="adm-head">
         <div>
           <h1>Listings</h1>
-          <p>Add, edit, reorder and hide the properties and furniture shown on the website. Nothing changes publicly until you save.</p>
+          <p>Add, edit, reorder and hide the properties, furniture and previous jobs shown on the website. Nothing changes publicly until you save.</p>
         </div>
       </div>
       <div className="adm-actions" style={{ marginTop: 0, marginBottom: 18 }} role="tablist">
         <button role="tab" aria-selected={tab === "properties"} className={`adm-btn ${tab === "properties" ? "" : "ghost"}`} onClick={() => setTab("properties")}>Properties</button>
         <button role="tab" aria-selected={tab === "furniture"} className={`adm-btn ${tab === "furniture" ? "" : "ghost"}`} onClick={() => setTab("furniture")}>Furniture</button>
+        <button role="tab" aria-selected={tab === "jobs"} className={`adm-btn ${tab === "jobs" ? "" : "ghost"}`} onClick={() => setTab("jobs")}>Previous jobs</button>
       </div>
-      <ListEditor key={tab} kind={tab} initial={(tab === "properties" ? data.properties : data.furniture) as Item[]} />
+      <ListEditor key={tab} kind={tab} initial={data[tab] as Item[]} />
     </>
   );
 }

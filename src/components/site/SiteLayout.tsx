@@ -1,7 +1,7 @@
-import { useIsStaff } from "@/lib/staff";
+import { signOutUser, useSession } from "@/lib/staff";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { Menu, ChevronRight, LayoutDashboard, LogIn, ArrowUpRight, Instagram, Facebook } from "lucide-react";
+import { Menu, ChevronRight, LayoutDashboard, LogIn, LogOut, ArrowUpRight, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@/assets/wsl-logo.png";
@@ -17,7 +17,8 @@ const links: [string, string][] = [
 // the dashboard is a separate application reached by its own URL.
 export function SiteLayout() {
   const [open, setOpen] = useState(false);
-  const staff = useIsStaff();
+  const { user, staff } = useSession();
+  const out = () => { signOutUser().catch(() => {}); };
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); setOpen(false); }, [pathname]);
 
@@ -28,14 +29,18 @@ export function SiteLayout() {
         <nav className="desktop-nav" aria-label="Primary">
           {links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>{l}</NavLink>)}
         </nav>
-        <Link className="header-signin" to={staff ? "/admin" : "/auth"}>{staff ? <LayoutDashboard size={15} aria-hidden="true" /> : <LogIn size={15} aria-hidden="true" />} {staff ? "Admin" : "Sign in"}</Link>
+        <div className="header-auth">
+          {staff && <Link className="header-signin" to="/admin"><LayoutDashboard size={15} aria-hidden="true" /> Admin</Link>}
+          {user ? <button type="button" className="header-signin" onClick={out}><LogOut size={15} aria-hidden="true" /> Sign out</button>
+            : <Link className="header-signin" to="/auth"><LogIn size={15} aria-hidden="true" /> Sign in</Link>}
+        </div>
         <div className="header-right">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" className="mobile-menu" aria-label="Open menu"><Menu /></Button></SheetTrigger>
             <SheetContent>
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <SheetDescription className="sr-only">Site navigation</SheetDescription>
-              <nav className="mobile-nav" aria-label="Mobile">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}<Link to={staff ? "/admin" : "/auth"} className="mobile-signin">{staff ? "Admin" : "Sign in"}{staff ? <LayoutDashboard size={16} /> : <LogIn size={16} />}</Link></nav>
+              <nav className="mobile-nav" aria-label="Mobile">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}{staff && <Link to="/admin" className="mobile-signin">Admin<LayoutDashboard size={16} /></Link>}{user ? <button type="button" className="mobile-signin" onClick={out}>Sign out<LogOut size={16} /></button> : <Link to="/auth" className="mobile-signin">Sign in<LogIn size={16} /></Link>}</nav>
             </SheetContent>
           </Sheet>
         </div>
@@ -49,7 +54,7 @@ export function SiteLayout() {
           <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
           <Link className="text-link" to="/contact">Enquire Now <ArrowUpRight size={14} /></Link>
         </div>
-        <small>© {new Date().getFullYear()} WSL Realty. All rights reserved. <Link className="footer-signin" to={staff ? "/admin" : "/auth"}>{staff ? "Admin" : "Sign in"}</Link></small>
+        <small>© {new Date().getFullYear()} WSL Realty. All rights reserved. {staff && <Link className="footer-signin" to="/admin">Admin</Link>}{user ? <button type="button" className="footer-signin" onClick={out}>Sign out</button> : <Link className="footer-signin" to="/auth">Sign in</Link>}</small>
       </footer>
     </div>
   );
