@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { projectIsSetUp, seedProject } from "@/lib/projects";
 import { countEnquiries, fetchEnquiryDates, fetchRecentEnquiries, sourceLabel, STATUS_LABEL, timeAgo } from "@/lib/enquiries";
 import { useAdmin } from "./context";
 
@@ -7,6 +10,22 @@ const DAYS = 14;
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 export default function Dashboard() {
   const { email } = useAdmin();
+  const qc = useQueryClient();
+  const [seeding, setSeeding] = useState(false);
+  const setup = useQuery({ queryKey: ["admin", "project-setup"], queryFn: () => projectIsSetUp() });
+  const runSetup = async () => {
+    setSeeding(true);
+    try {
+      await seedProject();
+      toast.success("Arya Luxe project created");
+      qc.invalidateQueries({ queryKey: ["admin", "project-setup"] });
+      qc.invalidateQueries({ queryKey: ["project"] });
+    } catch {
+      toast.error("Setup failed. Check that the Firestore rules have been published.");
+    } finally {
+      setSeeding(false);
+    }
+  };
   const since = new Date(Date.now() - (DAYS - 1) * 86400000);
   since.setHours(0, 0, 0, 0);
 
@@ -43,9 +62,19 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {setup.data === false && (
+        <section className="adm-panel" style={{ borderColor: "var(--a-gold)" }}>
+          <h2>Finish setting up</h2>
+          <p className="sub">The Arya Luxe project has not been created in the database yet. This adds it with its six build stages and the first two progress updates, so you can start editing them.</p>
+          <div className="adm-actions" style={{ marginTop: 0 }}>
+            <button className="adm-btn" onClick={runSetup} disabled={seeding}>{seeding ? "Setting up…" : "Set up Arya Luxe"}</button>
+          </div>
+        </section>
+      )}
+
       {failed && (
         <div className="adm-err" role="alert">
-          <span>Some figures could not be loaded. Check your connection and that the database updates have been applied.</span>
+          <span>Some figures could not be loaded. Check your connection and that the Firestore rules have been published.</span>
           <button className="adm-btn small" onClick={() => { counts.refetch(); dates.refetch(); recent.refetch(); }}>Retry</button>
         </div>
       )}

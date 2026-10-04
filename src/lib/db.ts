@@ -1,12 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-/**
- * The generated Database type only knows about the original tables.
- * New tables are typed by the interfaces below instead, so queries on them go
- * through this loosely typed handle. Same client, same session.
- */
-export const db = supabase as unknown as SupabaseClient;
+// Row shapes shared by the public site and the admin. Data lives in Firestore (see firestore.rules).
 
 export type PropertyStatus = "available" | "under_construction" | "sold";
 

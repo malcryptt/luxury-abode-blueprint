@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { db } from "@/lib/db";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { db } from "@/integrations/firebase/client";
 import { fetchSiteContent, type SiteContent } from "@/lib/siteContent";
 
 type Hero = SiteContent["hero"];
@@ -10,10 +11,9 @@ type About = SiteContent["about"];
 type Contact = SiteContent["contact"];
 type Service = SiteContent["services"][number];
 
-/** Writes one section. Upsert, so it also works when the row does not exist yet. */
+/** Writes one section. setDoc creates it if it does not exist yet. */
 async function saveSection(section: string, content: unknown) {
-  const { error } = await db.from("website_content").upsert({ section, content }, { onConflict: "section" });
-  if (error) throw error;
+  await setDoc(doc(db, "content", section), { value: content, updated_at: serverTimestamp() });
 }
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {

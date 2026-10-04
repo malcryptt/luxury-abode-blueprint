@@ -46,25 +46,29 @@ async function getJson(url, headers) {
   }
 }
 
+// Firestore's REST API wraps every value in a type tag. This unwraps it into plain JSON.
+function decode(v) {
+  if (v == null) return null;
+  if ("stringValue" in v) return v.stringValue;
+  if ("integerValue" in v) return Number(v.integerValue);
+  if ("doubleValue" in v) return v.doubleValue;
+  if ("booleanValue" in v) return v.booleanValue;
+  if ("nullValue" in v) return null;
+  if ("arrayValue" in v) return (v.arrayValue.values || []).map(decode);
+  if ("mapValue" in v) return Object.fromEntries(Object.entries(v.mapValue.fields || {}).map(([k, x]) => [k, decode(x)]));
+  return null;
+}
+
 async function loadProperties() {
   const env = readEnv();
-  const base = env.VITE_SUPABASE_URL;
-  const key = env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (base && key) {
-    const headers = { apikey: key, Authorization: `Bearer ${key}` };
+  const project = env.VITE_FIREBASE_PROJECT_ID;
+  if (project) {
     try {
-      const rows = await getJson(
-        `${base}/rest/v1/properties?select=slug,title,location,description,price,status,bedrooms,bathrooms,size_sqm,images&published=eq.true&order=sort_order.asc`,
-        headers,
-      );
-      if (Array.isArray(rows) && rows.length) return { source: "properties table", list: rows };
-    } catch (e) { console.log(`  properties table not available (${e.message})`); }
-    try {
-      const rows = await getJson(`${base}/rest/v1/website_content?select=content&section=eq.properties`, headers);
-      const list = rows?.[0]?.content;
+      const doc = await getJson(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/content/properties`, {});
+      const list = decode(doc.fields?.value);
       if (Array.isArray(list) && list.length) {
         return {
-          source: "website_content JSON",
+          source: "Firestore content/properties",
           list: list.map((p, i) => ({
             slug: p.slug || slugify(p.title || `property-${i + 1}`),
             title: p.title || "Untitled property",
@@ -75,7 +79,7 @@ async function loadProperties() {
           })),
         };
       }
-    } catch (e) { console.log(`  legacy property list not available (${e.message})`); }
+    } catch (e) { console.log(`  property list not available (${e.message})`); }
   }
   return { source: "built-in defaults", list: DEFAULT_PROPERTIES };
 }

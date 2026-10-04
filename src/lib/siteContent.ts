@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/integrations/firebase/client";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
 import property3 from "@/assets/property-3.jpg";
@@ -42,15 +43,19 @@ const fallbackImgs = [property1, property2, property3];
 
 /** Code defaults overlaid with whatever the team has saved in the database. */
 export async function fetchSiteContent(): Promise<SiteContent> {
-  const { data } = await supabase.from("website_content").select("section, content");
-  const c: any = structuredClone(defaults);
-  data?.forEach((row: any) => {
-    const v = row.content;
-    if (v == null) return;
-    if (Array.isArray(v)) { if (v.length) c[row.section] = v; }
-    else if (typeof v === "object") c[row.section] = { ...c[row.section], ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
-  });
-  return c as SiteContent;
+  const c = structuredClone(defaults) as unknown as Record<string, unknown>;
+  try {
+    const snap = await getDocs(collection(db, "content"));
+    snap.forEach((d) => {
+      const v = d.data().value as unknown;
+      if (v == null) return;
+      if (Array.isArray(v)) { if (v.length) c[d.id] = v; }
+      else if (typeof v === "object") c[d.id] = { ...(c[d.id] as object), ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
+    });
+  } catch {
+    // Offline or not set up yet: the built-in content is shown.
+  }
+  return c as unknown as SiteContent;
 }
 
 export function useSiteContent() {

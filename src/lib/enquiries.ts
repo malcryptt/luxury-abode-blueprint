@@ -1,5 +1,22 @@
 import { z } from "zod";
-import { db, type EnquiryRow, type EnquiryStatus } from "@/lib/db";
+import {
+  addDoc, collection, deleteDoc, doc, getCountFromServer, getDocs, limit as fsLimit, orderBy, query, serverTimestamp,
+  Timestamp, updateDoc, where, type DocumentData, type QueryDocumentSnapshot,
+} from "firebase/firestore";
+import { db } from "@/integrations/firebase/client";
+import type { EnquiryRow, EnquiryStatus } from "@/lib/db";
+
+const col = () => collection(db, "enquiries");
+
+const toRow = (d: QueryDocumentSnapshot<DocumentData>): EnquiryRow => {
+  const x = d.data();
+  const created = x.created_at?.toDate?.() ?? new Date();
+  return {
+    id: d.id, name: x.name ?? "", phone: x.phone ?? "", email: x.email ?? null, interest: x.interest ?? null, message: x.message ?? null,
+    source: x.source ?? "", status: x.status ?? "new", notes: x.notes ?? null, handled_by: x.handled_by ?? null,
+    created_at: created.toISOString(), updated_at: created.toISOString(),
+  };
+};
 
 /* ---------------------------------------------------------------------------
    Visitor side: validate and save an enquiry
@@ -47,17 +64,29 @@ export function validateEnquiry(input: EnquiryInput): EnquiryValidation {
   return { ok: false, errors };
 }
 
-/** Saves a validated enquiry. Visitors can insert but never read, so no row is requested back. */
+/** Saves a validated enquiry. Visitors can create but never read enquiries (see firestore.rules). */
 export async function submitEnquiry(data: EnquiryInput, source: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { error } = await db.from("enquiries").insert({
-    name: data.name,
-    phone: data.phone,
-    email: data.email || null,
-    interest: data.interest || null,
-    message: data.message || null,
-    source: source.slice(0, 120),
-  });
-  return error ? { ok: false, error: error.message } : { ok: true };
+  try {
+    // addDoc waits for the server; don't leave a visitor staring at "Sending…" on a bad connection.
+    await Promise.race([
+      addDoc(col(), {
+        name: data.name,
+        phone: data.phone,
+        email: data.email || null,
+        interest: data.interest || null,
+        message: data.message || null,
+        source: source.slice(0, 120),
+        status: "new",
+        notes: null,
+        handled_by: null,
+        created_at: serverTimestamp(),
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
+    ]);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 /** The message the visitor sends us on WhatsApp after submitting. */
@@ -80,39 +109,27 @@ export const STATUS_LABEL: Record<EnquiryStatus, string> = { new: "New", contact
 export const FETCH_LIMIT = 500;
 
 export async function fetchEnquiries(limit = FETCH_LIMIT): Promise<{ rows: EnquiryRow[]; total: number }> {
-  const { data, error, count } = await db
-    .from("enquiries")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  const rows = (data ?? []) as EnquiryRow[];
-  return { rows, total: count ?? rows.length };
+  const [snap, total] = await Promise.all([
+    getDocs(query(col(), orderBy("created_at", "desc"), fsLimit(limit))),
+    getCountFromServer(col()),
+  ]);
+  const rows = snap.docs.map(toRow);
+  return { rows, total: total.data().count };
 }
 
 export async function countEnquiries(status?: EnquiryStatus): Promise<number> {
-  let q = db.from("enquiries").select("id", { count: "exact", head: true });
-  if (status) q = q.eq("status", status);
-  const { count, error } = await q;
-  if (error) throw error;
-  return count ?? 0;
+  const q = status ? query(col(), where("status", "==", status)) : query(col());
+  return (await getCountFromServer(q)).data().count;
 }
 
 export async function fetchEnquiryDates(sinceIso: string): Promise<string[]> {
-  const { data, error } = await db
-    .from("enquiries")
-    .select("created_at")
-    .gte("created_at", sinceIso)
-    .order("created_at", { ascending: false })
-    .limit(2000);
-  if (error) throw error;
-  return ((data ?? []) as { created_at: string }[]).map((r) => r.created_at);
+  const snap = await getDocs(query(col(), where("created_at", ">=", Timestamp.fromDate(new Date(sinceIso))), orderBy("created_at", "desc"), fsLimit(2000)));
+  return snap.docs.map((d) => toRow(d).created_at);
 }
 
 export async function fetchRecentEnquiries(limit = 5): Promise<EnquiryRow[]> {
-  const { data, error } = await db.from("enquiries").select("*").order("created_at", { ascending: false }).limit(limit);
-  if (error) throw error;
-  return (data ?? []) as EnquiryRow[];
+  const snap = await getDocs(query(col(), orderBy("created_at", "desc"), fsLimit(limit)));
+  return snap.docs.map(toRow);
 }
 
 export async function updateEnquiry(
@@ -120,16 +137,11 @@ export async function updateEnquiry(
   patch: { status?: EnquiryStatus; notes?: string | null },
   userId?: string,
 ): Promise<void> {
-  const { error } = await db
-    .from("enquiries")
-    .update({ ...patch, ...(userId ? { handled_by: userId } : {}) })
-    .eq("id", id);
-  if (error) throw error;
+  await updateDoc(doc(db, "enquiries", id), { ...patch, ...(userId ? { handled_by: userId } : {}) });
 }
 
 export async function deleteEnquiry(id: string): Promise<void> {
-  const { error } = await db.from("enquiries").delete().eq("id", id);
-  if (error) throw error;
+  await deleteDoc(doc(db, "enquiries", id));
 }
 
 /* ---------------------------------------------------------------------------

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { ExternalLink, FileText, Hammer, Inbox, LayoutDashboard, LogOut, Menu, Users, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { db } from "@/lib/db";
+import { onAuthStateChanged, signOut as fbSignOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/integrations/firebase/client";
 import { countEnquiries } from "@/lib/enquiries";
 import { useNoIndex } from "@/components/site/Seo";
 import type { AdminContext, StaffRole } from "./context";
@@ -25,23 +26,19 @@ export default function AdminLayout() {
 
   useEffect(() => {
     let alive = true;
-    const check = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!alive) return;
-      if (!session?.user) return setState({ phase: "signed-out" });
-      const { data, error } = await db.from("user_roles").select("role").eq("user_id", session.user.id);
-      if (!alive) return;
-      if (error) return setState({ phase: "error" });
-      const roles = ((data ?? []) as { role: string }[]).map((r) => r.role);
-      const role: StaffRole | null = roles.includes("admin") ? "admin" : roles.includes("editor") ? "editor" : null;
-      if (!role) return setState({ phase: "denied", email: session.user.email ?? "" });
-      setState({ phase: "ready", ctx: { userId: session.user.id, email: session.user.email ?? "", role } });
-    };
-    check();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") setState({ phase: "signed-out" });
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (!user) return alive && setState({ phase: "signed-out" });
+      try {
+        const snap = await getDoc(doc(db, "staff", user.uid));
+        if (!alive) return;
+        const role = snap.exists() ? snap.data().role : null;
+        if (role !== "admin" && role !== "editor") return setState({ phase: "denied", email: user.email ?? "" });
+        setState({ phase: "ready", ctx: { userId: user.uid, email: user.email ?? "", role: role as StaffRole } });
+      } catch {
+        if (alive) setState({ phase: "error" });
+      }
     });
-    return () => { alive = false; subscription.unsubscribe(); };
+    return () => { alive = false; unsub(); };
   }, []);
 
   const refreshNewCount = useCallback(() => {
@@ -53,7 +50,7 @@ export default function AdminLayout() {
   }, [state.phase, refreshNewCount]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await fbSignOut(auth);
     navigate("/auth");
   };
 

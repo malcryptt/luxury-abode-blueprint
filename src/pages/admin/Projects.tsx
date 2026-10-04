@@ -6,8 +6,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { db, usableImage, type ProjectUpdateRow } from "@/lib/db";
-import { fetchProject, overallPercent, formatDate } from "@/lib/projects";
+import { usableImage, type ProjectUpdateRow } from "@/lib/db";
+import { deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectProgress, saveProjectUpdate } from "@/lib/projects";
 import { uploadImage } from "@/lib/upload";
 
 const SLUG = "arya-luxe";
@@ -67,7 +67,7 @@ export default function Projects() {
   if (isError || !data)
     return (
       <div className="adm-err" role="alert">
-        <span>{isError ? "The project could not be loaded. Check your connection and that the database updates have been applied." : "The Arya Luxe project was not found in the database."}</span>
+        <span>{isError ? "The project could not be loaded. Check your connection and that the Firestore rules have been published." : "The Arya Luxe project was not found in the database."}</span>
         <button className="adm-btn small" onClick={() => refetch()}>Retry</button>
       </div>
     );
@@ -81,11 +81,7 @@ export default function Projects() {
   const saveProgress = async () => {
     setSaving(true);
     try {
-      const { error: e1 } = await db.from("projects").update({ current_stage: current }).eq("slug", SLUG);
-      if (e1) throw e1;
-      const rows = effective.map((s) => ({ project_slug: SLUG, stage: s.stage, title: s.title.trim() || data.stages[s.stage].title, note: s.note.trim(), image: s.image, progress: s.progress }));
-      const { error: e2 } = await db.from("project_stages").upsert(rows, { onConflict: "project_slug,stage" });
-      if (e2) throw e2;
+      await saveProjectProgress(SLUG, current, effective.map((x) => ({ ...x, title: x.title.trim() || data.stages[x.stage].title, note: x.note.trim() })));
       toast.success("Build progress updated");
       refresh();
     } catch {
@@ -101,9 +97,7 @@ export default function Projects() {
     if (!editing.title.trim()) return toast.error("Give the update a title");
     setSavingUpdate(true);
     try {
-      const row = { project_slug: SLUG, stage: editing.stage, title: editing.title.trim(), body: editing.body.trim(), posted_on: editing.posted_on, published: editing.published, images: editing.images };
-      const { error } = editing.id ? await db.from("project_updates").update(row).eq("id", editing.id) : await db.from("project_updates").insert(row);
-      if (error) throw error;
+      await saveProjectUpdate(SLUG, { stage: editing.stage, title: editing.title.trim(), body: editing.body.trim(), posted_on: editing.posted_on, published: editing.published, images: editing.images }, editing.id);
       toast.success(editing.id ? "Update saved" : "Update posted");
       setEditing(null);
       refresh();
@@ -118,10 +112,13 @@ export default function Projects() {
     if (!toDelete) return;
     const u = toDelete;
     setToDelete(null);
-    const { error } = await db.from("project_updates").delete().eq("id", u.id);
-    if (error) return toast.error("Could not delete the update");
-    toast.success("Update deleted");
-    refresh();
+    try {
+      await deleteProjectUpdate(u.id);
+      toast.success("Update deleted");
+      refresh();
+    } catch {
+      toast.error("Could not delete the update");
+    }
   };
 
   return (

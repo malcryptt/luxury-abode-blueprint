@@ -12,7 +12,6 @@ import Content from "./pages/admin/Content";
 import Projects from "./pages/admin/Projects";
 import Team from "./pages/admin/Team";
 import NotFound from "./pages/NotFound";
-import ResetPassword from "./pages/ResetPassword";
 import { SiteLayout } from "./components/site/SiteLayout";
 import * as P from "./pages/site/Pages";
 
@@ -48,7 +47,7 @@ const App = () => (
             <Route path="team" element={<Team />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-password" element={<Navigate to="/auth" replace />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

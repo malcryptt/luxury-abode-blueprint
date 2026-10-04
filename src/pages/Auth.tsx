@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/integrations/firebase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 import wslLogo from "@/assets/wsl-logo.png";
@@ -22,41 +23,22 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) navigate("/admin");
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) navigate("/admin");
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+  useEffect(() => onAuthStateChanged(auth, (user) => { if (user) navigate("/admin"); }), [navigate]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const validatedEmail = z.string().trim().email("Invalid email address").parse(email);
-      const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
+      try { await sendPasswordResetEmail(auth, validatedEmail); } catch (err) {
+        // Don't reveal whether an address has an account.
+        if ((err as { code?: string }).code !== "auth/user-not-found") throw err;
       }
-
       toast.success("If that email belongs to a team member, a reset link is on its way.");
       setIsForgotPassword(false);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
+      if (error instanceof z.ZodError) toast.error(error.errors[0].message);
+      else toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -65,26 +47,19 @@ const Auth = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const validated = authSchema.parse({ email, password });
-      const { error } = await supabase.auth.signInWithPassword({
-        email: validated.email,
-        password: validated.password,
-      });
-
-      if (error) {
-        toast.error(error.message.includes("Invalid login credentials") ? "Invalid email or password" : error.message);
-        return;
-      }
-
+      await signInWithEmailAndPassword(auth, validated.email, validated.password);
       toast.success("Welcome back!");
       navigate("/admin");
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      } else {
-        toast.error("Something went wrong. Please try again.");
+      if (error instanceof z.ZodError) toast.error(error.errors[0].message);
+      else {
+        const code = (error as { code?: string }).code ?? "";
+        if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") toast.error("Invalid email or password");
+        else if (code === "auth/too-many-requests") toast.error("Too many attempts. Please wait a few minutes and try again.");
+        else if (code === "auth/network-request-failed") toast.error("No connection. Check your internet and try again.");
+        else toast.error("Could not sign in. Please try again.");
       }
     } finally {
       setIsLoading(false);

@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// WSL Realty Firestore rules.
+// Visitors: read published site content, and CREATE (never read) enquiries.
+// Staff (a document at staff/<uid>): manage content, projects and enquiries.
+// Admins (role "admin"): also manage the team and delete enquiries.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function staffDoc() { return get(/databases/$(database)/documents/staff/$(request.auth.uid)); }
+    function isStaff() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid))
+        && staffDoc().data.role in ['admin', 'editor'];
+    }
+    function isAdmin() { return isStaff() && staffDoc().data.role == 'admin'; }
+
+    // Team. Read your own record (the app uses it to learn your role); admins read all.
+    // Admins can add, change and remove other people, never themselves.
+    match /staff/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() && uid != request.auth.uid
+        && request.resource.data.keys().hasOnly(['email', 'role', 'created_at'])
+        && request.resource.data.role in ['admin', 'editor']
+        && request.resource.data.email is string && request.resource.data.email.size() <= 255;
+      allow update: if isAdmin() && uid != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        && request.resource.data.role in ['admin', 'editor'];
+      allow delete: if isAdmin() && uid != request.auth.uid;
+    }
+
+    // Editable page text (hero, about, contact, values, ...).
+    match /content/{section} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Projects such as Arya Luxe, with their build stages stored on the document.
+    match /projects/{slug} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Progress updates. The public site must query with published == true; drafts are staff-only.
+    match /projectUpdates/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+
+    // Enquiries: anyone may create a well-formed one; only staff can read or manage them.
+    match /enquiries/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'interest', 'message', 'source', 'status', 'notes', 'handled_by', 'created_at'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 100
+        && request.resource.data.phone is string && request.resource.data.phone.size() >= 5 && request.resource.data.phone.size() <= 30
+        && (request.resource.data.email == null || (request.resource.data.email is string && request.resource.data.email.size() <= 255))
+        && (request.resource.data.interest == null || (request.resource.data.interest is string && request.resource.data.interest.size() <= 200))
+        && (request.resource.data.message == null || (request.resource.data.message is string && request.resource.data.message.size() <= 1000))
+        && request.resource.data.source is string && request.resource.data.source.size() <= 120
+        && request.resource.data.status == 'new'
+        && request.resource.data.notes == null
+        && request.resource.data.handled_by == null
+        && request.resource.data.created_at == request.time;
+      allow read: if isStaff();
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'notes', 'handled_by'])
+        && request.resource.data.status in ['new', 'contacted', 'closed']
+        && (request.resource.data.notes == null || (request.resource.data.notes is string && request.resource.data.notes.size() <= 2000));
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

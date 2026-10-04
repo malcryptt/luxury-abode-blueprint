@@ -130,7 +130,7 @@ export default function Enquiries() {
 
       {isError && (
         <div className="adm-err" role="alert">
-          <span>Enquiries could not be loaded. Check your connection and that the database updates have been applied.</span>
+          <span>Enquiries could not be loaded. Check your connection and that the Firestore rules have been published.</span>
           <button className="adm-btn small" onClick={() => refetch()}>Retry</button>
         </div>
       )}
