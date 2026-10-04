@@ -8,9 +8,8 @@ import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import NotFound from "@/pages/NotFound";
+import { useProject, stageImage, formatDate } from "@/lib/projects";
 
-const stages = ["Foundation", "Block Work", "Ceiling", "Windows", "Finishing", "Handover"];
-const CURRENT_STAGE = 1;
 
 function PropertyTile({ p }: { p: SiteProperty }) {
   return (
@@ -24,6 +23,7 @@ function PropertyTile({ p }: { p: SiteProperty }) {
 
 export function Home() {
   const c = useSiteContent();
+  const { data: pr } = useProject("arya-luxe");
   return <>
     <Seo route="/" />
     <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" /><div className="hero-shade" />
@@ -36,8 +36,8 @@ export function Home() {
     </section>
     <section className="project-feature"><div className="project-image"><img src={ph.property3} alt="Arya Luxe construction" /><span className="project-label">Currently building</span></div>
       <div className="project-copy"><span className="eyebrow">Featured project</span><h2>Arya Luxe</h2><p>Follow the construction of Arya Luxe, a private collection of contemporary residences in Gwarinpa.</p>
-        <div className="progress-line"><span style={{ width: `${((CURRENT_STAGE + 1) / stages.length) * 100}%` }} /></div>
-        <div className="progress-meta"><span>Current stage</span><strong>{stages[CURRENT_STAGE]}</strong></div>
+        <div className="progress-line" role="progressbar" aria-label="Arya Luxe progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pr.percent}%` }} /></div>
+        <div className="progress-meta"><span>Current stage</span><strong>{pr.stages[pr.project.current_stage].title} · {pr.percent}% complete</strong></div>
         <Link className="text-link" to="/arya-luxe">Follow The Build <ArrowUpRight size={16} /></Link></div>
     </section>
     <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Realty" />
@@ -119,34 +119,38 @@ export function PreviousJobs() {
   </>;
 }
 
-const updates = [
-  { date: "14 September 2025", stage: 1, text: "Block work completed through level 2. The structure is taking shape with clean lines and generous light." },
-  { date: "20 July 2025", stage: 0, text: "Foundation completed and inspected. Ground works signed off ahead of schedule." },
-];
-
 export function ProjectUpdates() {
+  const { data: pr, loaded } = useProject("arya-luxe");
   return <>
     <Seo route="/project-updates" />
     <PageHero eyebrow="Construction journal" title="Project Updates" text="Real progress, documented from the ground up." />
-    <section className="section"><SectionIntro eyebrow="Project update" title="Latest updates" />
-      <div className="update-list">{updates.map(u => (
-        <article key={u.date} className="update-item"><img src={u.stage ? ph.property2 : ph.property3} alt={stages[u.stage]} loading="lazy" />
-          <div><span className="eyebrow">Arya Luxe · {u.date}</span><h3>{stages[u.stage]}</h3><p>{u.text}</p><Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link></div></article>))}</div>
+    <section className="section"><SectionIntro eyebrow="Project update" title="Latest updates" text={`Arya Luxe is ${pr.percent}% complete.`} />
+      <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
+        <article key={u.id} className="update-item"><img src={stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" />
+          <div><span className="eyebrow">{pr.project.name} · {formatDate(u.posted_on)}</span><h3>{u.title || pr.stages[u.stage]?.title}</h3><p>{u.body}</p><Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link></div></article>))}</div>
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Stay informed" title="Get project updates" text="Message us on WhatsApp to receive new progress reports." /><Button asChild><Link to="/contact">Register Interest</Link></Button></section>
   </>;
 }
 
 export function AryaLuxe() {
-  const [sel, setSel] = useState(CURRENT_STAGE);
-  const c = useSiteContent();
+  const { data: pr } = useProject("arya-luxe");
+  const cur = pr.project.current_stage;
+  const [picked, setPicked] = useState<number | null>(null);
+  const sel = picked ?? cur;
+  const st = pr.stages[sel];
+  const state = sel < cur ? "complete" : sel === cur ? "in progress" : "upcoming";
+  const pct = sel < cur ? 100 : sel === cur ? st.progress : 0;
   return <>
     <Seo route="/arya-luxe" />
-    <PageHero eyebrow="Gwarinpa, Abuja · 2025—26" title="Arya Luxe" text="A private collection of contemporary residences, built with clarity, quality and a long view." image={ph.property1} />
-    <section className="section"><SectionIntro eyebrow="Current stage" title="Follow the build" text="Follow the construction of Arya Luxe." />
-      <div className="stage-tabs">{stages.map((s, i) => <button key={s} className={`${sel === i ? "active" : ""} ${i <= CURRENT_STAGE ? "done" : ""}`} onClick={() => setSel(i)}><span>0{i + 1}</span>{s}</button>)}</div>
-      <div className="journal-detail"><img src={sel % 2 ? ph.property2 : ph.property3} alt={`${stages[sel]} at Arya Luxe`} />
-        <div><span className="eyebrow">Stage 0{sel + 1}</span><h3>{stages[sel]}</h3><p>{sel < CURRENT_STAGE ? "This stage is complete." : sel === CURRENT_STAGE ? "Work on this stage is in progress." : "This stage is upcoming."}</p></div></div>
+    <PageHero eyebrow={`${pr.project.location} · 2025—26`} title={pr.project.name} text={pr.project.summary} image={ph.property1} />
+    <section className="section"><SectionIntro eyebrow="Current stage" title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
+      <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
+      <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>
+      <div className="journal-detail"><img src={stageImage(st.image, sel % 2 ? ph.property2 : ph.property3)} alt={`${st.title} at ${pr.project.name}`} />
+        <div><span className="eyebrow">Stage 0{sel + 1} · {state}</span><h3>{st.title}</h3>
+          <div className="progress-line" aria-hidden="true" style={{ margin: "14px 0" }}><span style={{ width: `${pct}%` }} /></div>
+          <p>{st.note || (sel < cur ? "This stage is complete." : sel === cur ? `Work on this stage is ${pct}% done.` : "This stage is upcoming.")}</p></div></div>
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Interested?" title="Register your interest" text="Units are limited. Speak to our team about pricing and availability." />
       <EnquiryButton label="Register Interest" topic="Arya Luxe (Gwarinpa, Abuja)" heading="Arya Luxe" source="project:arya-luxe" defaultMessage="Hello, I'd like to register my interest in Arya Luxe." /></section>

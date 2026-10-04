@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
-import { ExternalLink, FileText, Inbox, LayoutDashboard, LogOut, Menu, Users, X } from "lucide-react";
+import { ExternalLink, FileText, Hammer, Inbox, LayoutDashboard, LogOut, Menu, Users, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/db";
 import { countEnquiries } from "@/lib/enquiries";
@@ -85,6 +85,7 @@ export default function AdminLayout() {
   const links = [
     { to: "/admin", end: true, label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/enquiries", end: false, label: "Enquiries", icon: Inbox, count: newCount },
+    { to: "/admin/projects", end: false, label: "Projects", icon: Hammer },
     { to: "/admin/content", end: false, label: "Page text", icon: FileText },
     ...(ctx.role === "admin" ? [{ to: "/admin/team", end: false, label: "Team", icon: Users }] : []),
   ];

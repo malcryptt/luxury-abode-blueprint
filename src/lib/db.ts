@@ -70,6 +70,7 @@ export interface ProjectStageRow {
   title: string;
   note: string;
   image: string;
+  progress: number;
   updated_at: string;
 }
 

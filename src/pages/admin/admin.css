@@ -124,3 +124,13 @@ a.adm-stat:hover { border-color: var(--a-gold); }
 .adm-denied { max-width: 520px; margin: 18vh auto; padding: 0 20px; text-align: center; }
 .adm-denied h1 { margin-bottom: 10px; }
 .adm-spin { min-height: 60vh; display: grid; place-items: center; color: var(--a-muted); }
+
+/* Projects */
+.adm-meter { height: 8px; background: var(--a-line); margin-top: 12px; }
+.adm-meter div { height: 100%; background: var(--a-gold); transition: width .3s; }
+.stage-card { border: 1px solid var(--a-line); padding: 16px; background: #fff; }
+.stage-card.now { border-color: var(--a-gold); background: #fdfaf3; }
+.stage-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.adm-radio { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+.adm-radio input { width: 18px; height: 18px; accent-color: var(--a-navy); }
+.adm input[type=range] { padding: 0; accent-color: var(--a-gold); }
