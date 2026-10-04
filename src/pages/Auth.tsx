@@ -15,7 +15,7 @@ const authSchema = z.object({
 // Staff sign-in only. Accounts are created by an admin from the dashboard,
 // so there is deliberately no public sign-up here.
 const Auth = () => {
-  useNoIndex("Team sign in");
+  useNoIndex("Sign in");
   const navigate = useNavigate();
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -96,7 +96,7 @@ const Auth = () => {
       <div className="adm-auth-card">
         <img src={wslLogo} alt="WSL Realty" />
         <h1>WSL Realty</h1>
-        <p className="sub">Team sign in</p>
+        <p className="sub">Sign in</p>
 
         {isForgotPassword ? (
           <form onSubmit={handleForgotPassword} className="adm-grid" noValidate>

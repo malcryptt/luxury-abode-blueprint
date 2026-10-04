@@ -33,7 +33,7 @@ export function SiteLayout() {
             <SheetContent>
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <SheetDescription className="sr-only">Site navigation</SheetDescription>
-              <nav className="mobile-nav" aria-label="Mobile">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}<Link to="/auth" className="mobile-signin">Team sign in<LogIn size={16} /></Link></nav>
+              <nav className="mobile-nav" aria-label="Mobile">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}<Link to="/auth" className="mobile-signin">Sign in<LogIn size={16} /></Link></nav>
             </SheetContent>
           </Sheet>
         </div>
@@ -47,7 +47,7 @@ export function SiteLayout() {
           <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
           <Link className="text-link" to="/contact">Enquire Now <ArrowUpRight size={14} /></Link>
         </div>
-        <small>© {new Date().getFullYear()} WSL Realty. All rights reserved. <Link className="footer-signin" to="/auth">Team sign in</Link></small>
+        <small>© {new Date().getFullYear()} WSL Realty. All rights reserved. <Link className="footer-signin" to="/auth">Sign in</Link></small>
       </footer>
     </div>
   );
