@@ -15,6 +15,7 @@ import Team from "./pages/admin/Team";
 import NotFound from "./pages/NotFound";
 import { SiteLayout } from "./components/site/SiteLayout";
 import * as P from "./pages/site/Pages";
+import { Inbox } from "./pages/site/Inbox";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/project-updates" element={<P.ProjectUpdates />} />
             <Route path="/arya-luxe" element={<P.AryaLuxe />} />
             <Route path="/contact" element={<P.Contact />} />
+            <Route path="/inbox" element={<Inbox />} />
             {/* Unknown public URLs keep the site header and footer */}
             <Route path="*" element={<NotFound />} />
           </Route>

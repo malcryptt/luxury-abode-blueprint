@@ -7,11 +7,16 @@ import { db } from "@/integrations/firebase/client";
 import { usableImage, type ProjectUpdateRow } from "@/lib/db";
 
 export const STAGE_COUNT = 6;
+export const MAX_GALLERY = 20; // photos on the Arya Luxe page (also enforced in firestore.rules)
+export const MAX_UPDATES = 20; // posts on the Project Updates page
 export const DEFAULT_STAGE_TITLES = ["Foundation", "Block Work", "Ceiling", "Windows", "Finishing", "Handover"];
 
 export interface StageData { stage: number; title: string; note: string; image: string; progress: number }
 
+export interface GalleryItem { id: string; image: string; title: string; description: string; stage: number; level: number; taken_on: string }
+
 export interface ProjectData {
+  gallery: GalleryItem[];
   project: { slug: string; name: string; location: string; summary: string; current_stage: number };
   stages: StageData[];
   updates: ProjectUpdateRow[];
@@ -28,6 +33,7 @@ const DEFAULT_PROJECT = { slug: "arya-luxe", name: "Arya Luxe", location: "Gwari
 const defaultStages = (): StageData[] => DEFAULT_STAGE_TITLES.map((title, stage) => ({ stage, title, note: "", image: "", progress: stage < 1 ? 100 : 0 }));
 
 const FALLBACK: ProjectData = {
+  gallery: [],
   project: DEFAULT_PROJECT,
   stages: defaultStages(),
   updates: [],
@@ -64,7 +70,11 @@ export async function fetchProject(slug: string, includeDrafts = false): Promise
   const updates = us.docs
     .map((d) => toUpdate(d.id, d.data()))
     .sort((a, b) => (b.posted_on.localeCompare(a.posted_on)) || b.created_at.localeCompare(a.created_at));
-  return { project, stages, updates, percent: overallPercent(project.current_stage, stages) };
+  const gallery: GalleryItem[] = (Array.isArray(x.gallery) ? x.gallery : []).map((g: Partial<GalleryItem>, i: number) => ({
+    id: g.id || `g${i}`, image: g.image ?? "", title: g.title ?? "", description: g.description ?? "",
+    stage: Math.min(STAGE_COUNT - 1, Math.max(0, g.stage ?? 0)), level: Math.min(100, Math.max(0, g.level ?? 0)), taken_on: g.taken_on ?? "",
+  }));
+  return { project, stages, updates, gallery, percent: overallPercent(project.current_stage, stages) };
 }
 
 /** Public hook: falls back to a sensible default so the pages never render empty if the database is unreachable. */
@@ -87,6 +97,11 @@ export async function saveProjectProgress(slug: string, current: number, stages:
   });
 }
 
+export async function saveProjectGallery(slug: string, gallery: GalleryItem[]): Promise<void> {
+  if (gallery.length > MAX_GALLERY) throw new Error("too many photos");
+  await updateDoc(projectRef(slug), { gallery, updated_at: serverTimestamp() });
+}
+
 export interface UpdateInput { stage: number; title: string; body: string; posted_on: string; published: boolean; images: string[] }
 
 export async function saveProjectUpdate(slug: string, input: UpdateInput, id?: string): Promise<void> {
@@ -107,7 +122,7 @@ export async function seedProject(): Promise<void> {
   const slug = "arya-luxe";
   if (await projectIsSetUp(slug)) return;
   const batch = writeBatch(db);
-  batch.set(projectRef(slug), { ...DEFAULT_PROJECT, slug: undefined, stages: defaultStages(), created_at: serverTimestamp(), updated_at: serverTimestamp() });
+  batch.set(projectRef(slug), { ...DEFAULT_PROJECT, slug: undefined, stages: defaultStages(), gallery: [], created_at: serverTimestamp(), updated_at: serverTimestamp() });
   const mk = (id: string, stage: number, title: string, body: string, posted_on: string) =>
     batch.set(doc(db, "projectUpdates", id), { project_slug: slug, stage, title, body, images: [], posted_on, published: true, created_at: serverTimestamp() });
   mk("seed-block-work", 1, "Block work completed through level 2", "Block work completed through level 2. The structure is taking shape with clean lines and generous light.", "2025-09-14");

@@ -110,7 +110,7 @@ export default function AdminLayout() {
           </nav>
           <div className="adm-side-foot">
             <div><div className="who">{ctx.email}</div><div className="role">{ctx.role}</div></div>
-            <Link to="/" target="_blank" rel="noreferrer"><ExternalLink size={15} /> View website</Link>
+            <Link to="/"><ExternalLink size={15} /> View website</Link>
             <button type="button" onClick={signOut}><LogOut size={15} /> Sign out</button>
           </div>
         </aside>

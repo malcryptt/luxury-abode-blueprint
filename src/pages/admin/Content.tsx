@@ -6,6 +6,9 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
 import { fetchSiteContent, type SiteContent } from "@/lib/siteContent";
 
+const MIN_VALUES = 3;
+const MAX_VALUES = 6;
+
 type Hero = SiteContent["hero"];
 type About = SiteContent["about"];
 type Contact = SiteContent["contact"];
@@ -122,22 +125,23 @@ export default function Content() {
       </form>
 
       <form className="adm-panel" onSubmit={(e) => {
-        if (services.draft.some((x) => !x.title.trim() || !x.description.trim())) { e.preventDefault(); return toast.error("Give every value a title and a description, or remove it"); }
+        if (services.draft.length < MIN_VALUES) { e.preventDefault(); return toast.error(`Keep at least ${MIN_VALUES} values`); }
+        if (services.draft.some((x) => !x.title.trim() || !x.description.trim())) { e.preventDefault(); return toast.error("Give every value a title and a description"); }
         services.save(e, "Values updated");
       }}>
         <h2>What we stand for</h2>
-        <p className="sub">The values shown on the About page. Leave this empty to show the standard three.</p>
+        <p className="sub">The values shown on the About page. You can change any of them, including the original three. There must always be at least {MIN_VALUES}, each with a title and a description (up to {MAX_VALUES}).</p>
         <div className="adm-grid">
           {services.draft.map((s, i) => (
             <div key={s.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
               <Field label={`Value ${i + 1} title`}><input type="text" maxLength={80} value={s.title} onChange={(e) => services.setDraft(services.draft.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} /></Field>
               <Field label="Description"><textarea rows={2} maxLength={400} value={s.description} onChange={(e) => services.setDraft(services.draft.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} /></Field>
-              <div><button type="button" className="adm-btn small ghost" onClick={() => services.setDraft(services.draft.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button></div>
+              <div><button type="button" className="adm-btn small ghost" disabled={services.draft.length <= MIN_VALUES} title={services.draft.length <= MIN_VALUES ? `At least ${MIN_VALUES} values are required` : undefined} onClick={() => services.setDraft(services.draft.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button></div>
             </div>
           ))}
         </div>
         <div className="adm-actions">
-          <button type="button" className="adm-btn ghost" onClick={() => services.setDraft([...services.draft, { id: `${Date.now()}`, title: "", description: "" }])}><Plus size={16} /> Add a value</button>
+          <button type="button" className="adm-btn ghost" disabled={services.draft.length >= MAX_VALUES} onClick={() => services.setDraft([...services.draft, { id: `${Date.now()}`, title: "", description: "" }])}><Plus size={16} /> Add a value</button>
           <button type="submit" className="adm-btn" disabled={services.busy || !services.dirty}><Save size={16} /> {services.busy ? "Saving…" : "Save values"}</button>
         </div>
       </form>

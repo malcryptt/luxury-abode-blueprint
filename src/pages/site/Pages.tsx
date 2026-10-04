@@ -9,6 +9,7 @@ import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import NotFound from "@/pages/NotFound";
 import { useProject, stageImage, formatDate } from "@/lib/projects";
+import { useSession } from "@/lib/staff";
 
 
 function PropertyTile({ p }: { p: SiteProperty }) {
@@ -54,10 +55,10 @@ export function About() {
     <PageHero eyebrow="Company" title="About WSL Realty" text="A property developer with roots in making." />
     <section className="section about-section"><div className="about-image"><img src={ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
-        <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><b>0{i + 1}</b><span>{t}</span></div>)}</div></div>
+        <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><span>{t}</span></div>)}</div></div>
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Values" title="What we stand for" />
-      <div className="value-grid">{(c.services.length ? c.services : [{ id: "a", title: "Quality", description: "No shortcuts on materials or workmanship." }, { id: "b", title: "Integrity", description: "Honest pricing and honest timelines." }, { id: "c", title: "Design", description: "Considered spaces made for real living." }]).map(s => <div key={s.id}><h3>{s.title}</h3><p>{s.description}</p></div>)}</div>
+      <div className="value-grid">{c.services.map(s => <div key={s.id}><h3>{s.title}</h3><p>{s.description}</p></div>)}</div>
     </section>
   </>;
 }
@@ -106,15 +107,17 @@ export function Furniture() {
 }
 
 export function PreviousJobs() {
+  const c = useSiteContent();
   const [filter, setFilter] = useState("All");
-  const items = [ph.property1, ph.furniture1, ph.property2, ph.furniture2, ph.property3, ph.furniture3].map((src, i) => ({ src, cat: i % 2 ? "Furniture" : "Builds" }));
-  const shown = filter === "All" ? items : items.filter(i => i.cat === filter);
+  const shown = filter === "All" ? c.jobs : c.jobs.filter(j => j.category === filter);
   return <>
     <Seo route="/previous-jobs" />
     <PageHero eyebrow="Portfolio" title="Previous Jobs" text="A selection of spaces, details and objects from our previous work." />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
       <div className="filter-tabs">{["All", "Builds", "Furniture"].map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
-      <div className="media-grid">{shown.map((m, i) => <div key={m.src} className={`media-item media-${i}`}><img src={m.src} alt={`WSL ${m.cat}`} loading="lazy" /></div>)}</div>
+      {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
+      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img"><img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" /></div>
+        <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
     </section>
   </>;
 }
@@ -151,6 +154,8 @@ export function AryaLuxe() {
         <div><span className="eyebrow">Stage 0{sel + 1} · {state}</span><h3>{st.title}</h3>
           <div className="progress-line" aria-hidden="true" style={{ margin: "14px 0" }}><span style={{ width: `${pct}%` }} /></div>
           <p>{st.note || (sel < cur ? "This stage is complete." : sel === cur ? `Work on this stage is ${pct}% done.` : "This stage is upcoming.")}</p></div></div>
+      {pr.gallery.some(g => g.stage === sel) && <div className="stage-gallery" aria-label={`${st.title} photos`}>{pr.gallery.filter(g => g.stage === sel).map(g => (
+        <figure key={g.id}><img src={g.image} alt={g.title} loading="lazy" /><figcaption><strong>{g.title}</strong><span>{g.taken_on ? formatDate(g.taken_on) : ""}{g.taken_on ? " · " : ""}{g.level}% of this stage done</span><p>{g.description}</p></figcaption></figure>))}</div>}
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Interested?" title="Register your interest" text="Units are limited. Speak to our team about pricing and availability." />
       <EnquiryButton label="Register Interest" topic="Arya Luxe (Gwarinpa, Abuja)" heading="Arya Luxe" source="project:arya-luxe" defaultMessage="Hello, I'd like to register my interest in Arya Luxe." /></section>
@@ -159,6 +164,7 @@ export function AryaLuxe() {
 
 export function Contact() {
   const c = useSiteContent();
+  const { user } = useSession();
   return <>
     <Seo route="/contact" />
     <PageHero eyebrow="Start a conversation" title="Contact Us" text="For property enquiries, project information or partnerships, our team is ready to help." />
@@ -166,5 +172,8 @@ export function Contact() {
       <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={`tel:${c.contact.phone}`}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>
       <EnquiryForm source="contact_page" whatsapp={c.contact.whatsapp} showInterest />
     </section>
+    <section className="contact-inbox"><div><h2>Follow your enquiry</h2>
+      <p>{user ? "Open your inbox to see when our team has seen your enquiry, read our replies and write back." : "Create an account or sign in before you send an enquiry, and you can follow it here: see when we have read it and read our replies."}</p></div>
+      <Button asChild variant="outline"><Link to={user ? "/inbox" : "/auth"}>{user ? "Open your inbox" : "Sign in or create an account"}</Link></Button></section>
   </>;
 }

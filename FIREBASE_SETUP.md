@@ -44,3 +44,11 @@ Without this, **Remove** still cuts off access instantly, but the person's login
 - Add a test person in **Admin → Team**, confirm they appear in Authentication → Users, remove them, confirm they disappear from both lists.
 - Upload a photo on **Admin → Projects** → it shows in the preview.
 - Open the site in a private window → Arya Luxe progress shows; hidden updates do not.
+
+## Customer accounts and the inbox
+
+Anyone can create a customer account at `/auth` ("Create an account"). Team accounts are still created by an admin under Team, and team members land on `/admin` after signing in; everyone else lands on `/inbox`.
+
+- An enquiry sent while signed in carries the customer's account id, so they can follow it in their inbox: sent time, **Seen** (with the time the team first opened it), and the team's replies.
+- Opening an enquiry in Admin → Enquiries marks it seen and shows the conversation. Replies go to the customer's inbox. Enquiries from visitors who were not signed in have no inbox: reply by phone, WhatsApp or email.
+- After pulling this change, **republish `firestore.rules`** (Firestore → Rules → paste → Publish). It adds the customer read rule and the `messages` sub-collection.
