@@ -42,7 +42,7 @@ On any computer with Node installed, from this project folder:
 npm install -g firebase-tools
 firebase login
 cd functions && npm install && cd ..
-firebase deploy --only functions
+firebase deploy --only functions --project wsl-realty-c65fb
 ```
 Until it is deployed, **Remove** still revokes access instantly and tells you the login was left in Firebase.
 
