@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Pencil, Plus, Save, Trash2 } from "lucide-react";
+import { Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usableImage, type ProjectUpdateRow } from "@/lib/db";
 import { deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectProgress, saveProjectUpdate } from "@/lib/projects";
-import { uploadImage } from "@/lib/upload";
+import { ImagePicker } from "@/components/admin/ImagePicker";
 
 const SLUG = "arya-luxe";
 const KEY = ["admin", "project", SLUG];
@@ -18,30 +18,6 @@ interface UpdateDraft { id?: string; stage: number; title: string; body: string;
 
 const today = () => new Date().toISOString().slice(0, 10);
 const blankUpdate = (stage: number): UpdateDraft => ({ stage, title: "", body: "", posted_on: today(), published: true, images: [] });
-
-function ImagePicker({ value, onChange, label }: { value: string; onChange: (url: string) => void; label: string }) {
-  const [busy, setBusy] = useState(false);
-  const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setBusy(true);
-    try { onChange(await uploadImage(file)); } catch (err) { toast.error((err as Error).message); } finally { setBusy(false); }
-  };
-  return (
-    <div className="adm-field">
-      <span>{label}</span>
-      {usableImage(value) && <img src={value} alt="" style={{ width: "100%", maxWidth: 260, height: 150, objectFit: "cover", border: "1px solid var(--a-line)" }} />}
-      <div className="adm-actions" style={{ marginTop: 0 }}>
-        <label className="adm-btn small ghost" style={{ cursor: busy ? "wait" : "pointer" }}>
-          <ImagePlus size={15} /> {busy ? "Uploading…" : value ? "Replace photo" : "Add photo"}
-          <input type="file" accept="image/*" onChange={pick} disabled={busy} className="sr-only" aria-label={label} />
-        </label>
-        {value && <button type="button" className="adm-btn small ghost" onClick={() => onChange("")}>Remove</button>}
-      </div>
-    </div>
-  );
-}
 
 export default function Projects() {
   const qc = useQueryClient();

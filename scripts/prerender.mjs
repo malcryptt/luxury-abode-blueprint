@@ -69,7 +69,7 @@ async function loadProperties() {
       if (Array.isArray(list) && list.length) {
         return {
           source: "Firestore content/properties",
-          list: list.map((p, i) => ({
+          list: list.filter((p) => !p.hidden).map((p, i) => ({
             slug: p.slug || slugify(p.title || `property-${i + 1}`),
             title: p.title || "Untitled property",
             location: p.location || "",

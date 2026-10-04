@@ -9,6 +9,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import Enquiries from "./pages/admin/Enquiries";
 import Content from "./pages/admin/Content";
+import Listings from "./pages/admin/Listings";
 import Projects from "./pages/admin/Projects";
 import Team from "./pages/admin/Team";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="enquiries" element={<Enquiries />} />
+            <Route path="listings" element={<Listings />} />
             <Route path="projects" element={<Projects />} />
             <Route path="content" element={<Content />} />
             <Route path="team" element={<Team />} />
