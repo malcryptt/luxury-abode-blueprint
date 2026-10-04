@@ -43,9 +43,11 @@ service cloud.firestore {
     match /content/jobs { allow read: if true; allow write: if isStaff() && listWithin(30); }
 
     // Projects such as Arya Luxe, with their build stages stored on the document.
+    // The Arya Luxe photo gallery holds at most 20 photos.
     match /projects/{slug} {
       allow read: if true;
-      allow write: if isStaff();
+      allow write: if isStaff()
+        && (!('gallery' in request.resource.data) || (request.resource.data.gallery is list && request.resource.data.gallery.size() <= 20));
     }
 
     // Progress updates. The public site must query with published == true; drafts are staff-only.

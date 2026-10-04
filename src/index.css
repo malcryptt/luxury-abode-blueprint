@@ -241,3 +241,14 @@ textarea.enq-input { min-height: 96px; resize: vertical; line-height: 1.6; }
 .empty-note { color: #73716e; }
 @media (max-width: 960px) { .jobs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .jobs-grid { grid-template-columns: 1fr; } }
+
+/* Arya Luxe stage gallery */
+.stage-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 28px; }
+.stage-gallery figure { margin: 0; background: var(--paper); }
+.stage-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.stage-gallery figcaption { padding: 14px 4px 4px; display: grid; gap: 4px; }
+.stage-gallery figcaption strong { color: var(--navy); font-weight: 500; font-size: 17px; }
+.stage-gallery figcaption span { color: #9a7950; font-size: 12px; letter-spacing: .04em; }
+.stage-gallery figcaption p { margin: 4px 0 0; color: #5e6265; line-height: 1.65; font-size: 14px; }
+@media (max-width: 960px) { .stage-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .stage-gallery { grid-template-columns: 1fr; } }

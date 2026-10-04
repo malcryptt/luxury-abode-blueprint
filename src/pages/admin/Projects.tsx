@@ -7,7 +7,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { usableImage, type ProjectUpdateRow } from "@/lib/db";
-import { deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectProgress, saveProjectUpdate } from "@/lib/projects";
+import { MAX_GALLERY, MAX_UPDATES, deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectGallery, saveProjectProgress, saveProjectUpdate, type GalleryItem } from "@/lib/projects";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 
 const SLUG = "arya-luxe";
@@ -30,6 +30,9 @@ export default function Projects() {
   const [editing, setEditing] = useState<UpdateDraft | null>(null);
   const [savingUpdate, setSavingUpdate] = useState(false);
   const [toDelete, setToDelete] = useState<ProjectUpdateRow | null>(null);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [galleryOk, setGalleryOk] = useState("[]");
+  const [savingGallery, setSavingGallery] = useState(false);
 
   useEffect(() => {
     if (!data) return;
@@ -37,6 +40,8 @@ export default function Projects() {
     setCurrent(data.project.current_stage);
     setStages(s);
     setSaved(JSON.stringify([data.project.current_stage, s]));
+    setGallery(data.gallery.map((g) => ({ ...g })));
+    setGalleryOk(JSON.stringify(data.gallery));
   }, [data]);
 
   if (isLoading) return <p className="adm-muted">Loading…</p>;
@@ -71,6 +76,10 @@ export default function Projects() {
     e.preventDefault();
     if (!editing) return;
     if (!editing.title.trim()) return toast.error("Give the update a title");
+    if (!editing.body.trim()) return toast.error("Describe what happened in this update");
+    if (!editing.posted_on) return toast.error("Choose the date of the update");
+    if (!editing.images[0]) return toast.error("Add a photo for this update");
+    if (!editing.id && data.updates.length >= MAX_UPDATES) return toast.error(`You can post up to ${MAX_UPDATES} updates. Delete an old one first.`);
     setSavingUpdate(true);
     try {
       await saveProjectUpdate(SLUG, { stage: editing.stage, title: editing.title.trim(), body: editing.body.trim(), posted_on: editing.posted_on, published: editing.published, images: editing.images }, editing.id);
@@ -81,6 +90,30 @@ export default function Projects() {
       toast.error("Could not save the update. Please try again.");
     } finally {
       setSavingUpdate(false);
+    }
+  };
+
+  const galleryDirty = JSON.stringify(gallery) !== galleryOk;
+  const setG = (i: number, patch: Partial<GalleryItem>) => setGallery(gallery.map((g, j) => (j === i ? { ...g, ...patch } : g)));
+  const saveGallery = async () => {
+    for (const [n, g] of gallery.entries()) {
+      const name = g.title.trim() || `photo ${n + 1}`;
+      if (!g.image) return toast.error(`Add a photo for "${name}"`);
+      if (!g.title.trim()) return toast.error(`Give photo ${n + 1} a name`);
+      if (!g.description.trim()) return toast.error(`"${name}" needs a description`);
+      if (!g.taken_on) return toast.error(`"${name}" needs a date`);
+    }
+    setSavingGallery(true);
+    try {
+      const clean = gallery.map((g) => ({ ...g, title: g.title.trim(), description: g.description.trim() }));
+      await saveProjectGallery(SLUG, clean);
+      setGallery(clean); setGalleryOk(JSON.stringify(clean));
+      toast.success("Photo gallery updated");
+      refresh();
+    } catch {
+      toast.error("Could not save the gallery. Please try again.");
+    } finally {
+      setSavingGallery(false);
     }
   };
 
@@ -148,9 +181,41 @@ export default function Projects() {
       </section>
 
       <section className="adm-panel">
+        <h2>Photo gallery</h2>
+        <p className="sub">Progress photos shown on the Arya Luxe page under their stage. Up to {MAX_GALLERY} photos; each needs a name, description, stage, level of work done and date.</p>
+        <div className="adm-grid">
+          {gallery.map((g, i) => (
+            <div key={g.id} className="stage-card">
+              <div className="adm-grid two">
+                <ImagePicker label={`Photo ${i + 1}`} value={g.image} onChange={(url) => setG(i, { image: url })} />
+                <div className="adm-grid">
+                  <label className="adm-field"><span>Name</span><input type="text" maxLength={100} value={g.title} onChange={(e) => setG(i, { title: e.target.value })} /></label>
+                  <label className="adm-field"><span>Description</span><textarea rows={3} maxLength={500} value={g.description} onChange={(e) => setG(i, { description: e.target.value })} /></label>
+                </div>
+              </div>
+              <div className="adm-grid two" style={{ marginTop: 12 }}>
+                <label className="adm-field"><span>Stage</span>
+                  <select value={g.stage} onChange={(e) => setG(i, { stage: Number(e.target.value) })}>{stages.map((s) => <option key={s.stage} value={s.stage}>{s.title}</option>)}</select></label>
+                <label className="adm-field"><span>Date taken</span><input type="date" value={g.taken_on} onChange={(e) => setG(i, { taken_on: e.target.value })} /></label>
+              </div>
+              <label className="adm-field" style={{ marginTop: 12 }}><span>Level of work done in this photo: <strong>{g.level}%</strong></span>
+                <input type="range" min={0} max={100} step={5} value={g.level} onChange={(e) => setG(i, { level: Number(e.target.value) })} /></label>
+              <div className="adm-actions"><button type="button" className="adm-btn small ghost" onClick={() => { if (window.confirm(`Remove "${g.title || `photo ${i + 1}`}"? This takes effect when you save.`)) setGallery(gallery.filter((_, j) => j !== i)); }}><Trash2 size={14} /> Remove</button></div>
+            </div>
+          ))}
+        </div>
+        {gallery.length === 0 && <p className="adm-muted">No photos yet.</p>}
+        <div className="adm-actions">
+          <button type="button" className="adm-btn ghost" disabled={gallery.length >= MAX_GALLERY} onClick={() => setGallery([...gallery, { id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, image: "", title: "", description: "", stage: current, level: stages[current]?.progress ?? 0, taken_on: today() }])}><Plus size={16} /> Add a photo</button>
+          <span className="adm-muted">{gallery.length} of {MAX_GALLERY} used</span>
+          <button type="button" className="adm-btn" disabled={savingGallery || !galleryDirty} onClick={saveGallery}><Save size={16} /> {savingGallery ? "Saving…" : "Save gallery"}</button>
+        </div>
+      </section>
+
+      <section className="adm-panel">
         <div className="adm-head" style={{ marginBottom: 12 }}>
           <div><h2>Progress updates</h2><p className="sub" style={{ margin: 0 }}>The posts shown on the Project Updates page, newest first.</p></div>
-          {!editing && <button className="adm-btn" onClick={() => setEditing(blankUpdate(current))}><Plus size={16} /> New update</button>}
+          {!editing && <div className="adm-actions" style={{ margin: 0 }}><span className="adm-muted">{data.updates.length} of {MAX_UPDATES} used</span><button className="adm-btn" disabled={data.updates.length >= MAX_UPDATES} onClick={() => setEditing(blankUpdate(current))}><Plus size={16} /> New update</button></div>}
         </div>
 
         {editing && (
