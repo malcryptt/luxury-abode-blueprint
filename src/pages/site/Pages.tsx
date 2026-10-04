@@ -42,7 +42,7 @@ export function Home() {
         <Link className="text-link" to="/arya-luxe">Follow The Build <ArrowUpRight size={16} /></Link></div>
     </section>
     <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Realty" />
-      <div className="value-grid">{[["Craft", "A heritage in bespoke furniture shapes every finish."], ["Clarity", "Transparent progress updates at every stage."], ["Longevity", "Homes built with materials and methods that last."]].map(([t, d]) => <div key={t}><h3>{t}</h3><p>{d}</p></div>)}</div>
+      <div className="value-grid">{c.promise.map(v => <div key={v.id}><h3>{v.title}</h3><p>{v.description}</p></div>)}</div>
       <div className="section-link"><Button asChild><Link to="/contact">Enquire Now</Link></Button></div>
     </section>
   </>;
@@ -52,7 +52,7 @@ export function About() {
   const c = useSiteContent();
   return <>
     <Seo route="/about" />
-    <PageHero eyebrow="Company" title="About WSL Realty" text="A property developer with roots in making." />
+    <PageHero eyebrow="Company" title={c.about.title} text="A property developer with roots in making." />
     <section className="section about-section"><div className="about-image"><img src={ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
         <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><span>{t}</span></div>)}</div></div>
@@ -67,7 +67,7 @@ export function Properties() {
   const c = useSiteContent();
   return <>
     <Seo route="/properties" />
-    <PageHero eyebrow="A considered collection" title="Properties" text="Explore our available properties." />
+    <PageHero eyebrow="A considered collection" title={c.pages.properties.title} text={c.pages.properties.text} />
     <section className="section"><div className="property-grid">{c.properties.map(p => <PropertyTile key={p.id} p={p} />)}</div></section>
   </>;
 }
@@ -95,7 +95,7 @@ export function Furniture() {
   const c = useSiteContent();
   return <>
     <Seo route="/furniture" />
-    <PageHero eyebrow="Handcrafted" title="Furniture" text="Bespoke pieces made with the same care as our homes." />
+    <PageHero eyebrow="Handcrafted" title={c.pages.furniture.title} text={c.pages.furniture.text} />
     <section className="section"><div className="property-grid scroll-x">{c.furniture.map(f => (
       <article key={f.id} className="property-card">
         <div className="property-image"><img src={f.images[0]} alt={f.title} loading="lazy" /></div>
@@ -112,7 +112,7 @@ export function PreviousJobs() {
   const shown = filter === "All" ? c.jobs : c.jobs.filter(j => j.category === filter);
   return <>
     <Seo route="/previous-jobs" />
-    <PageHero eyebrow="Portfolio" title="Previous Jobs" text="A selection of spaces, details and objects from our previous work." />
+    <PageHero eyebrow="Portfolio" title={c.pages.jobs.title} text={c.pages.jobs.text} />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
       <div className="filter-tabs">{["All", "Builds", "Furniture"].map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
@@ -123,10 +123,11 @@ export function PreviousJobs() {
 }
 
 export function ProjectUpdates() {
+  const c = useSiteContent();
   const { data: pr, loaded } = useProject("arya-luxe");
   return <>
     <Seo route="/project-updates" />
-    <PageHero eyebrow="Construction journal" title="Project Updates" text="Real progress, documented from the ground up." />
+    <PageHero eyebrow="Construction journal" title={c.pages.updates.title} text={c.pages.updates.text} />
     <section className="section"><SectionIntro eyebrow="Project update" title="Latest updates" text={`Arya Luxe is ${pr.percent}% complete.`} />
       <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
         <article key={u.id} className="update-item"><img src={stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" />
@@ -167,7 +168,7 @@ export function Contact() {
   const { user } = useSession();
   return <>
     <Seo route="/contact" />
-    <PageHero eyebrow="Start a conversation" title="Contact Us" text="For property enquiries, project information or partnerships, our team is ready to help." />
+    <PageHero eyebrow="Start a conversation" title={c.pages.contact.title} text={c.pages.contact.text} />
     <section className="contact-section">
       <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={`tel:${c.contact.phone}`}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>
       <EnquiryForm source="contact_page" whatsapp={c.contact.whatsapp} showInterest />
