@@ -24,10 +24,10 @@ interface ContactFormProps {
 
 const ContactForm = ({ contactInfo }: ContactFormProps) => {
   const info = contactInfo || {
-    phone: "+234 901 088 3999",
-    email: "mailwaro.online@gmail.com",
+    phone: "08028081047",
+    email: "Warosynergylimited@gmail.com",
     address: "Gwarinpa, 900108, FCT Nigeria",
-    whatsapp: "2349010883999",
+    whatsapp: "2348028081047",
   };
   const [formData, setFormData] = useState({
     name: "",

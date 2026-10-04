@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/integrations/firebase/client";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
 import property3 from "@/assets/property-3.jpg";
@@ -22,9 +23,9 @@ export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
 const defaults: SiteContent = {
-  hero: { title: "Luxury homes, built with craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
-  about: { title: "About WSL Properties", description: "WSL Properties is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
-  contact: { phone: "+234 901 088 3999", email: "mailwaro.online@gmail.com", address: "Abuja, Nigeria", whatsapp: "2349010883999" },
+  hero: { title: "Luxury Homes, Built With Craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
+  about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
+  contact: { phone: "08028081047", email: "Warosynergylimited@gmail.com", address: "Abuja, Nigeria", whatsapp: "2348028081047" },
   properties: [
     { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "A private collection of contemporary residences currently under construction.", price: "Price on request", image: property1 },
     { id: "2", slug: "4-bedroom-smart-home", title: "4 Bedroom Smart Home", location: "Gwarinpa, Abuja", description: "A fully automated family home with premium finishes throughout.", price: "₦95,000,000", image: property2 },
@@ -40,22 +41,25 @@ const defaults: SiteContent = {
 
 const fallbackImgs = [property1, property2, property3];
 
+/** Code defaults overlaid with whatever the team has saved in the database. */
+export async function fetchSiteContent(): Promise<SiteContent> {
+  const c = structuredClone(defaults) as unknown as Record<string, unknown>;
+  try {
+    const snap = await getDocs(collection(db, "content"));
+    snap.forEach((d) => {
+      const v = d.data().value as unknown;
+      if (v == null) return;
+      if (Array.isArray(v)) { if (v.length) c[d.id] = v; }
+      else if (typeof v === "object") c[d.id] = { ...(c[d.id] as object), ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
+    });
+  } catch {
+    // Offline or not set up yet: the built-in content is shown.
+  }
+  return c as unknown as SiteContent;
+}
+
 export function useSiteContent() {
-  const { data } = useQuery({
-    queryKey: ["site-content"],
-    queryFn: async () => {
-      const { data } = await supabase.from("website_content").select("section, content");
-      const c: any = structuredClone(defaults);
-      data?.forEach((row: any) => {
-        const v = row.content;
-        if (v == null) return;
-        if (Array.isArray(v)) { if (v.length) c[row.section] = v; }
-        else if (typeof v === "object") c[row.section] = { ...c[row.section], ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
-      });
-      return c as SiteContent;
-    },
-    staleTime: 60_000,
-  });
+  const { data } = useQuery({ queryKey: ["site-content"], queryFn: fetchSiteContent, staleTime: 60_000 });
   const content = data ?? defaults;
   const properties = content.properties.map((p, i) => ({ ...p, slug: p.slug || slugify(p.title || `property-${i + 1}`), image: p.image || fallbackImgs[i % 3] }));
   const furniture = content.furniture.map((f, i) => ({ ...f, images: f.images?.length ? f.images : [[furniture1, furniture2, furniture3][i % 3]] }));

@@ -46,3 +46,7 @@ WSL Realty is one of many products delivered by DevLuxe to help businesses make 
 > Built by red teamers. Secured before it ships.— *ZexLabs Agency*
 > 
 
+
+
+## Backend
+This project uses Firebase. See [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
