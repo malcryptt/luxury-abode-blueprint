@@ -8,8 +8,8 @@ import furniture1 from "@/assets/furniture-1.jpg";
 import furniture2 from "@/assets/furniture-2.jpg";
 import furniture3 from "@/assets/furniture-3.jpg";
 
-export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string }
-export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string }
+export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string; hidden?: boolean }
+export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string; hidden?: boolean }
 export interface SiteContent {
   hero: { title: string; subtitle: string };
   about: { title: string; description: string };
@@ -49,7 +49,7 @@ export async function fetchSiteContent(): Promise<SiteContent> {
     snap.forEach((d) => {
       const v = d.data().value as unknown;
       if (v == null) return;
-      if (Array.isArray(v)) { if (v.length) c[d.id] = v; }
+      if (Array.isArray(v)) { if (v.length || d.id === "properties" || d.id === "furniture") c[d.id] = v; }
       else if (typeof v === "object") c[d.id] = { ...(c[d.id] as object), ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
     });
   } catch {
@@ -61,8 +61,8 @@ export async function fetchSiteContent(): Promise<SiteContent> {
 export function useSiteContent() {
   const { data } = useQuery({ queryKey: ["site-content"], queryFn: fetchSiteContent, staleTime: 60_000 });
   const content = data ?? defaults;
-  const properties = content.properties.map((p, i) => ({ ...p, slug: p.slug || slugify(p.title || `property-${i + 1}`), image: p.image || fallbackImgs[i % 3] }));
-  const furniture = content.furniture.map((f, i) => ({ ...f, images: f.images?.length ? f.images : [[furniture1, furniture2, furniture3][i % 3]] }));
+  const properties = content.properties.filter((p) => !p.hidden).map((p, i) => ({ ...p, slug: p.slug || slugify(p.title || `property-${i + 1}`), image: p.image || fallbackImgs[i % 3] }));
+  const furniture = content.furniture.filter((f) => !f.hidden).map((f, i) => ({ ...f, images: f.images?.length ? f.images : [[furniture1, furniture2, furniture3][i % 3]] }));
   return { ...content, properties, furniture };
 }
 
