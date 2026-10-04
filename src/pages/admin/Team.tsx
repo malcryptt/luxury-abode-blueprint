@@ -7,9 +7,8 @@ import { deleteApp, initializeApp } from "firebase/app";
 import {
   createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signOut as signOutAuth,
 } from "firebase/auth";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { collection, deleteDoc, doc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { app, auth, db, firebaseConfig } from "@/integrations/firebase/client";
+import { auth, db, firebaseConfig } from "@/integrations/firebase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -130,16 +129,20 @@ export default function Team() {
     const m = pendingRemove;
     setPendingRemove(null);
     try {
+      const token = await auth.currentUser?.getIdToken();
+      let res: Response | null = null;
       try {
-        // The server function deletes the staff record and the Firebase login together.
-        await httpsCallable(getFunctions(app), "removeTeamMember")({ uid: m.id });
+        res = await fetch("/api/remove-member", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ uid: m.id }) });
+      } catch { /* no server reachable (for example, running locally) */ }
+      if (res?.ok) {
         toast.success(`${m.email} was removed and their login deleted`);
-      } catch (fnErr) {
-        const code = (fnErr as { code?: string }).code ?? "";
-        if (code !== "functions/not-found" && code !== "functions/internal" && code !== "functions/unavailable") throw fnErr;
-        // Function not deployed yet: still revoke access, but the login stays in Firebase.
+      } else if (res && res.status !== 404 && res.status !== 501) {
+        const reason = await res.json().catch(() => ({}));
+        throw new Error(reason?.error || "Could not remove that person.");
+      } else {
+        // The cleanup service is not set up yet: still revoke access, but the login stays in Firebase.
         await deleteDoc(doc(db, "staff", m.id));
-        toast.warning(`${m.email} can no longer use the admin. Their login still exists in Firebase because the cleanup function is not deployed.`);
+        toast.warning(`${m.email} can no longer use the admin. Their login still exists in Firebase because the cleanup service is not set up yet.`);
       }
       refresh();
     } catch (err) {
