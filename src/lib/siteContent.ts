@@ -11,6 +11,8 @@ import furniture3 from "@/assets/furniture-3.jpg";
 export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string; hidden?: boolean }
 export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string; hidden?: boolean }
 export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; hidden?: boolean }
+export type PageKey = "properties" | "furniture" | "jobs" | "updates" | "contact";
+export const PAGE_LABELS: Record<PageKey, string> = { properties: "Properties", furniture: "Furniture", jobs: "Previous Jobs", updates: "Project Updates", contact: "Contact" };
 export interface SiteContent {
   jobs: SiteJob[];
   hero: { title: string; subtitle: string };
@@ -18,6 +20,8 @@ export interface SiteContent {
   contact: { phone: string; email: string; address: string; whatsapp: string };
   properties: SiteProperty[];
   services: { id: string; title: string; description: string }[];
+  promise: { id: string; title: string; description: string }[];
+  pages: Record<PageKey, { title: string; text: string }>;
   furniture: SiteFurniture[];
 }
 
@@ -28,6 +32,13 @@ export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
 const defaults: SiteContent = {
+  pages: {
+    properties: { title: "Properties", text: "Explore our available properties." },
+    furniture: { title: "Furniture", text: "Bespoke pieces made with the same care as our homes." },
+    jobs: { title: "Previous Jobs", text: "A selection of spaces, details and objects from our previous work." },
+    updates: { title: "Project Updates", text: "Real progress, documented from the ground up." },
+    contact: { title: "Contact Us", text: "For property enquiries, project information or partnerships, our team is ready to help." },
+  },
   jobs: [
     { id: "j1", category: "Builds", title: "Residential build", location: "Abuja", description: "A family home delivered with considered finishes throughout.", image: property1 },
     { id: "j2", category: "Furniture", title: "Bespoke bed set", location: "Abuja", description: "Handcrafted to the client's room and taste.", image: furniture1 },
@@ -43,6 +54,11 @@ const defaults: SiteContent = {
     { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "A private collection of contemporary residences currently under construction.", price: "Price on request", image: property1 },
     { id: "2", slug: "4-bedroom-smart-home", title: "4 Bedroom Smart Home", location: "Gwarinpa, Abuja", description: "A fully automated family home with premium finishes throughout.", price: "₦95,000,000", image: property2 },
     { id: "3", slug: "the-palm-residence", title: "The Palm Residence", location: "Jabi, Abuja", description: "A 3-bedroom apartment designed around light and calm.", price: "₦72,000,000", image: property3 },
+  ],
+  promise: [
+    { id: "craft", title: "Craft", description: "A heritage in bespoke furniture shapes every finish." },
+    { id: "clarity", title: "Clarity", description: "Transparent progress updates at every stage." },
+    { id: "longevity", title: "Longevity", description: "Homes built with materials and methods that last." },
   ],
   services: [
     { id: "quality", title: "Quality", description: "No shortcuts on materials or workmanship." },

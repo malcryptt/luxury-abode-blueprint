@@ -4,7 +4,7 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
-import { fetchSiteContent, type SiteContent } from "@/lib/siteContent";
+import { PAGE_LABELS, fetchSiteContent, type PageKey, type SiteContent } from "@/lib/siteContent";
 
 const MIN_VALUES = 3;
 const MAX_VALUES = 6;
@@ -58,13 +58,40 @@ function useSection<T>(section: string, initial: T | undefined) {
   return { draft: (draft ?? initial) as T, setDraft: setDraft as (v: T) => void, dirty, busy, save };
 }
 
+function ValuesForm({ section, initial, title, sub, ok }: { section: string; initial: Service[] | undefined; title: string; sub: string; ok: string }) {
+  const v = useSection<Service[]>(section, initial);
+  return (
+      <form className="adm-panel" onSubmit={(e) => {
+        if (v.draft.length < MIN_VALUES) { e.preventDefault(); return toast.error(`Keep at least ${MIN_VALUES} items in "${title}"`); }
+        if (v.draft.some((x) => !x.title.trim() || !x.description.trim())) { e.preventDefault(); return toast.error("Give every value a title and a description"); }
+        v.save(e, ok);
+      }}>
+        <h2>{title}</h2>
+        <p className="sub">{sub} You can change any of them, including the original ones. There must always be at least {MIN_VALUES}, each with a title and a description (up to {MAX_VALUES}).</p>
+        <div className="adm-grid">
+          {v.draft.map((s, i) => (
+            <div key={s.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
+              <Field label={`Value ${i + 1} title`}><input type="text" maxLength={80} value={s.title} onChange={(e) => v.setDraft(v.draft.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} /></Field>
+              <Field label="Description"><textarea rows={2} maxLength={400} value={s.description} onChange={(e) => v.setDraft(v.draft.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} /></Field>
+              <div><button type="button" className="adm-btn small ghost" disabled={v.draft.length <= MIN_VALUES} title={v.draft.length <= MIN_VALUES ? `At least ${MIN_VALUES} values are required` : undefined} onClick={() => v.setDraft(v.draft.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button></div>
+            </div>
+          ))}
+        </div>
+        <div className="adm-actions">
+          <button type="button" className="adm-btn ghost" disabled={v.draft.length >= MAX_VALUES} onClick={() => v.setDraft([...v.draft, { id: `${Date.now()}`, title: "", description: "" }])}><Plus size={16} /> Add a value</button>
+          <button type="submit" className="adm-btn" disabled={v.busy || !v.dirty}><Save size={16} /> {v.busy ? "Saving…" : "Save values"}</button>
+        </div>
+      </form>
+  );
+}
+
 export default function Content() {
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin", "site-content"], queryFn: fetchSiteContent });
 
   const hero = useSection<Hero>("hero", data?.hero);
   const about = useSection<About>("about", data?.about);
   const contact = useSection<Contact>("contact", data?.contact);
-  const services = useSection<Service[]>("services", data?.services);
+  const pages = useSection<SiteContent["pages"]>("pages", data?.pages);
 
   if (isLoading) return <p className="adm-muted">Loading…</p>;
   if (isError || !data)
@@ -125,26 +152,26 @@ export default function Content() {
       </form>
 
       <form className="adm-panel" onSubmit={(e) => {
-        if (services.draft.length < MIN_VALUES) { e.preventDefault(); return toast.error(`Keep at least ${MIN_VALUES} values`); }
-        if (services.draft.some((x) => !x.title.trim() || !x.description.trim())) { e.preventDefault(); return toast.error("Give every value a title and a description"); }
-        services.save(e, "Values updated");
+        const bad = (Object.keys(PAGE_LABELS) as PageKey[]).find((k) => !pages.draft[k].title.trim() || !pages.draft[k].text.trim());
+        if (bad) { e.preventDefault(); return toast.error(`The ${PAGE_LABELS[bad]} heading and intro cannot be empty`); }
+        pages.save(e, "Page headings updated");
       }}>
-        <h2>What we stand for</h2>
-        <p className="sub">The values shown on the About page. You can change any of them, including the original three. There must always be at least {MIN_VALUES}, each with a title and a description (up to {MAX_VALUES}).</p>
+        <h2>Page headings</h2>
+        <p className="sub">The title and introduction at the top of each main page. The Arya Luxe heading is edited under Projects.</p>
         <div className="adm-grid">
-          {services.draft.map((s, i) => (
-            <div key={s.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
-              <Field label={`Value ${i + 1} title`}><input type="text" maxLength={80} value={s.title} onChange={(e) => services.setDraft(services.draft.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} /></Field>
-              <Field label="Description"><textarea rows={2} maxLength={400} value={s.description} onChange={(e) => services.setDraft(services.draft.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} /></Field>
-              <div><button type="button" className="adm-btn small ghost" disabled={services.draft.length <= MIN_VALUES} title={services.draft.length <= MIN_VALUES ? `At least ${MIN_VALUES} values are required` : undefined} onClick={() => services.setDraft(services.draft.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button></div>
+          {(Object.keys(PAGE_LABELS) as PageKey[]).map((k) => (
+            <div key={k} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
+              <strong>{PAGE_LABELS[k]} page</strong>
+              <Field label="Title"><input type="text" maxLength={80} value={pages.draft[k].title} onChange={(e) => pages.setDraft({ ...pages.draft, [k]: { ...pages.draft[k], title: e.target.value } })} /></Field>
+              <Field label="Introduction"><textarea rows={2} maxLength={300} value={pages.draft[k].text} onChange={(e) => pages.setDraft({ ...pages.draft, [k]: { ...pages.draft[k], text: e.target.value } })} /></Field>
             </div>
           ))}
         </div>
-        <div className="adm-actions">
-          <button type="button" className="adm-btn ghost" disabled={services.draft.length >= MAX_VALUES} onClick={() => services.setDraft([...services.draft, { id: `${Date.now()}`, title: "", description: "" }])}><Plus size={16} /> Add a value</button>
-          <button type="submit" className="adm-btn" disabled={services.busy || !services.dirty}><Save size={16} /> {services.busy ? "Saving…" : "Save values"}</button>
-        </div>
+        <SaveBar busy={pages.busy} dirty={pages.dirty} label="Save page headings" />
       </form>
+
+      <ValuesForm section="services" initial={data.services} title="What we stand for" sub="The values shown on the About page." ok="Values updated" />
+      <ValuesForm section="promise" initial={data.promise} title="Why WSL Realty" sub="The three promises shown on the Home page." ok="Home promises updated" />
     </>
   );
 }

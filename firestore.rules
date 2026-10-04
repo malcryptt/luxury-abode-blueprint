@@ -59,7 +59,7 @@ service cloud.firestore {
     // Enquiries: anyone may create a well-formed one. A signed-in customer's enquiry carries their uid, so they
     // can read their own enquiry and its conversation. Staff read and manage all of them.
     match /enquiries/{id} {
-      function isOwner() { return signedIn() && resource.data.get('user_id', null) == request.auth.uid; }
+      function isOwner() { return signedIn() && resource.data.user_id == request.auth.uid; }
 
       allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'interest', 'message', 'source', 'status', 'notes', 'handled_by', 'created_at', 'user_id'])
         && request.resource.data.keys().hasAll(['name', 'phone', 'email', 'interest', 'message', 'source', 'status', 'notes', 'handled_by', 'created_at'])
