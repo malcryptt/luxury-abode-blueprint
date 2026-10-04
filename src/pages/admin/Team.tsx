@@ -7,8 +7,9 @@ import { deleteApp, initializeApp } from "firebase/app";
 import {
   createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signOut as signOutAuth,
 } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { collection, deleteDoc, doc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { auth, db, firebaseConfig } from "@/integrations/firebase/client";
+import { app, auth, db, firebaseConfig } from "@/integrations/firebase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -129,8 +130,17 @@ export default function Team() {
     const m = pendingRemove;
     setPendingRemove(null);
     try {
-      await deleteDoc(doc(db, "staff", m.id));
-      toast.success(`${m.email} no longer has access`);
+      try {
+        // The server function deletes the staff record and the Firebase login together.
+        await httpsCallable(getFunctions(app), "removeTeamMember")({ uid: m.id });
+        toast.success(`${m.email} was removed and their login deleted`);
+      } catch (fnErr) {
+        const code = (fnErr as { code?: string }).code ?? "";
+        if (code !== "functions/not-found" && code !== "functions/internal" && code !== "functions/unavailable") throw fnErr;
+        // Function not deployed yet: still revoke access, but the login stays in Firebase.
+        await deleteDoc(doc(db, "staff", m.id));
+        toast.warning(`${m.email} can no longer use the admin. Their login still exists in Firebase because the cleanup function is not deployed.`);
+      }
       refresh();
     } catch (err) {
       toast.error(friendly(err));
@@ -200,7 +210,7 @@ export default function Team() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove this person?</AlertDialogTitle>
-            <AlertDialogDescription>{pendingRemove?.email} will no longer be able to use the admin area. Their login account stays in Firebase but can do nothing.</AlertDialogDescription>
+            <AlertDialogDescription>{pendingRemove?.email} will no longer be able to use the admin area. Their login is deleted too.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
