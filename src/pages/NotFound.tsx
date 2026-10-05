@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Seo } from "@/components/site/Seo";
+import { useSiteContent } from "@/lib/siteContent";
 
 // Rendered inside the public layout, so a missing page still has the site header and footer.
-const NotFound = () => (
+const NotFound = () => {
+  const { hidden } = useSiteContent();
+  return (
   <>
     <Seo title="Page not found" description="The page you are looking for has moved or does not exist." noindex />
     <section className="page-hero">
@@ -13,11 +16,12 @@ const NotFound = () => (
         <p>The page you are looking for has moved or does not exist.</p>
         <div className="hero-actions">
           <Button asChild><Link to="/">Back to Home</Link></Button>
-          <Link className="text-link" to="/properties">Browse properties</Link>
+          <Link className="text-link" to={hidden.properties ? "/contact" : "/properties"}>{hidden.properties ? "Contact us" : "Browse properties"}</Link>
         </div>
       </div>
     </section>
   </>
-);
+  );
+};
 
 export default NotFound;

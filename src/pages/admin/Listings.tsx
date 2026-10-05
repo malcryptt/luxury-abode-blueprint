@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
 import { ImagePicker } from "@/components/admin/ImagePicker";
+import { PageSwitches } from "@/components/admin/PageSwitches";
 import { LIMITS, fetchSiteContent, placeholders, slugify, type SiteFurniture, type SiteJob, type SiteProperty } from "@/lib/siteContent";
 
 type Kind = "properties" | "furniture" | "jobs";
@@ -165,6 +166,7 @@ export default function Listings() {
         <button role="tab" aria-selected={tab === "furniture"} className={`adm-btn ${tab === "furniture" ? "" : "ghost"}`} onClick={() => setTab("furniture")}>Furniture</button>
         <button role="tab" aria-selected={tab === "jobs"} className={`adm-btn ${tab === "jobs" ? "" : "ghost"}`} onClick={() => setTab("jobs")}>Previous jobs</button>
       </div>
+      {tab !== "jobs" && <PageSwitches only={[tab]} title={`${tab === "properties" ? "Properties" : "Furniture"} page`} />}
       <ListEditor key={tab} kind={tab} initial={data[tab] as Item[]} />
     </>
   );

@@ -7,17 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@/assets/wsl-logo.png";
 
+import { useSiteContent, type PageVisibility } from "@/lib/siteContent";
 export { Seo } from "./Seo";
 
-const links: [string, string][] = [
+const allLinks: [string, string][] = [
   ["Home", "/"], ["About Us", "/about"], ["Properties", "/properties"], ["Furniture", "/furniture"],
   ["Previous Jobs", "/previous-jobs"], ["Project Updates", "/project-updates"], ["Arya Luxe", "/arya-luxe"], ["Contact", "/contact"],
 ];
 
 // Public site shell. Nothing here knows about the admin area or who is signed in:
 // the dashboard is a separate application reached by its own URL.
+const HIDEABLE_ROUTES: Record<string, keyof PageVisibility> = { "/properties": "properties", "/furniture": "furniture", "/arya-luxe": "aryaLuxe" };
+
 export function SiteLayout() {
   const [open, setOpen] = useState(false);
+  const { hidden } = useSiteContent();
+  const links = allLinks.filter(([, to]) => !(HIDEABLE_ROUTES[to] && hidden[HIDEABLE_ROUTES[to]]));
   const { user, staff } = useSession();
   const { unread } = useReplies(user && !staff ? user.uid : undefined);
   const badge = unread > 0 ? <span className="nav-badge" aria-label={`${unread} new replies`}>{unread}</span> : null;

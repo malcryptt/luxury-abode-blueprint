@@ -4,13 +4,20 @@ import { ArrowUpRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
-import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty } from "@/lib/siteContent";
+import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty, type PageVisibility } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import NotFound from "@/pages/NotFound";
 import { useProject, stageImage, formatDate } from "@/lib/projects";
 import { useSession } from "@/lib/staff";
 
+
+/** Shows a page only while the team has not hidden it. A hidden page looks like any page that does not exist. */
+function Gate({ page, children }: { page: keyof PageVisibility; children: React.ReactNode }) {
+  const c = useSiteContent();
+  if (!c.loaded) return null;
+  return c.hidden[page] ? <NotFound /> : <>{children}</>;
+}
 
 function PropertyTile({ p }: { p: SiteProperty }) {
   return (
@@ -29,18 +36,20 @@ export function Home() {
     <Seo route="/" />
     <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" /><div className="hero-shade" />
       <div className="hero-copy"><h1>{c.hero.title}</h1><p>{c.hero.subtitle}</p>
-        <div className="hero-actions"><Button asChild><Link to="/properties">View Properties <ArrowUpRight size={16} /></Link></Button><Link className="text-link light" to="/project-updates">See Our Progress</Link></div></div>
+        <div className="hero-actions"><Button asChild>{c.hidden.properties ? <Link to="/contact">Enquire Now <ArrowUpRight size={16} /></Link> : <Link to="/properties">View Properties <ArrowUpRight size={16} /></Link>}</Button><Link className="text-link light" to="/project-updates">See Our Progress</Link></div></div>
     </section>
-    <section className="section"><SectionIntro eyebrow="Available now" title="Featured properties" text="Explore our available properties." />
+    {!c.hidden.properties && <section className="section"><SectionIntro eyebrow="Available now" title="Featured properties" text="Explore our available properties." />
       <div className="property-grid scroll-x">{c.properties.slice(0, 3).map(p => <PropertyTile key={p.id} p={p} />)}</div>
       <div className="section-link"><Link className="text-link" to="/properties">View All Properties <ArrowUpRight size={16} /></Link></div>
     </section>
-    <section className="project-feature"><div className="project-image"><img src={c.images.homeFeature || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
+    }
+    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image"><img src={c.images.homeFeature || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
       <div className="project-copy"><span className="eyebrow">Featured project</span><h2>{pr.project.name}</h2><p>{pr.project.summary}</p>
         <div className="progress-line" role="progressbar" aria-label="Arya Luxe progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pr.percent}%` }} /></div>
         <div className="progress-meta"><span>Current stage</span><strong>{pr.stages[pr.project.current_stage].title} · {pr.percent}% complete</strong></div>
-        <Link className="text-link" to="/arya-luxe">Follow The Build <ArrowUpRight size={16} /></Link></div>
+        <Link className="text-link" to="/project-updates">Follow The Build <ArrowUpRight size={16} /></Link></div>
     </section>
+    }
     <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Realty" />
       <div className="value-grid">{c.promise.map(v => <div key={v.id}><h3>{v.title}</h3><p>{v.description}</p></div>)}</div>
       <div className="section-link"><Button asChild><Link to="/contact">Enquire Now</Link></Button></div>
@@ -63,7 +72,8 @@ export function About() {
   </>;
 }
 
-export function Properties() {
+export function Properties() { return <Gate page="properties"><PropertiesPage /></Gate>; }
+function PropertiesPage() {
   const c = useSiteContent();
   return <>
     <Seo route="/properties" />
@@ -72,7 +82,8 @@ export function Properties() {
   </>;
 }
 
-export function PropertyDetail() {
+export function PropertyDetail() { return <Gate page="properties"><PropertyDetailPage /></Gate>; }
+function PropertyDetailPage() {
   const { slug } = useParams();
   const c = useSiteContent();
   const p = c.properties.find(x => x.slug === slug);
@@ -102,7 +113,8 @@ function FurnitureGallery({ images, title }: { images: string[]; title: string }
   </>;
 }
 
-export function Furniture() {
+export function Furniture() { return <Gate page="furniture"><FurniturePage /></Gate>; }
+function FurniturePage() {
   const c = useSiteContent();
   return <>
     <Seo route="/furniture" />
@@ -136,21 +148,6 @@ export function PreviousJobs() {
 export function ProjectUpdates() {
   const c = useSiteContent();
   const { data: pr, loaded } = useProject("arya-luxe");
-  return <>
-    <Seo route="/project-updates" />
-    <PageHero eyebrow="Construction journal" title={c.pages.updates.title} text={c.pages.updates.text} />
-    <section className="section"><SectionIntro eyebrow="Project update" title="Latest updates" text={`Arya Luxe is ${pr.percent}% complete.`} />
-      <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
-        <article key={u.id} className="update-item"><img src={stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" />
-          <div><span className="eyebrow">{pr.project.name} · {formatDate(u.posted_on)}</span><h3>{u.title || pr.stages[u.stage]?.title}</h3><p>{u.body}</p><Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link></div></article>))}</div>
-    </section>
-    <section className="section tinted"><SectionIntro eyebrow="Stay informed" title="Get project updates" text="Message us on WhatsApp to receive new progress reports." /><Button asChild><Link to="/contact">Register Interest</Link></Button></section>
-  </>;
-}
-
-export function AryaLuxe() {
-  const c = useSiteContent();
-  const { data: pr } = useProject("arya-luxe");
   const cur = pr.project.current_stage;
   const [picked, setPicked] = useState<number | null>(null);
   const sel = picked ?? cur;
@@ -158,9 +155,9 @@ export function AryaLuxe() {
   const state = sel < cur ? "complete" : sel === cur ? "in progress" : "upcoming";
   const pct = sel < cur ? 100 : sel === cur ? st.progress : 0;
   return <>
-    <Seo route="/arya-luxe" />
-    <PageHero eyebrow={`${pr.project.location} · 2025—26`} title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
-    <section className="section"><SectionIntro eyebrow="Current stage" title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
+    <Seo route="/project-updates" />
+    <PageHero eyebrow="Construction journal" title={c.pages.updates.title} text={c.pages.updates.text} />
+    <section className="section"><SectionIntro eyebrow={pr.project.name} title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
       <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
       <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>
       <div className="journal-detail"><img src={stageImage(st.image, sel % 2 ? ph.property2 : ph.property3)} alt={`${st.title} at ${pr.project.name}`} />
@@ -169,6 +166,25 @@ export function AryaLuxe() {
           <p>{st.note || (sel < cur ? "This stage is complete." : sel === cur ? `Work on this stage is ${pct}% done.` : "This stage is upcoming.")}</p></div></div>
       {pr.gallery.some(g => g.stage === sel) && <div className="stage-gallery" aria-label={`${st.title} photos`}>{pr.gallery.filter(g => g.stage === sel).map(g => (
         <figure key={g.id}><img src={g.image} alt={g.title} loading="lazy" /><figcaption><strong>{g.title}</strong><span>{g.taken_on ? formatDate(g.taken_on) : ""}{g.taken_on ? " · " : ""}{g.level}% of this stage done</span><p>{g.description}</p></figcaption></figure>))}</div>}
+    </section>
+    <section className="section tinted"><SectionIntro eyebrow="Project update" title="Latest updates" />
+      <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
+        <article key={u.id} className="update-item"><img src={stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" />
+          <div><span className="eyebrow">{pr.project.name} · {formatDate(u.posted_on)}</span><h3>{u.title || pr.stages[u.stage]?.title}</h3><p>{u.body}</p>{!c.hidden.aryaLuxe && <Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link>}</div></article>))}</div>
+    </section>
+    <section className="section"><SectionIntro eyebrow="Stay informed" title="Get project updates" text="Message us on WhatsApp to receive new progress reports." /><Button asChild><Link to="/contact">Register Interest</Link></Button></section>
+  </>;
+}
+
+export function AryaLuxe() { return <Gate page="aryaLuxe"><AryaLuxePage /></Gate>; }
+function AryaLuxePage() {
+  const c = useSiteContent();
+  const { data: pr } = useProject("arya-luxe");
+  return <>
+    <Seo route="/arya-luxe" />
+    <PageHero eyebrow={pr.project.location} title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
+    <section className="section"><SectionIntro eyebrow="Build progress" title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Photos, stages and progress reports are on the Project Updates page.`} />
+      <Button asChild variant="outline"><Link to="/project-updates">See Project Updates <ArrowUpRight size={16} /></Link></Button>
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Interested?" title="Register your interest" text="Units are limited. Speak to our team about pricing and availability." />
       <EnquiryButton label="Register Interest" topic="Arya Luxe (Gwarinpa, Abuja)" heading="Arya Luxe" source="project:arya-luxe" defaultMessage="Hello, I'd like to register my interest in Arya Luxe." /></section>
