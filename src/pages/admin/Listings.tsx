@@ -67,7 +67,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
     const out = draft.map((x) => {
       const item = { ...x, title: x.title.trim() } as Item & { slug?: string; hidden?: boolean };
       if (isProp) {
-        let base = slugify((item as SiteProperty).slug || item.title) || "property";
+        const base = slugify((item as SiteProperty).slug || item.title) || "property";
         let s = base, n = 2;
         while (used.has(s)) s = `${base}-${n++}`;
         used.add(s);

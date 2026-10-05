@@ -20,7 +20,7 @@ export function ImagePicker({ value, onChange, label }: { value: string; onChang
       <div className="adm-actions" style={{ marginTop: 0 }}>
         <label className="adm-btn small ghost" style={{ cursor: busy ? "wait" : "pointer" }}>
           <ImagePlus size={15} /> {busy ? "Uploading…" : value ? "Replace photo" : "Add photo"}
-          <input type="file" accept="image/*" onChange={pick} disabled={busy} className="sr-only" aria-label={label} />
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={pick} disabled={busy} className="sr-only" aria-label={label} />
         </label>
         {value && <button type="button" className="adm-btn small ghost" onClick={() => onChange("")}>Remove</button>}
       </div>

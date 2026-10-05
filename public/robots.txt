@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /auth
 Disallow: /reset-password
+Disallow: /inbox
+Disallow: /api/
 
 Sitemap: https://wslproperties.com.ng/sitemap.xml

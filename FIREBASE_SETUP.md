@@ -52,3 +52,22 @@ Anyone can create a customer account at `/auth` ("Create an account"). Team acco
 - An enquiry sent while signed in carries the customer's account id, so they can follow it in their inbox: sent time, **Seen** (with the time the team first opened it), and the team's replies.
 - Opening an enquiry in Admin → Enquiries marks it seen and shows the conversation. Replies go to the customer's inbox. Enquiries from visitors who were not signed in have no inbox: reply by phone, WhatsApp or email.
 - After pulling this change, **republish `firestore.rules`** (Firestore → Rules → paste → Publish). It adds the customer read rule and the `messages` sub-collection.
+
+## Security checklist
+
+Done in code: security headers and a strict Content-Security-Policy (`vercel.json`), no third-party scripts, SVG uploads refused, stronger password rule for new accounts, removal API checks the caller is an admin and validates its input, enquiry "seen/handled by" can no longer be faked, unused database tooling removed.
+
+Things only you can switch on (all free, no card):
+
+1. **Republish `firestore.rules`** after every change to that file.
+2. **Cloudinary upload preset** (Settings → Upload → your `wsl-realty` preset): set *Allowed formats* to `jpg,png,webp,avif,gif`, *Folder* to `wsl-realty`, and a *Max file size* of about 10 MB. Keep it Unsigned. Without these anyone who finds the preset name can upload arbitrary files to your account.
+3. **Firebase Authentication → Settings → Password policy**: require at least 8 characters, a letter and a number.
+4. **Firebase App Check** (stops bots flooding enquiries and using up your free quota):
+   1. Go to https://www.google.com/recaptcha/admin, register the site with **reCAPTCHA v3** for `wslproperties.com.ng` (and your `*.vercel.app` URL while testing). Copy the **site key** and **secret key**.
+   2. Firebase console → Build → **App Check** → your web app → reCAPTCHA v3 → paste the **secret key**.
+   3. In Vercel add `VITE_RECAPTCHA_SITE_KEY` = the **site key** (Config type) and redeploy.
+   4. Visit the site and the admin for a day, check App Check → *Metrics* shows verified requests, then click **Enforce** for Cloud Firestore.
+5. **Vercel**: turn on two-factor sign-in for your Vercel and GitHub accounts, and keep `FIREBASE_SERVICE_ACCOUNT` as a *Secret*.
+6. **Firebase console users**: only add trusted people as project owners, and use 2-step verification on those Google accounts.
+
+Known limits: anyone can still create a customer account (they can only see their own enquiries); the 20-update limit on Project Updates is enforced by the admin page, not the database; `react-router` has an open-redirect advisory that only applies to code that redirects to user-supplied addresses (this site does not).
