@@ -78,7 +78,11 @@ service cloud.firestore {
       allow update: if isStaff()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'notes', 'handled_by', 'seen_at', 'seen_by'])
         && request.resource.data.status in ['new', 'contacted', 'closed']
-        && (request.resource.data.notes == null || (request.resource.data.notes is string && request.resource.data.notes.size() <= 2000));
+        && (request.resource.data.notes == null || (request.resource.data.notes is string && request.resource.data.notes.size() <= 2000))
+        // Who handled or saw an enquiry, and when, cannot be faked: it must be the signed-in team member and the server clock.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['handled_by']) || request.resource.data.handled_by == request.auth.uid)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['seen_by']) || request.resource.data.seen_by == request.auth.uid)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['seen_at']) || request.resource.data.seen_at == request.time);
       allow delete: if isAdmin();
 
       // The conversation: replies from the team and follow-ups from the customer.
@@ -94,6 +98,7 @@ service cloud.firestore {
           && ((request.resource.data.from == 'staff' && isStaff()) || (request.resource.data.from == 'customer' && ownsEnquiry()));
         // The other side marks a message as seen; nothing else may change.
         allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen_at'])
+          && request.resource.data.seen_at == request.time
           && ((resource.data.from == 'customer' && isStaff()) || (resource.data.from == 'staff' && ownsEnquiry()));
         allow delete: if isAdmin();
       }

@@ -15,20 +15,23 @@ function admin() {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  if (req.method !== "POST") { res.setHeader("Allow", "POST"); return res.status(405).json({ error: "Method not allowed" }); }
   try {
     const { auth, db } = admin();
 
     const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!token) return res.status(401).json({ error: "Please sign in." });
     let caller;
-    try { caller = await auth.verifyIdToken(token); } catch { return res.status(401).json({ error: "Please sign in again." }); }
+    try { caller = await auth.verifyIdToken(token, true); } catch { return res.status(401).json({ error: "Please sign in again." }); }
 
     const me = await db.doc(`staff/${caller.uid}`).get();
     if (!me.exists || me.data().role !== "admin") return res.status(403).json({ error: "Only admins can remove team members." });
 
     const uid = String((req.body && req.body.uid) || "");
-    if (!uid) return res.status(400).json({ error: "Missing member." });
+    // Firebase uids are plain letters and digits. Anything else (such as a "/") could point at a different document.
+    if (!/^[A-Za-z0-9]{6,128}$/.test(uid)) return res.status(400).json({ error: "Missing or invalid member." });
     if (uid === caller.uid) return res.status(400).json({ error: "You cannot remove yourself." });
 
     await db.doc(`staff/${uid}`).delete();

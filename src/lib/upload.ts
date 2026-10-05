@@ -28,7 +28,8 @@ export async function compressImage(file: File): Promise<File> {
 
 /** Uploads an image to Cloudinary (free, no card needed) and returns its public https URL. */
 export async function uploadImage(file: File): Promise<string> {
-  if (!file.type.startsWith("image/")) throw new Error("Please choose an image file");
+  // Only plain raster photos: SVG files can carry scripts, so they are refused.
+  if (!/^image\/(jpeg|png|webp|avif|gif)$/.test(file.type)) throw new Error("Please choose a JPG, PNG, WebP, AVIF or GIF photo");
   if (file.size > MAX_BYTES) throw new Error("The image must be under 25 MB");
   if (!CLOUD || !PRESET) throw new Error("Photo uploads are not set up yet. See FIREBASE_SETUP.md, step 4.");
   const body = new FormData();

@@ -5,10 +5,11 @@ import { KeyRound, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { deleteApp, initializeApp } from "firebase/app";
 import {
-  createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signOut as signOutAuth,
+  createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signOut as signOutAuth,
 } from "firebase/auth";
 import { collection, deleteDoc, doc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { auth, db, firebaseConfig } from "@/integrations/firebase/client";
+import { passwordProblem } from "@/lib/password";
+import { auth, db, firebaseConfig, makeAuth } from "@/integrations/firebase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -38,7 +39,7 @@ async function listMembers(): Promise<Member[]> {
  */
 async function addMember(email: string, password: string, role: StaffRole): Promise<void> {
   const secondary = initializeApp(firebaseConfig, `team-${Date.now()}`);
-  const sAuth = getAuth(secondary);
+  const sAuth = makeAuth(secondary, true);
   try {
     let uid: string;
     try {
@@ -90,7 +91,7 @@ export default function Team() {
     e.preventDefault();
     const em = email.trim();
     if (!EMAIL_RE.test(em)) return toast.error("Enter a valid email address");
-    if (password.length < 8) return toast.error("The password must be at least 8 characters");
+    { const pw = passwordProblem(password); if (pw) return toast.error(`Choose a stronger password. ${pw}.`); }
     setAdding(true);
     try {
       if ((data ?? []).some((m) => m.email.toLowerCase() === em.toLowerCase())) throw new Error("That person is already on the team.");
@@ -161,7 +162,7 @@ export default function Team() {
         <p className="sub">Create their login here and share the password with them privately. They can change it with “Forgot password?” on the sign-in page.</p>
         <div className="adm-grid two">
           <label className="adm-field"><span>Email address</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" /></label>
-          <label className="adm-field"><span>Temporary password</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /><small>At least 8 characters.</small></label>
+          <label className="adm-field"><span>Temporary password</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /><small>At least 8 characters, with letters and numbers.</small></label>
           <label className="adm-field"><span>Role</span>
             <select value={newRole} onChange={(e) => setNewRole(e.target.value as StaffRole)}>
               <option value="editor">Editor</option><option value="admin">Admin</option>

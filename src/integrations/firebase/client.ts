@@ -1,5 +1,6 @@
-import { initializeApp, type FirebaseOptions } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp, type FirebaseApp, type FirebaseOptions } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import { browserLocalPersistence, indexedDBLocalPersistence, inMemoryPersistence, initializeAuth } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
 
 const env = import.meta.env;
@@ -17,5 +18,21 @@ export const firebaseConfig: FirebaseOptions = {
 export const firebaseConfigured = !!env.VITE_FIREBASE_API_KEY && !!env.VITE_FIREBASE_PROJECT_ID;
 
 export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+/**
+ * Optional bot protection (Firebase App Check with reCAPTCHA v3, free, no card). It is on only when
+ * VITE_RECAPTCHA_SITE_KEY is set; see FIREBASE_SETUP.md. Turn on enforcement in the Firebase console afterwards.
+ */
+const recaptchaKey = env.VITE_RECAPTCHA_SITE_KEY as string | undefined;
+if (recaptchaKey) {
+  try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider(recaptchaKey), isTokenAutoRefreshEnabled: true }); } catch { /* the site still works without it */ }
+}
+
+/**
+ * Email and password sign-in only. Using initializeAuth (instead of getAuth) skips Firebase's popup and redirect
+ * helper, which would load Google's gapi script and an extra iframe on every page. Fewer third-party scripts, tighter CSP.
+ */
+export const makeAuth = (a: FirebaseApp, temporary = false) =>
+  initializeAuth(a, { persistence: temporary ? inMemoryPersistence : [indexedDBLocalPersistence, browserLocalPersistence] });
+export const auth = makeAuth(app);
 export const db = initializeFirestore(app, { ignoreUndefinedProperties: true });

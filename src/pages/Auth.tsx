@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import wslLogo from "@/assets/wsl-logo.png";
 import { useNoIndex } from "@/components/site/Seo";
+import { passwordProblem } from "@/lib/password";
 import "@/pages/admin/admin.css";
 
 const authSchema = z.object({
@@ -64,6 +65,8 @@ const Auth = () => {
     try {
       const validated = authSchema.parse({ email, password });
       if (creating) {
+        const weak = passwordProblem(validated.password);
+        if (weak) { toast.error(`Choose a stronger password. ${weak}.`); return; }
         if (validated.password !== confirm) { toast.error("The two passwords do not match"); return; }
         const cred = await createUserWithEmailAndPassword(auth, validated.email, validated.password);
         sendEmailVerification(cred.user).catch(() => {});
