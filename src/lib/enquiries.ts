@@ -150,7 +150,10 @@ export async function deleteEnquiry(id: string): Promise<void> {
    Helpers shared by the inbox and dashboard
 --------------------------------------------------------------------------- */
 
+export const CHAT_SUFFIX = "|chat";
+
 export function sourceLabel(source: string): string {
+  if (source.endsWith(CHAT_SUFFIX)) return `${sourceLabel(source.slice(0, -CHAT_SUFFIX.length))} · Chat`;
   if (source === "contact_page") return "Contact page";
   if (source.startsWith("property:")) return `Property · ${source.slice(9)}`;
   if (source.startsWith("furniture:")) return `Furniture · ${source.slice(10)}`;

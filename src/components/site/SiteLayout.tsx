@@ -1,4 +1,5 @@
 import { signOutUser, useSession } from "@/lib/staff";
+import { useReplies } from "@/lib/inbox";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { Menu, ChevronRight, LayoutDashboard, LogIn, LogOut, Inbox, ArrowUpRight, Instagram, Facebook } from "lucide-react";
@@ -18,6 +19,8 @@ const links: [string, string][] = [
 export function SiteLayout() {
   const [open, setOpen] = useState(false);
   const { user, staff } = useSession();
+  const { unread } = useReplies(user && !staff ? user.uid : undefined);
+  const badge = unread > 0 ? <span className="nav-badge" aria-label={`${unread} new replies`}>{unread}</span> : null;
   const out = () => { signOutUser().catch(() => {}); };
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); setOpen(false); }, [pathname]);
@@ -30,7 +33,7 @@ export function SiteLayout() {
           {links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>{l}</NavLink>)}
         </nav>
         <div className="header-auth">
-          {user && !staff && <Link className="header-signin" to="/inbox"><Inbox size={15} aria-hidden="true" /> My enquiries</Link>}
+          {user && !staff && <Link className="header-signin" to="/inbox"><Inbox size={15} aria-hidden="true" /> My enquiries{badge}</Link>}
           {staff && <Link className="header-signin" to="/admin"><LayoutDashboard size={15} aria-hidden="true" /> Admin</Link>}
           {user ? <button type="button" className="header-signin" onClick={out}><LogOut size={15} aria-hidden="true" /> Sign out</button>
             : <Link className="header-signin" to="/auth"><LogIn size={15} aria-hidden="true" /> Sign in</Link>}
@@ -41,7 +44,7 @@ export function SiteLayout() {
             <SheetContent>
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <SheetDescription className="sr-only">Site navigation</SheetDescription>
-              <nav className="mobile-nav" aria-label="Mobile">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}{user && !staff && <Link to="/inbox" className="mobile-signin">My enquiries<Inbox size={16} /></Link>}{staff && <Link to="/admin" className="mobile-signin">Admin<LayoutDashboard size={16} /></Link>}{user ? <button type="button" className="mobile-signin" onClick={out}>Sign out<LogOut size={16} /></button> : <Link to="/auth" className="mobile-signin">Sign in<LogIn size={16} /></Link>}</nav>
+              <nav className="mobile-nav" aria-label="Mobile">{links.map(([l, to]) => <NavLink key={to} to={to} end={to === "/"}>{l}<ChevronRight size={16} /></NavLink>)}{user && !staff && <Link to="/inbox" className="mobile-signin">My enquiries{badge}<Inbox size={16} /></Link>}{staff && <Link to="/admin" className="mobile-signin">Admin<LayoutDashboard size={16} /></Link>}{user ? <button type="button" className="mobile-signin" onClick={out}>Sign out<LogOut size={16} /></button> : <Link to="/auth" className="mobile-signin">Sign in<LogIn size={16} /></Link>}</nav>
             </SheetContent>
           </Sheet>
         </div>

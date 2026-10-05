@@ -4,6 +4,10 @@
 .adm *, .adm *::before, .adm *::after { box-sizing: border-box; }
 .adm h1, .adm h2, .adm h3 { font-family: 'Libre Baskerville', Georgia, serif; color: var(--a-navy); margin: 0; }
 .adm a { color: inherit; }
+/* Links styled as buttons keep their button colours (the rule above would otherwise turn them dark). */
+.adm a.adm-btn { color: #fff; }
+.adm a.adm-btn.ghost { color: var(--a-navy); }
+.adm a.adm-btn.danger { color: #fff; }
 
 /* Shell */
 .adm-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }

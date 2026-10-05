@@ -112,6 +112,7 @@ export default function AdminLayout() {
             <div><div className="who">{ctx.email}</div><div className="role">{ctx.role}</div></div>
             <Link to="/"><ExternalLink size={15} /> View website</Link>
             <button type="button" onClick={signOut}><LogOut size={15} /> Sign out</button>
+            <div className="adm-muted" style={{ fontSize: 11, marginTop: 6 }} title="The version of the website that is live">Version {typeof __BUILD_SHA__ !== "undefined" ? __BUILD_SHA__ : "dev"}{typeof __BUILD_AT__ !== "undefined" ? ` · ${__BUILD_AT__}` : ""}</div>
           </div>
         </aside>
         <main className="adm-main">

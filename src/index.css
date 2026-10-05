@@ -283,3 +283,22 @@ textarea.enq-input { min-height: 96px; resize: vertical; line-height: 1.6; }
 .thread-reply textarea { width: 100%; border: 1px solid var(--line); padding: 10px 12px; font: inherit; background: #fff; }
 .thread-reply button { justify-self: end; }
 @media (max-width: 600px) { .inbox-row { flex-direction: column; } .inbox-meta { justify-items: start; } .bubble { max-width: 94%; } }
+
+.about-copy .section-intro p { white-space: pre-line; }
+
+/* Chat button and replies under the enquiry form */
+.enq-buttons { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.enq-form .enq-buttons .enq-submit { margin-top: 0; }
+.enq-chat { border-radius: 0; min-height: 48px; padding: 0 22px; border-color: var(--navy); color: var(--navy); background: transparent; }
+.enq-chat:hover { background: var(--navy); color: #fff; }
+.enq-chat-note { margin: -4px 0 0; font-size: 13px; color: #73716e; }
+.replies-panel { margin-top: 8px; display: grid; gap: 10px; }
+.replies-box { background: #f6f1e7; border-left: 3px solid #9a7950; padding: 14px 16px; display: grid; gap: 10px; }
+.replies-box h4 { margin: 0; font-size: 15px; font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+.replies-box .badge { background: #9a7950; color: #fff; font-size: 11px; padding: 1px 8px; font-weight: 500; }
+.replies-box ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.replies-box li { display: grid; gap: 2px; font-size: 14px; }
+.replies-box li span { color: #4d5154; line-height: 1.55; }
+.replies-box li small, .replies-empty { color: #8b887f; font-size: 12px; margin: 0; }
+.replies-note { margin: 0; font-size: 12.5px; color: #73716e; }
+.nav-badge { display: inline-block; margin-left: 6px; min-width: 18px; padding: 0 5px; background: #9a7950; color: #fff; font-size: 11px; line-height: 18px; text-align: center; border-radius: 9px; }

@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   addDoc, collection, doc, getDocs, query, serverTimestamp, updateDoc, where, type DocumentData,
 } from "firebase/firestore";
@@ -53,3 +54,19 @@ export async function markEnquirySeen(row: EnquiryRow, staffId: string): Promise
 
 export const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+export interface ReplyItem extends ThreadMessage { enquiryId: string; subject: string }
+
+/** The team's most recent replies across a customer's enquiries (newest first). */
+export async function fetchLatestReplies(uid: string, max = 5): Promise<ReplyItem[]> {
+  const rows = (await fetchMyEnquiries(uid)).slice(0, 8);
+  const lists = await Promise.all(rows.map((r) => fetchMessages(r.id).then((ms) => ms.filter((m) => m.from === "staff").map((m) => ({ ...m, enquiryId: r.id, subject: r.interest || r.message?.slice(0, 40) || "Your enquiry" })))));
+  return lists.flat().sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, max);
+}
+
+/** Replies from the team for the signed-in customer, refreshed every minute. Disabled when signed out. */
+export function useReplies(uid: string | undefined) {
+  const q = useQuery({ queryKey: ["inbox", "replies", uid], queryFn: () => fetchLatestReplies(uid!), enabled: !!uid, refetchInterval: 60_000, staleTime: 30_000 });
+  const replies = q.data ?? [];
+  return { replies, unread: replies.filter((r) => !r.seen_at).length, loading: q.isLoading };
+}

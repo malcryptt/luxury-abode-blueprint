@@ -134,7 +134,7 @@ export default function Content() {
         <p className="sub">Used on the About page and in search results.</p>
         <div className="adm-grid">
           <Field label="Title"><input type="text" maxLength={120} value={about.draft.title} onChange={(e) => about.setDraft({ ...about.draft, title: e.target.value })} /></Field>
-          <Field label="Description"><textarea rows={6} maxLength={2000} value={about.draft.description} onChange={(e) => about.setDraft({ ...about.draft, description: e.target.value })} /></Field>
+          <Field label="Description" hint="Up to 10,000 characters. A blank line starts a new paragraph."><textarea rows={12} maxLength={10000} value={about.draft.description} onChange={(e) => about.setDraft({ ...about.draft, description: e.target.value })} /></Field>
         </div>
         <SaveBar busy={about.busy} dirty={about.dirty} label="Save about text" />
       </form>
