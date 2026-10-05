@@ -72,7 +72,7 @@ function ValuesForm({ section, initial, title, sub, ok }: { section: string; ini
           {v.draft.map((s, i) => (
             <div key={s.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
               <Field label={`Value ${i + 1} title`}><input type="text" maxLength={80} value={s.title} onChange={(e) => v.setDraft(v.draft.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} /></Field>
-              <Field label="Description"><textarea rows={2} maxLength={400} value={s.description} onChange={(e) => v.setDraft(v.draft.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} /></Field>
+              <Field label="Description" hint={`${s.description.length} of 5,000 characters. A new line starts a new paragraph.`}><textarea rows={8} maxLength={5000} value={s.description} onChange={(e) => v.setDraft(v.draft.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} /></Field>
               <div><button type="button" className="adm-btn small ghost" disabled={v.draft.length <= MIN_VALUES} title={v.draft.length <= MIN_VALUES ? `At least ${MIN_VALUES} values are required` : undefined} onClick={() => v.setDraft(v.draft.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button></div>
             </div>
           ))}
@@ -134,7 +134,7 @@ export default function Content() {
         <p className="sub">Used on the About page and in search results.</p>
         <div className="adm-grid">
           <Field label="Title"><input type="text" maxLength={120} value={about.draft.title} onChange={(e) => about.setDraft({ ...about.draft, title: e.target.value })} /></Field>
-          <Field label="Description" hint="Up to 10,000 characters. A blank line starts a new paragraph."><textarea rows={12} maxLength={10000} value={about.draft.description} onChange={(e) => about.setDraft({ ...about.draft, description: e.target.value })} /></Field>
+          <Field label="Description" hint={`${about.draft.description.length} of 10,000 characters. A blank line starts a new paragraph.`}><textarea rows={12} maxLength={10000} value={about.draft.description} onChange={(e) => about.setDraft({ ...about.draft, description: e.target.value })} /></Field>
         </div>
         <SaveBar busy={about.busy} dirty={about.dirty} label="Save about text" />
       </form>
