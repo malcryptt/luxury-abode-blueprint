@@ -16,6 +16,34 @@ service cloud.firestore {
     }
     function isAdmin() { return isStaff() && staffDoc().data.role == 'admin'; }
 
+    // Rate limits for signed-in customers. Every enquiry or customer message is written in the same batch as a
+    // "ticket" at limits/<enq|msg>_<uid>. The ticket rules below enforce the gap between sends and the daily count
+    // (days are UTC), so Firebase itself refuses a customer who sends too fast or too often. Team replies are exempt.
+    // Numbers (keep in step with src/lib/rateLimit.ts): enquiries 5 a day, messages 50 a day. The gaps here (50 s and 8 s)
+    // are a little shorter than the 60 s and 10 s shown in the browser, so a slow clock never blocks a fair send.
+    function today() { return string(request.time.year()) + '-' + string(request.time.month()) + '-' + string(request.time.day()); }
+    function ticketPath(kind) { return /databases/$(database)/documents/limits/$(kind + '_' + request.auth.uid); }
+    function ticketed(kind) { return existsAfter(ticketPath(kind)) && getAfter(ticketPath(kind)).data.last == request.time; }
+    match /limits/{lid} {
+      function mine() { return signedIn() && (lid == 'enq_' + request.auth.uid || lid == 'msg_' + request.auth.uid); }
+      function gap() { return lid.matches('enq_.*') ? 50 : 8; }
+      function cap() { return lid.matches('enq_.*') ? 5 : 50; }
+      function shape() {
+        return request.resource.data.keys().hasOnly(['last', 'day', 'count'])
+          && request.resource.data.last == request.time
+          && request.resource.data.day == today()
+          && request.resource.data.count is int;
+      }
+      allow get: if mine();
+      allow create: if mine() && shape() && request.resource.data.count == 1;
+      allow update: if mine() && shape()
+        && request.time > resource.data.last + duration.value(gap(), 's')
+        && (resource.data.day == today()
+              ? (request.resource.data.count == resource.data.count + 1 && request.resource.data.count <= cap())
+              : request.resource.data.count == 1);
+      allow delete: if false;
+    }
+
     // Team. Read your own record (the app uses it to learn your role); admins read all.
     // Admins can add, change and remove other people, never themselves.
     match /staff/{uid} {
@@ -73,7 +101,8 @@ service cloud.firestore {
         && request.resource.data.status == 'new'
         && request.resource.data.notes == null
         && request.resource.data.handled_by == null
-        && request.resource.data.created_at == request.time;
+        && request.resource.data.created_at == request.time
+        && (!signedIn() || ticketed('enq'));
       allow read: if isStaff() || isOwner();
       allow update: if isStaff()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'notes', 'handled_by', 'seen_at', 'seen_by'])
@@ -95,7 +124,7 @@ service cloud.firestore {
           && request.resource.data.author is string && request.resource.data.author.size() <= 120
           && request.resource.data.seen_at == null
           && request.resource.data.created_at == request.time
-          && ((request.resource.data.from == 'staff' && isStaff()) || (request.resource.data.from == 'customer' && ownsEnquiry()));
+          && ((request.resource.data.from == 'staff' && isStaff()) || (request.resource.data.from == 'customer' && ownsEnquiry() && ticketed('msg')));
         // The other side marks a message as seen; nothing else may change.
         allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen_at'])
           && request.resource.data.seen_at == request.time

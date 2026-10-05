@@ -4,6 +4,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
 import type { EnquiryRow } from "@/lib/db";
+import { guardedCreate, recordSend } from "@/lib/rateLimit";
 import { col, toRow, updateEnquiry } from "@/lib/enquiries";
 
 export interface ThreadMessage {
@@ -36,7 +37,10 @@ export async function fetchMessages(enquiryId: string): Promise<ThreadMessage[]>
 }
 
 export async function sendMessage(enquiryId: string, from: "staff" | "customer", text: string, author: string): Promise<void> {
-  await addDoc(messagesCol(enquiryId), { from, text: text.trim(), author: author.slice(0, 120), seen_at: null, created_at: serverTimestamp() });
+  const data = { from, text: text.trim(), author: author.slice(0, 120), seen_at: null, created_at: serverTimestamp() };
+  // Team replies are never limited; a customer's follow-ups are (see rateLimit.ts and firestore.rules).
+  if (from === "customer") { await guardedCreate("message", ["enquiries", enquiryId, "messages"], data); recordSend("message"); }
+  else await addDoc(messagesCol(enquiryId), data);
 }
 
 /** Marks the other side's unseen messages as seen. Returns how many were updated. */

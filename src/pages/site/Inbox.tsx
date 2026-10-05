@@ -8,6 +8,7 @@ import { PageHero } from "@/components/site/SiteLayout";
 import { useNoIndex } from "@/components/site/Seo";
 import { sourceLabel, STATUS_LABEL } from "@/lib/enquiries";
 import type { EnquiryRow } from "@/lib/db";
+import { checkRate, isRefused, RATE_REJECTED } from "@/lib/rateLimit";
 import { fetchMessages, fetchMyEnquiries, formatDateTime, markMessagesSeen, sendMessage, type ThreadMessage } from "@/lib/inbox";
 import { useSession } from "@/lib/staff";
 
@@ -35,13 +36,15 @@ function Thread({ row, name }: { row: EnquiryRow; name: string }) {
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() || busy) return;
+    const gate = checkRate("message");
+    if (!gate.ok) return toast.error(gate.message);
     setBusy(true);
     try {
       await sendMessage(row.id, "customer", text, name);
       setText("");
       qc.invalidateQueries({ queryKey: key });
-    } catch {
-      toast.error("Your message could not be sent. Please try again.");
+    } catch (err) {
+      toast.error(isRefused(err) ? RATE_REJECTED : "Your message could not be sent. Please try again.");
     } finally {
       setBusy(false);
     }

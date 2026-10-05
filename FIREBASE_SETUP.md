@@ -71,3 +71,17 @@ Things only you can switch on (all free, no card):
 6. **Firebase console users**: only add trusted people as project owners, and use 2-step verification on those Google accounts.
 
 Known limits: anyone can still create a customer account (they can only see their own enquiries); the 20-update limit on Project Updates is enforced by the admin page, not the database; `react-router` has an open-redirect advisory that only applies to code that redirects to user-supplied addresses (this site does not).
+
+## Rate limits (spam control)
+
+Limits on how much one visitor can send, with no extra service or card:
+
+| What | Gap between sends | Per day |
+|---|---|---|
+| New enquiry | 60 seconds | 5 |
+| Customer message in the inbox | 10 seconds | 50 |
+
+- **Everyone:** the website refuses a send that is too soon or over the daily cap and says why (counted in the visitor's browser).
+- **Signed-in customers:** Firebase enforces the same limits itself (`limits/...` documents in `firestore.rules`), so they hold even if someone bypasses the website. Team replies are never limited.
+- **Signed-out visitors** are limited by the browser only. Someone who clears their browser data or calls Firebase directly can get around it; the hidden honeypot field catches simple bots. If spam ever gets through, add Cloudflare Turnstile.
+- To change the numbers, edit `RATE` in `src/lib/rateLimit.ts` and the matching numbers in `firestore.rules`, then republish the rules.
