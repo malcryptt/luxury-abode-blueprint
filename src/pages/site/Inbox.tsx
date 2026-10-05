@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, CheckCheck, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -73,7 +73,8 @@ function Thread({ row, name }: { row: EnquiryRow; name: string }) {
 export function Inbox() {
   useNoIndex("Your enquiries");
   const { user, ready } = useSession();
-  const [open, setOpen] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const [open, setOpen] = useState<string | null>(params.get("open"));
   const { data: rows = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["inbox", "mine", user?.uid], queryFn: () => fetchMyEnquiries(user!.uid), enabled: !!user, refetchInterval: 60_000,
   });

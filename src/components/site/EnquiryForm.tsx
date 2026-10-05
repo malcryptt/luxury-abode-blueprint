@@ -3,6 +3,7 @@ import { CheckCircle2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   buildEnquiryWhatsApp,
+  CHAT_SUFFIX,
   emptyEnquiry,
   submitEnquiry,
   validateEnquiry,
@@ -12,6 +13,7 @@ import {
 import { whatsappLink } from "@/lib/siteContent";
 import { auth } from "@/integrations/firebase/client";
 import { Link } from "react-router-dom";
+import { RepliesPanel } from "@/components/site/RepliesPanel";
 
 interface EnquiryFormProps {
   /** Where the enquiry came from; shown in the admin inbox, e.g. "contact_page" or "property:arya-luxe". */
@@ -40,6 +42,7 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
   const [honeypot, setHoneypot] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [saved, setSaved] = useState(true);
+  const [mode, setMode] = useState<"whatsapp" | "chat">("whatsapp");
   const [waUrl, setWaUrl] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -48,9 +51,12 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
     if (errors[k]) setErrors((er) => ({ ...er, [k]: undefined }));
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (e: React.FormEvent) => { e.preventDefault(); return submit("whatsapp"); };
+
+  /** "whatsapp": save the enquiry and open WhatsApp. "chat": send straight to the team's dashboard, no WhatsApp. */
+  const submit = async (how: "whatsapp" | "chat") => {
     if (phase === "sending") return;
+    setMode(how);
 
     // Hidden field only bots fill in: pretend it worked and do nothing.
     if (honeypot) {
@@ -60,6 +66,11 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
 
     const input: EnquiryInput = { ...values, interest: topic ?? values.interest };
     const result = validateEnquiry(input);
+    if (how === "chat" && result.ok && !result.data.message.trim()) {
+      setErrors({ message: "Please write the message you would like to send to a representative" });
+      requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
+      return;
+    }
     if (!result.ok) {
       setErrors(result.errors);
       requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
@@ -67,12 +78,14 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
     }
 
     // Open WhatsApp first, while the click still counts as a user action (browsers block popups after an await).
-    const url = whatsappLink(whatsapp, buildEnquiryWhatsApp(result.data, topic));
-    setWaUrl(url);
-    window.open(url, "_blank", "noopener,noreferrer");
+    if (how === "whatsapp") {
+      const url = whatsappLink(whatsapp, buildEnquiryWhatsApp(result.data, topic));
+      setWaUrl(url);
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
 
     setPhase("sending");
-    const res = await submitEnquiry(result.data, source);
+    const res = await submitEnquiry(result.data, how === "chat" ? source.slice(0, 120 - CHAT_SUFFIX.length) + CHAT_SUFFIX : source);
     setSaved(res.ok);
     setPhase("sent");
   };
@@ -89,7 +102,11 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
       <div className="enq-sent" role="status">
         <CheckCircle2 size={30} aria-hidden="true" />
         <h3>{first ? `Thank you, ${first}` : "Thank you"}</h3>
-        {saved ? (
+        {mode === "chat" ? (saved ? (
+          <p>Your message has gone straight to our representatives. {auth.currentUser ? "We will reply in your inbox on this website." : "We will contact you on the number you gave. Sign in or create an account next time to read replies right here."}</p>
+        ) : (
+          <p>We could not send your message just now. Please try again, or use the Send Enquiry button to reach us on WhatsApp.</p>
+        )) : saved ? (
           <p>We have received your enquiry and will be in touch shortly. We have also opened WhatsApp so you can message us directly.</p>
         ) : (
           <p>We could not save your details on our site just now, but WhatsApp should have opened so you can message us directly. If it did not, use the button below.</p>
@@ -160,9 +177,16 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
         value={honeypot}
         onChange={(e) => setHoneypot(e.target.value)}
       />
-      <Button type="submit" className="enq-submit" disabled={phase === "sending"}>
-        {phase === "sending" ? "Sending…" : submitLabel}
-      </Button>
+      <div className="enq-buttons">
+        <Button type="submit" className="enq-submit" disabled={phase === "sending"}>
+          {phase === "sending" && mode === "whatsapp" ? "Sending…" : submitLabel}
+        </Button>
+        <Button type="button" variant="outline" className="enq-chat" disabled={phase === "sending"} onClick={() => submit("chat")}>
+          <MessageCircle size={16} aria-hidden="true" /> {phase === "sending" && mode === "chat" ? "Sending…" : "Chat with a representative"}
+        </Button>
+      </div>
+      <p className="enq-chat-note">Talking directly with a representative is generally faster.</p>
+      <RepliesPanel />
     </form>
   );
 }
