@@ -35,8 +35,8 @@ export function Home() {
       <div className="property-grid scroll-x">{c.properties.slice(0, 3).map(p => <PropertyTile key={p.id} p={p} />)}</div>
       <div className="section-link"><Link className="text-link" to="/properties">View All Properties <ArrowUpRight size={16} /></Link></div>
     </section>
-    <section className="project-feature"><div className="project-image"><img src={ph.property3} alt="Arya Luxe construction" /><span className="project-label">Currently building</span></div>
-      <div className="project-copy"><span className="eyebrow">Featured project</span><h2>Arya Luxe</h2><p>Follow the construction of Arya Luxe, a private collection of contemporary residences in Gwarinpa.</p>
+    <section className="project-feature"><div className="project-image"><img src={c.images.homeFeature || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
+      <div className="project-copy"><span className="eyebrow">Featured project</span><h2>{pr.project.name}</h2><p>{pr.project.summary}</p>
         <div className="progress-line" role="progressbar" aria-label="Arya Luxe progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pr.percent}%` }} /></div>
         <div className="progress-meta"><span>Current stage</span><strong>{pr.stages[pr.project.current_stage].title} · {pr.percent}% complete</strong></div>
         <Link className="text-link" to="/arya-luxe">Follow The Build <ArrowUpRight size={16} /></Link></div>
@@ -53,7 +53,7 @@ export function About() {
   return <>
     <Seo route="/about" />
     <PageHero eyebrow="Company" title={c.about.title} text="A property developer with roots in making." />
-    <section className="section about-section"><div className="about-image"><img src={ph.furniture1} alt="Crafted interior detail" /></div>
+    <section className="section about-section"><div className="about-image"><img src={c.images.about || ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
         <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><span>{t}</span></div>)}</div></div>
     </section>
@@ -91,6 +91,17 @@ export function PropertyDetail() {
   </>;
 }
 
+/** One large photo with small thumbnails to switch between a piece's photos. */
+function FurnitureGallery({ images, title }: { images: string[]; title: string }) {
+  const [i, setI] = useState(0);
+  const shown = images[Math.min(i, images.length - 1)];
+  return <>
+    <div className="property-image"><img src={shown} alt={title} loading="lazy" /></div>
+    {images.length > 1 && <div className="thumb-row" role="group" aria-label={`${title} photos`}>{images.map((src, k) => (
+      <button key={k} type="button" className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={`Show photo ${k + 1} of ${images.length}`} aria-pressed={k === i}><img src={src} alt="" loading="lazy" /></button>))}</div>}
+  </>;
+}
+
 export function Furniture() {
   const c = useSiteContent();
   return <>
@@ -98,7 +109,7 @@ export function Furniture() {
     <PageHero eyebrow="Handcrafted" title={c.pages.furniture.title} text={c.pages.furniture.text} />
     <section className="section"><div className="property-grid scroll-x">{c.furniture.map(f => (
       <article key={f.id} className="property-card">
-        <div className="property-image"><img src={f.images[0]} alt={f.title} loading="lazy" /></div>
+        <FurnitureGallery images={f.images} title={f.title} />
         <div className="property-info"><div><h3>{f.title}</h3><p>{f.location}</p></div><strong>{f.price}</strong></div>
         <p className="card-desc">{f.description}</p>
         <EnquiryButton look="link" topic={`the ${f.title}`} heading={f.title} source={`furniture:${slugify(f.title)}`} />
@@ -138,6 +149,7 @@ export function ProjectUpdates() {
 }
 
 export function AryaLuxe() {
+  const c = useSiteContent();
   const { data: pr } = useProject("arya-luxe");
   const cur = pr.project.current_stage;
   const [picked, setPicked] = useState<number | null>(null);
@@ -147,7 +159,7 @@ export function AryaLuxe() {
   const pct = sel < cur ? 100 : sel === cur ? st.progress : 0;
   return <>
     <Seo route="/arya-luxe" />
-    <PageHero eyebrow={`${pr.project.location} · 2025—26`} title={pr.project.name} text={pr.project.summary} image={ph.property1} />
+    <PageHero eyebrow={`${pr.project.location} · 2025—26`} title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
     <section className="section"><SectionIntro eyebrow="Current stage" title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
       <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
       <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>

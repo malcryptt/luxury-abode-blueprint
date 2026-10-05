@@ -4,7 +4,8 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
-import { PAGE_LABELS, fetchSiteContent, type PageKey, type SiteContent } from "@/lib/siteContent";
+import { ImagePicker } from "@/components/admin/ImagePicker";
+import { IMAGE_LABELS, PAGE_LABELS, fetchSiteContent, type PageKey, type SiteContent } from "@/lib/siteContent";
 
 const MIN_VALUES = 3;
 const MAX_VALUES = 6;
@@ -92,6 +93,7 @@ export default function Content() {
   const about = useSection<About>("about", data?.about);
   const contact = useSection<Contact>("contact", data?.contact);
   const pages = useSection<SiteContent["pages"]>("pages", data?.pages);
+  const images = useSection<SiteContent["images"]>("images", data?.images);
 
   if (isLoading) return <p className="adm-muted">Loading…</p>;
   if (isError || !data)
@@ -168,6 +170,17 @@ export default function Content() {
           ))}
         </div>
         <SaveBar busy={pages.busy} dirty={pages.dirty} label="Save page headings" />
+      </form>
+
+      <form className="adm-panel" onSubmit={(e) => images.save(e, "Site photos updated")}>
+        <h2>Site photos</h2>
+        <p className="sub">Photos used around the website. Use Remove to go back to the standard photo. The Home page top photo is not editable here.</p>
+        <div className="adm-grid two">
+          {(Object.keys(IMAGE_LABELS) as (keyof SiteContent["images"])[]).map((k) => (
+            <ImagePicker key={k} label={IMAGE_LABELS[k]} value={images.draft[k]} onChange={(url) => images.setDraft({ ...images.draft, [k]: url })} />
+          ))}
+        </div>
+        <SaveBar busy={images.busy} dirty={images.dirty} label="Save site photos" />
       </form>
 
       <ValuesForm section="services" initial={data.services} title="What we stand for" sub="The values shown on the About page." ok="Values updated" />

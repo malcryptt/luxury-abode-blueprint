@@ -229,6 +229,12 @@ textarea.enq-input { min-height: 96px; resize: vertical; line-height: 1.6; }
 .mobile-signin { margin-top: 8px; color: #9a7950 !important; background: none; border: 0; font: inherit; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 0; }
 .footer-signin { margin-left: 14px; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
+/* Furniture thumbnails */
+.thumb-row { display: flex; gap: 8px; padding: 10px 0 0; }
+.thumb-row button { width: 54px; height: 54px; padding: 0; border: 2px solid transparent; background: none; cursor: pointer; opacity: .75; }
+.thumb-row button.on { border-color: #9a7950; opacity: 1; }
+.thumb-row img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* Previous jobs gallery */
 .jobs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .job-card { margin: 0; background: var(--paper); }
