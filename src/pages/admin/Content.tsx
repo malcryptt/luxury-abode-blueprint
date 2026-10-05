@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
 import { ImagePicker } from "@/components/admin/ImagePicker";
+import { PageSwitches } from "@/components/admin/PageSwitches";
 import { IMAGE_LABELS, PAGE_LABELS, fetchSiteContent, type PageKey, type SiteContent } from "@/lib/siteContent";
 
 const MIN_VALUES = 3;
@@ -120,6 +121,8 @@ export default function Content() {
           <p>Edit the words and contact details shown across the website. Changes go live as soon as you save.</p>
         </div>
       </div>
+
+      <PageSwitches />
 
       <form className="adm-panel" onSubmit={(e) => hero.save(e, "Home page headline updated")}>
         <h2>Home page headline</h2>

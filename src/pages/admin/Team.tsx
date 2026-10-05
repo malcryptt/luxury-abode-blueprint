@@ -51,7 +51,7 @@ async function addMember(email: string, password: string, role: StaffRole): Prom
       try {
         uid = (await signInWithEmailAndPassword(sAuth, email, password)).user.uid;
       } catch {
-        throw new Error("That email already has an account. Enter that account's current password to give it access, or use a different email.");
+        throw new Error("That email already has a login (for example, someone removed earlier). Enter that login's current password to give it access again, or have them use “Forgot password?” on the sign-in page first and then enter their new password here.");
       }
     }
     await setDoc(doc(db, "staff", uid), { email: email.toLowerCase(), role, created_at: serverTimestamp() });
@@ -137,13 +137,17 @@ export default function Team() {
       } catch { /* no server reachable (for example, running locally) */ }
       if (res?.ok) {
         toast.success(`${m.email} was removed and their login deleted`);
-      } else if (res && res.status !== 404 && res.status !== 501) {
-        const reason = await res.json().catch(() => ({}));
-        throw new Error(reason?.error || "Could not remove that person.");
       } else {
-        // The cleanup service is not set up yet: still revoke access, but the login stays in Firebase.
+        const body = res ? await res.json().catch(() => ({})) : {};
+        // Not allowed (signed out, or not an admin): nothing was changed, so say so.
+        if (res && (res.status === 401 || res.status === 403)) throw new Error(body?.error || "You are not allowed to remove team members.");
+        // Anything else is a problem with the cleanup service. Their admin access is still taken away here.
         await deleteDoc(doc(db, "staff", m.id));
-        toast.warning(`${m.email} can no longer use the admin. Their login still exists in Firebase because the cleanup service is not set up yet.`);
+        const why = !res ? "the cleanup service could not be reached"
+          : body?.error === "bad-config" ? "the FIREBASE_SERVICE_ACCOUNT setting in Vercel is not valid JSON (open /api/remove-member on the website to check it)"
+          : res.status === 404 || res.status === 501 ? "the cleanup service is not set up yet (FIREBASE_SERVICE_ACCOUNT in Vercel)"
+          : "the cleanup service had an error";
+        toast.warning(`${m.email} can no longer use the admin. Their login still exists in Firebase because ${why}.`, { duration: 12000 });
       }
       refresh();
     } catch (err) {

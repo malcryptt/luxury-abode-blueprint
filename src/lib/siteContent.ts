@@ -13,10 +13,14 @@ export interface SiteFurniture { id: string; images: string[]; title: string; lo
 export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; hidden?: boolean }
 export type PageKey = "properties" | "furniture" | "jobs" | "updates" | "contact";
 export const PAGE_LABELS: Record<PageKey, string> = { properties: "Properties", furniture: "Furniture", jobs: "Previous Jobs", updates: "Project Updates", contact: "Contact" };
+/** Pages the team can switch off. true = hidden from the public site. */
+export interface PageVisibility { properties: boolean; furniture: boolean; aryaLuxe: boolean }
+export const HIDEABLE_LABELS: Record<keyof PageVisibility, string> = { properties: "Properties", furniture: "Furniture", aryaLuxe: "Arya Luxe" };
 export interface SiteImages { homeFeature: string; about: string; aryaBanner: string }
 export const IMAGE_LABELS: Record<keyof SiteImages, string> = { homeFeature: "Home page: Arya Luxe feature photo", about: "About page: photo beside Our story", aryaBanner: "Arya Luxe page: banner photo" };
 export interface SiteContent {
   images: SiteImages;
+  hidden: PageVisibility;
   jobs: SiteJob[];
   hero: { title: string; subtitle: string };
   about: { title: string; description: string };
@@ -35,6 +39,7 @@ export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
 const defaults: SiteContent = {
+  hidden: { properties: false, furniture: false, aryaLuxe: false },
   images: { homeFeature: "", about: "", aryaBanner: "" },
   pages: {
     properties: { title: "Properties", text: "Explore our available properties." },
@@ -101,7 +106,7 @@ export function useSiteContent() {
   const properties = content.properties.filter((p) => !p.hidden).map((p, i) => ({ ...p, slug: p.slug || slugify(p.title || `property-${i + 1}`), image: p.image || fallbackImgs[i % 3] }));
   const furniture = content.furniture.filter((f) => !f.hidden).map((f, i) => ({ ...f, images: f.images?.length ? f.images : [[furniture1, furniture2, furniture3][i % 3]] }));
   const jobs = content.jobs.filter((j) => !j.hidden).map((j, i) => ({ ...j, image: j.image || [property1, furniture1, property2, furniture2][i % 4] }));
-  return { ...content, properties, furniture, jobs };
+  return { ...content, properties, furniture, jobs, loaded: !!data };
 }
 
 export const whatsappLink = (num: string, text: string) => `https://wa.me/${num.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;

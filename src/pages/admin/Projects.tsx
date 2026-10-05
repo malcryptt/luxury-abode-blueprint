@@ -9,6 +9,7 @@ import {
 import { usableImage, type ProjectUpdateRow } from "@/lib/db";
 import { MAX_GALLERY, MAX_UPDATES, deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectDetails, saveProjectGallery, saveProjectProgress, saveProjectUpdate, type GalleryItem } from "@/lib/projects";
 import { ImagePicker } from "@/components/admin/ImagePicker";
+import { PageSwitches } from "@/components/admin/PageSwitches";
 
 const SLUG = "arya-luxe";
 const KEY = ["admin", "project", SLUG];
@@ -160,9 +161,11 @@ export default function Projects() {
       <div className="adm-head">
         <div>
           <h1>Projects</h1>
-          <p>Show visitors how far {data.project.name} has got. Changes appear on the Home, Arya Luxe and Project Updates pages.</p>
+          <p>Show visitors how far {data.project.name} has got. The build progress, photos and progress updates below appear on the Project Updates page. The name, summary and banner appear on the Home and Arya Luxe pages.</p>
         </div>
       </div>
+
+      <PageSwitches only={["aryaLuxe"]} title="Arya Luxe page" sub="Switch the Arya Luxe page off to take it out of the menu and hide the Arya Luxe feature on the Home page. The Project Updates page stays on." />
 
       <form className="adm-panel" onSubmit={saveDetails} noValidate>
         <h2>Project details</h2>
@@ -218,7 +221,7 @@ export default function Projects() {
 
       <section className="adm-panel">
         <h2>Photo gallery</h2>
-        <p className="sub">Progress photos shown on the Arya Luxe page under their stage. Up to {MAX_GALLERY} photos; each needs a name, description, stage, level of work done and date.</p>
+        <p className="sub">Progress photos shown on the Project Updates page under their stage. Up to {MAX_GALLERY} photos; each needs a name, description, stage, level of work done and date.</p>
         <div className="adm-grid">
           {gallery.map((g, i) => (
             <div key={g.id} className="stage-card">

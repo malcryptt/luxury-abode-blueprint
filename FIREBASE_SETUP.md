@@ -35,7 +35,8 @@ VITE_CLOUDINARY_UPLOAD_PRESET=your-preset-name
 ## 5. Removing a team member also deletes their login (optional but recommended)
 Without this, **Remove** still cuts off access instantly, but the person's login stays in Firebase (harmless, it can do nothing).
 1. Firebase console → ⚙ Project settings → **Service accounts** → **Generate new private key**. A `.json` file downloads. **Keep it private; never put it in the repo.**
-2. Vercel → Project → Settings → Environment Variables → add `FIREBASE_SERVICE_ACCOUNT` with the **entire contents** of that file. Redeploy.
+2. Vercel → Project → Settings → Environment Variables → add `FIREBASE_SERVICE_ACCOUNT` with the **entire contents** of that file (paste it exactly as it is, including the curly brackets). Redeploy.
+3. Check it: open `https://wslproperties.com.ng/api/remove-member` in a browser. It should say `"ok":true`. If it says the setting is missing or not valid, fix the variable in Vercel and redeploy. (This page never shows the key itself.)
 
 ## 6. Check it works
 - Signed out, open `/admin` → you are sent to `/auth`.
