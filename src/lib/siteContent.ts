@@ -13,7 +13,10 @@ export interface SiteFurniture { id: string; images: string[]; title: string; lo
 export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; hidden?: boolean }
 export type PageKey = "properties" | "furniture" | "jobs" | "updates" | "contact";
 export const PAGE_LABELS: Record<PageKey, string> = { properties: "Properties", furniture: "Furniture", jobs: "Previous Jobs", updates: "Project Updates", contact: "Contact" };
+export interface SiteImages { homeFeature: string; about: string; aryaBanner: string }
+export const IMAGE_LABELS: Record<keyof SiteImages, string> = { homeFeature: "Home page: Arya Luxe feature photo", about: "About page: photo beside Our story", aryaBanner: "Arya Luxe page: banner photo" };
 export interface SiteContent {
+  images: SiteImages;
   jobs: SiteJob[];
   hero: { title: string; subtitle: string };
   about: { title: string; description: string };
@@ -32,6 +35,7 @@ export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
 const defaults: SiteContent = {
+  images: { homeFeature: "", about: "", aryaBanner: "" },
   pages: {
     properties: { title: "Properties", text: "Explore our available properties." },
     furniture: { title: "Furniture", text: "Bespoke pieces made with the same care as our homes." },

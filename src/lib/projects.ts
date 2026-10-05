@@ -102,6 +102,10 @@ export async function saveProjectGallery(slug: string, gallery: GalleryItem[]): 
   await updateDoc(projectRef(slug), { gallery, updated_at: serverTimestamp() });
 }
 
+export async function saveProjectDetails(slug: string, d: { name: string; location: string; summary: string }): Promise<void> {
+  await updateDoc(projectRef(slug), { name: d.name, location: d.location, summary: d.summary, updated_at: serverTimestamp() });
+}
+
 export interface UpdateInput { stage: number; title: string; body: string; posted_on: string; published: boolean; images: string[] }
 
 export async function saveProjectUpdate(slug: string, input: UpdateInput, id?: string): Promise<void> {
