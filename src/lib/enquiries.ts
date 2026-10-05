@@ -1,3 +1,4 @@
+import { guardedCreate, isRefused, RATE_REJECTED, recordSend } from "@/lib/rateLimit";
 import { z } from "zod";
 import {
   addDoc, collection, deleteDoc, doc, getCountFromServer, getDocs, limit as fsLimit, orderBy, query, serverTimestamp,
@@ -70,7 +71,7 @@ export async function submitEnquiry(data: EnquiryInput, source: string): Promise
   try {
     // addDoc waits for the server; don't leave a visitor staring at "Sending…" on a bad connection.
     await Promise.race([
-      addDoc(col(), {
+      guardedCreate("enquiry", ["enquiries"], {
         name: data.name,
         phone: data.phone,
         email: data.email || null,
@@ -85,9 +86,10 @@ export async function submitEnquiry(data: EnquiryInput, source: string): Promise
       }),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
     ]);
+    recordSend("enquiry");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: (e as Error).message };
+    return { ok: false, error: isRefused(e) && auth.currentUser ? RATE_REJECTED : (e as Error).message };
   }
 }
 

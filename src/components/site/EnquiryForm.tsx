@@ -10,6 +10,7 @@ import {
   type EnquiryErrors,
   type EnquiryInput,
 } from "@/lib/enquiries";
+import { checkRate, RATE_REJECTED } from "@/lib/rateLimit";
 import { whatsappLink } from "@/lib/siteContent";
 import { auth } from "@/integrations/firebase/client";
 import { Link } from "react-router-dom";
@@ -44,6 +45,7 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
   const [saved, setSaved] = useState(true);
   const [mode, setMode] = useState<"whatsapp" | "chat">("whatsapp");
   const [waUrl, setWaUrl] = useState("");
+  const [limitError, setLimitError] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   const set = (k: keyof EnquiryInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -77,6 +79,10 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
       return;
     }
 
+    const gate = checkRate("enquiry");
+    if (!gate.ok) { setLimitError(gate.message); return; }
+    setLimitError("");
+
     // Open WhatsApp first, while the click still counts as a user action (browsers block popups after an await).
     if (how === "whatsapp") {
       const url = whatsappLink(whatsapp, buildEnquiryWhatsApp(result.data, topic));
@@ -86,6 +92,7 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
 
     setPhase("sending");
     const res = await submitEnquiry(result.data, how === "chat" ? source.slice(0, 120 - CHAT_SUFFIX.length) + CHAT_SUFFIX : source);
+    if (!res.ok && res.error === RATE_REJECTED) { setLimitError(res.error); setPhase("idle"); return; }
     setSaved(res.ok);
     setPhase("sent");
   };
@@ -185,6 +192,7 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
           <MessageCircle size={16} aria-hidden="true" /> {phase === "sending" && mode === "chat" ? "Sending…" : "Chat with a representative"}
         </Button>
       </div>
+      {limitError && <p className="field-error" role="alert">{limitError}</p>}
       <p className="enq-chat-note">Talking directly with a representative is generally faster.</p>
       <RepliesPanel />
     </form>
