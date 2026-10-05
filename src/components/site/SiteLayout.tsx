@@ -2,7 +2,7 @@ import { signOutUser, useSession } from "@/lib/staff";
 import { useReplies } from "@/lib/inbox";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { Menu, ChevronRight, LayoutDashboard, LogIn, LogOut, Inbox, ArrowUpRight, Instagram, Facebook } from "lucide-react";
+import { Menu, ChevronRight, LayoutDashboard, LogIn, LogOut, Inbox, ArrowUpRight, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@/assets/wsl-logo.png";
@@ -54,14 +54,20 @@ export function SiteLayout() {
         <div><Link className="wordmark" to="/"><img src={logo} alt="" /><span>WSL <b>REALTY</b></span></Link><p>Luxury homes, built with craft. Abuja, Nigeria.</p></div>
         <nav aria-label="Footer">{links.map(([l, to]) => <Link key={to} to={to}>{l}</Link>)}</nav>
         <div className="socials">
-          <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
-          <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
+          <a href="https://www.instagram.com/warohomes" target="_blank" rel="noreferrer" aria-label="Instagram: @warohomes" title="@warohomes"><Instagram size={18} /></a>
+          <a href="https://www.instagram.com/wslrealty" target="_blank" rel="noreferrer" aria-label="Instagram: @wslrealty" title="@wslrealty"><Instagram size={18} /></a>
+          <a href="https://www.tiktok.com/@warosynergy" target="_blank" rel="noreferrer" aria-label="TikTok: @warosynergy" title="@warosynergy"><TikTok size={18} /></a>
           <Link className="text-link" to="/contact">Enquire Now <ArrowUpRight size={14} /></Link>
         </div>
         <small>© {new Date().getFullYear()} WSL Realty. All rights reserved. {user && !staff && <Link className="footer-signin" to="/inbox">My enquiries</Link>}{staff && <Link className="footer-signin" to="/admin">Admin</Link>}{user ? <button type="button" className="footer-signin" onClick={out}>Sign out</button> : <Link className="footer-signin" to="/auth">Sign in</Link>}</small>
       </footer>
     </div>
   );
+}
+
+/** lucide has no TikTok mark, so it is drawn here. */
+function TikTok({ size = 18 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 2h-3.2v13.2a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.2 6.2 0 1 0 5.2 6.1V8.6a7.9 7.9 0 0 0 4.6 1.5V6.9a4.7 4.7 0 0 1-4.6-4.9Z" /></svg>;
 }
 
 export function PageHero({ eyebrow, title, text, image }: { eyebrow: string; title: string; text?: string; image?: string }) {

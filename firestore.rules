@@ -104,6 +104,19 @@ service cloud.firestore {
       }
     }
 
+    // Media library: the photos staff have uploaded (Cloudinary links only), so they can be reused.
+    match /media/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff()
+        && request.resource.data.keys().hasOnly(['url', 'name', 'created_at'])
+        && request.resource.data.url is string && request.resource.data.url.size() <= 500
+        && request.resource.data.url.matches('^https://res\\.cloudinary\\.com/.*')
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.created_at == request.time;
+      allow update: if false;
+      allow delete: if isStaff();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
