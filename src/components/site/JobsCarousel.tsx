@@ -1,23 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { sized } from "@/lib/img";
 import { LazyVideo } from "@/components/site/LazyVideo";
 import type { SiteJob } from "@/lib/siteContent";
 
-const EVERY_MS = 4500;
+const EVERY_MS = 3000;
 
 /**
- * Previous work as a slideshow. It moves on by itself and can also be scrolled, swiped, or stepped with the arrows
- * and dots. It pauses while someone is hovering, touching, focused inside it, or playing a video, and it does not
- * move by itself for visitors who ask their device for reduced motion.
+ * Previous work as a slideshow. It moves on every 3 seconds by itself and keeps going. It only stands still while a
+ * visitor is holding it (finger or mouse button down, so they can swipe or drag) or a video is playing, and carries on
+ * as soon as they let go. It can also be stepped with the arrows and dots. It does not move by itself for visitors who
+ * ask their device for reduced motion.
  */
 export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const [hold, setHold] = useState(false);       // pointer / focus is inside
+  const [hold, setHold] = useState(false);       // a finger or the mouse button is down on it
   const [playing, setPlaying] = useState(false);  // a video is playing
-  const [paused, setPaused] = useState(false);    // the visitor pressed pause
+  const [tick, setTick] = useState(0);            // restarts the 3 second timer after a touch
   const [reduced, setReduced] = useState(false);
-  const lastTouch = useRef(0);
   const n = jobs.length;
 
   useEffect(() => {
@@ -50,12 +51,12 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
   };
   useEffect(() => () => clearTimeout(settle.current), []);
 
-  const auto = n > 1 && !reduced && !paused && !hold && !playing;
+  const auto = n > 1 && !reduced && !hold && !playing;
   useEffect(() => {
     if (!auto) return;
-    const t = setInterval(() => { if (Date.now() - lastTouch.current > 2500) goTo(index + 1); }, EVERY_MS);
-    return () => clearInterval(t);
-  }, [auto, index, goTo]);
+    const t = setTimeout(() => goTo(index + 1), EVERY_MS);
+    return () => clearTimeout(t);
+  }, [auto, index, tick, goTo]);
 
   // Resizing changes the slide width, so keep the current slide in view.
   useEffect(() => {
@@ -65,20 +66,23 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
   }, [index]);
 
   if (!n) return null;
-  const touched = () => { lastTouch.current = Date.now(); };
+  const touched = () => setTick((t) => t + 1);
+  const release = () => { setHold(false); touched(); };
 
   return (
     <div
       className="jobs-carousel"
+      data-hold={hold || playing ? "1" : "0"}
       role="region"
       aria-roledescription="carousel"
       aria-label="Photos of our previous work"
-      onMouseEnter={() => setHold(true)}
-      onMouseLeave={() => setHold(false)}
-      onFocus={() => setHold(true)}
-      onBlur={() => setHold(false)}
-      onTouchStart={() => { setHold(true); touched(); }}
-      onTouchEnd={() => { touched(); setTimeout(() => setHold(false), 1500); }}
+      onPointerDown={(e) => { if (e.pointerType === "mouse") setHold(true); }}
+      onPointerUp={(e) => { if (e.pointerType === "mouse") release(); }}
+      onPointerCancel={(e) => { if (e.pointerType === "mouse") release(); }}
+      onTouchStart={() => setHold(true)}
+      onTouchEnd={release}
+      onTouchCancel={release}
+      onMouseLeave={() => { if (hold) release(); }}
       onKeyDown={(e) => { if (e.key === "ArrowRight") { touched(); goTo(index + 1); } if (e.key === "ArrowLeft") { touched(); goTo(index - 1); } }}
     >
       <div className="jc-track" ref={track} onScroll={onScroll} aria-live={auto ? "off" : "polite"} tabIndex={0}>
@@ -86,8 +90,8 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
           <figure className="jc-slide" key={j.id} aria-roledescription="slide" aria-label={`${i + 1} of ${n}`}>
             <div className="jc-media">
               {j.video
-                ? <LazyVideo src={j.video} title={j.title} poster={j.image} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />
-                : <img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 2 ? "eager" : "lazy"} draggable={false} />}
+                ? <LazyVideo src={j.video} title={j.title} poster={sized(j.image, 1200)} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />
+                : <img src={sized(j.image, 1200)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} />}
             </div>
             <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption>
           </figure>
@@ -97,7 +101,6 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
         <div className="jc-bar">
           <div className="jc-dots">{jobs.map((j, i) => <button key={j.id} type="button" className={i === index ? "on" : ""} onClick={() => { touched(); goTo(i); }} aria-label={`Show photo ${i + 1}`} aria-current={i === index} />)}</div>
           <div className="jc-ctrl">
-            {!reduced && <button type="button" className="jc-btn" onClick={() => setPaused((p) => !p)} aria-label={paused ? "Start the slideshow" : "Pause the slideshow"}>{paused ? <Play size={15} /> : <Pause size={15} />}</button>}
             <button type="button" className="jc-btn" onClick={() => { touched(); goTo(index - 1); }} aria-label="Previous photo"><ChevronLeft size={20} /></button>
             <button type="button" className="jc-btn" onClick={() => { touched(); goTo(index + 1); }} aria-label="Next photo"><ChevronRight size={20} /></button>
           </div>

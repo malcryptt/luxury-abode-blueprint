@@ -157,13 +157,17 @@ export default function Arya() {
             {a.units.map((u, i) => (
               <div key={u.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14, alignContent: "start" }}>
                 <Field label="Tab name"><input type="text" maxLength={40} value={u.label} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} /></Field>
+                <div className="adm-grid two">
+                  <Field label="How many"><input type="text" maxLength={40} value={u.count} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, count: e.target.value } : x)) })} /></Field>
+                  <Field label="Size of each"><input type="text" maxLength={40} value={u.size} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, size: e.target.value } : x)) })} /></Field>
+                </div>
                 <Field label="Description"><textarea rows={3} maxLength={600} value={u.description} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} /></Field>
                 <Field label="Features (one per line)"><textarea rows={5} maxLength={1000} value={u.features} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, features: e.target.value } : x)) })} /></Field>
                 <div className="adm-actions" style={{ marginTop: 0 }}><button type="button" className="adm-btn small ghost" onClick={() => set({ units: a.units.filter((_, j) => j !== i) })}><Trash2 size={14} /> Remove</button></div>
               </div>
             ))}
           </div>
-          <div className="adm-actions"><button type="button" className="adm-btn ghost" disabled={a.units.length >= ARYA_LIMITS.units} onClick={() => set({ units: [...a.units, { id: newId(), label: "", description: "", features: "" }] })}><Plus size={16} /> Add an apartment type</button><span className="adm-muted">{a.units.length} of {ARYA_LIMITS.units} used</span></div>
+          <div className="adm-actions"><button type="button" className="adm-btn ghost" disabled={a.units.length >= ARYA_LIMITS.units} onClick={() => set({ units: [...a.units, { id: newId(), label: "", count: "", size: "", description: "", features: "" }] })}><Plus size={16} /> Add an apartment type</button><span className="adm-muted">{a.units.length} of {ARYA_LIMITS.units} used</span></div>
         </section>
 
         <section className="adm-panel">

@@ -79,7 +79,7 @@ export function PageHero({ eyebrow, title, text, image }: { eyebrow: string; tit
   return (
     <section className={`page-hero ${image ? "with-image" : ""}`}>
       {image && <><img src={image} alt="" /><div className="hero-shade" /></>}
-      <div className="page-hero-copy"><span className={`eyebrow ${image ? "light" : ""}`}>{eyebrow}</span><h1>{title}</h1>{text && <p>{text}</p>}</div>
+      <div className="page-hero-copy">{eyebrow && <span className={`eyebrow ${image ? "light" : ""}`}>{eyebrow}</span>}<h1>{title}</h1>{text && <p>{text}</p>}</div>
     </section>
   );
 }

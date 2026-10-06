@@ -154,7 +154,7 @@ export default function Content() {
       </form>
 
       <ValuesForm section="services" initial={data.services} title="What we stand for" sub="The values shown on the About page." ok="Values updated" />
-      <ValuesForm section="promise" initial={data.promise} title="Why WSL Realty" sub="The three promises shown on the Home page." ok="Home promises updated" />
+      <ValuesForm section="promise" initial={data.promise} title="Why WSL Realty" sub="The promises shown on the Home page under the heading We think beyond the building." ok="Home promises updated" />
     </>
   );
 }
