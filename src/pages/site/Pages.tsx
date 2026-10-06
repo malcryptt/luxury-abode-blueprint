@@ -4,7 +4,7 @@ import { ArrowUpRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
-import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
+import { useSiteContent, placeholders as ph, whatsappLink, telHref, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { JobsCarousel } from "@/components/site/JobsCarousel";
@@ -137,7 +137,7 @@ export function PreviousJobs() {
     <Seo route="/previous-jobs" />
     <PageHero eyebrow="Portfolio" title={c.pages.jobs.title} text={c.pages.jobs.text} />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
-      <div className="filter-tabs">{["All", "Builds", "Furniture"].map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
+      <div className="filter-tabs">{(c.jobs.some(j => j.category === "Furniture") ? ["All", "Builds", "Furniture"] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
       <JobsCarousel key={filter} jobs={shown} />
       <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={j.image} /> : <img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" />}</div>
@@ -220,7 +220,7 @@ export function Contact() {
     <Seo route="/contact" />
     <PageHero eyebrow="Start a conversation" title={c.pages.contact.title} text={c.pages.contact.text} />
     <section className="contact-section">
-      <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={`tel:${c.contact.phone}`}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>
+      <div className="contact-details"><a href={`mailto:${c.contact.email}`}><Mail size={18} />{c.contact.email}</a><a href={telHref(c.contact.phone)}><Phone size={18} />{c.contact.phone}</a><span><MapPin size={18} />{c.contact.address}</span></div>
       <EnquiryForm source="contact_page" whatsapp={c.contact.whatsapp} showInterest />
     </section>
     <section className="contact-inbox"><div><h2>Follow your enquiry</h2>

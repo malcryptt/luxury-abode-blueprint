@@ -16,11 +16,9 @@ import {
 const DIST = path.resolve("dist");
 const PLACEHOLDER = "<!--SEO-HEAD-->";
 
-// Same three listings the site ships with (see src/lib/siteContent.ts and the data migration).
+// The one listing the site ships with (see src/lib/siteContent.ts).
 const DEFAULT_PROPERTIES = [
-  { slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "A private collection of contemporary residences currently under construction.", price: "Price on request", status: "under_construction", images: [] },
-  { slug: "4-bedroom-smart-home", title: "4 Bedroom Smart Home", location: "Gwarinpa, Abuja", description: "A fully automated family home with premium finishes throughout.", price: "₦95,000,000", status: "available", bedrooms: 4, images: [] },
-  { slug: "the-palm-residence", title: "The Palm Residence", location: "Jabi, Abuja", description: "A 3-bedroom apartment designed around light and calm.", price: "₦72,000,000", status: "available", bedrooms: 3, images: [] },
+  { slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "Off-plan 3 and 4-bedroom smart apartments in Gwarinpa, Abuja. Foundation complete, superstructure starting.", price: "Price on request", status: "under_construction", images: [] },
 ];
 
 function readEnv() {
@@ -57,6 +55,20 @@ function decode(v) {
   if ("arrayValue" in v) return (v.arrayValue.values || []).map(decode);
   if ("mapValue" in v) return Object.fromEntries(Object.entries(v.mapValue.fields || {}).map(([k, x]) => [k, decode(x)]));
   return null;
+}
+
+// Pages the team switched off. Furniture is off by default until its photography is ready.
+const ROUTE_FLAGS = { "/properties": "properties", "/furniture": "furniture", "/arya-luxe": "aryaLuxe" };
+async function loadHidden() {
+  const hidden = { properties: false, furniture: true, aryaLuxe: false };
+  const project = readEnv().VITE_FIREBASE_PROJECT_ID;
+  if (!project) return hidden;
+  try {
+    const doc = await getJson(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/content/hidden`, {});
+    const v = decode(doc.fields?.value);
+    if (v && typeof v === "object") for (const k of Object.keys(hidden)) if (typeof v[k] === "boolean") hidden[k] = v[k];
+  } catch (e) { console.log(`  page visibility not available (${e.message})`); }
+  return hidden;
 }
 
 async function loadProperties() {
@@ -97,13 +109,15 @@ const withHead = (seo) => template.replace(PLACEHOLDER, renderHeadHtml(seo));
 const { source, list } = await loadProperties();
 console.log(`prerender: ${STATIC_ROUTES.length} fixed pages + ${list.length} properties (from ${source})`);
 
+const hiddenPages = await loadHidden();
 const pages = [];
 for (const r of STATIC_ROUTES) {
+  if (ROUTE_FLAGS[r.path] && hiddenPages[ROUTE_FLAGS[r.path]]) { console.log(`  skipping ${r.path} (hidden)`); continue; }
   write(r.path, withHead(buildSeo(routeSeoInput(r.path))));
   pages.push(r);
 }
 const seen = new Set();
-for (const p of list) {
+for (const p of hiddenPages.properties ? [] : list) {
   if (!p.slug || seen.has(p.slug)) continue;
   seen.add(p.slug);
   const route = `/properties/${p.slug}`;

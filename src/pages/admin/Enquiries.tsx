@@ -14,6 +14,7 @@ import {
 } from "@/lib/enquiries";
 import { fetchMessages, formatDateTime, markEnquirySeen, markMessagesSeen, sendMessage } from "@/lib/inbox";
 import { useAdmin } from "./context";
+import { telHref } from "@/lib/siteContent";
 
 /** The conversation with a customer who sent the enquiry while signed in. Opening it marks their messages as seen. */
 function Conversation({ row, staffEmail }: { row: EnquiryRow; staffEmail: string }) {
@@ -247,7 +248,7 @@ export default function Enquiries() {
               {current.message && <div className="enq-msg">{current.message}</div>}
 
               <div className="adm-actions" style={{ marginTop: 0, marginBottom: 20 }}>
-                <a className="adm-btn small" href={`tel:${current.phone}`}><Phone size={15} /> Call</a>
+                <a className="adm-btn small" href={telHref(current.phone)}><Phone size={15} /> Call</a>
                 <a className="adm-btn small ghost" href={`https://wa.me/${toWhatsAppNumber(current.phone)}`} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp</a>
                 {current.email && <a className="adm-btn small ghost" href={`mailto:${current.email}`}><Mail size={15} /> Email</a>}
               </div>

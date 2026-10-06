@@ -48,6 +48,9 @@ export interface SiteContent {
 /** Most items each admin-managed list may hold. Also enforced in firestore.rules. */
 export const LIMITS = { properties: 25, furniture: 30, jobs: 30, projects: 20, projectImages: 20 } as const;
 
+/** Phone number in international form for tel: links (08028081047 becomes +2348028081047). */
+export const telHref = (n: string) => { const d = (n || "").replace(/[^\d+]/g, ""); return "tel:" + (d.startsWith("0") ? "+234" + d.slice(1) : d); };
+
 export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
@@ -97,11 +100,8 @@ const defaults: SiteContent = {
     { id: "j-katsina", category: "Builds", title: "Katsina Government House", location: "Katsina State", description: "Remodelling and finishing works for the Katsina State Government House.", image: property1 },
     { id: "j-bayelsa", category: "Builds", title: "Bayelsa Government House", location: "Bayelsa State", description: "Remodelling and finishing works for the Bayelsa State Government House.", image: property2 },
     { id: "j1", category: "Builds", title: "Residential build", location: "Abuja", description: "A family home delivered with considered finishes throughout.", image: property1 },
-    { id: "j2", category: "Furniture", title: "Bespoke bed set", location: "Abuja", description: "Handcrafted to the client's room and taste.", image: furniture1 },
     { id: "j3", category: "Builds", title: "Contemporary apartment", location: "Abuja", description: "An apartment planned around light and calm.", image: property2 },
-    { id: "j4", category: "Furniture", title: "Dining collection", location: "Abuja", description: "A statement dining set made for gatherings.", image: furniture2 },
     { id: "j5", category: "Builds", title: "Private residence", location: "Abuja", description: "A private home built with lasting materials.", image: property3 },
-    { id: "j6", category: "Furniture", title: "Luxury soft furnishings", location: "Abuja", description: "Tailored cushions and finishing pieces.", image: furniture3 },
   ],
   hero: { title: "Luxury Homes, Built With Craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
   about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
