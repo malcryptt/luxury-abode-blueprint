@@ -138,7 +138,7 @@ export function PreviousJobs() {
     <Seo route="/previous-jobs" />
     <PageHero eyebrow="Portfolio" title={c.pages.jobs.title} text={c.pages.jobs.text} />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
-      <div className="filter-tabs">{(c.jobs.some(j => j.category === "Furniture") ? ["All", "Builds", "Furniture"] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
+      <div className="filter-tabs">{(["Builds", "Furniture"].filter(k => c.jobs.some(j => j.category === k)).length > 1 ? ["All", "Builds", "Furniture"] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
       <JobsCarousel key={filter} jobs={shown} />
       <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={j.image} /> : <img src={sized(j.image, 800)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" decoding="async" />}</div>
