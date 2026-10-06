@@ -4,6 +4,7 @@ import { ArrowUpRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
+import { sized } from "@/lib/img";
 import { useSiteContent, placeholders as ph, whatsappLink, telHref, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
@@ -24,7 +25,7 @@ function Gate({ page, children }: { page: keyof PageVisibility; children: React.
 function PropertyTile({ p }: { p: SiteProperty }) {
   return (
     <Link to={`/properties/${p.slug}`} className="property-card">
-      <div className="property-image"><img src={p.image} alt={p.title} loading="lazy" /><span className="arrow"><ArrowUpRight size={20} /></span></div>
+      <div className="property-image"><img src={sized(p.image, 900)} alt={p.title} loading="lazy" decoding="async" /><span className="arrow"><ArrowUpRight size={20} /></span></div>
       <div className="property-info"><div><h3>{p.title}</h3><p>{p.location}</p></div><strong>{p.price}</strong></div>
       <span className="text-link small">View Details <ArrowUpRight size={14} /></span>
     </Link>
@@ -45,7 +46,7 @@ export function Home() {
       <div className="section-link"><Link className="text-link" to="/properties">View All Properties <ArrowUpRight size={16} /></Link></div>
     </section>
     }
-    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image"><img src={c.images.homeFeature || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
+    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image"><img decoding="async" src={sized(c.images.homeFeature, 1200) || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
       <div className="project-copy"><span className="eyebrow">Featured project</span><h2>{pr.project.name}</h2><p>{pr.project.summary}</p>
         <div className="project-links"><Button asChild><Link to="/arya-luxe">Discover {pr.project.name} <ArrowUpRight size={16} /></Link></Button><Link className="text-link" to="/project-updates">Follow The Build</Link></div></div>
     </section>
@@ -91,7 +92,7 @@ function PropertyDetailPage() {
   const others = c.properties.filter(x => x.slug !== slug).slice(0, 3);
   return <>
     <Seo property={p} />
-    <section className="detail"><img className="detail-image" src={p.image} alt={p.title} />
+    <section className="detail"><img className="detail-image" src={sized(p.image, 1600)} alt={p.title} />
       <div className="detail-copy"><span className="eyebrow">Featured property</span><h1>{p.title}</h1><p className="detail-loc"><MapPin size={16} /> {p.location}</p>
         <strong className="detail-price">{p.price}</strong><p>{p.description}</p>
         <div className="hero-actions"><EnquiryButton topic={`${p.title} (${p.location})`} heading={p.title} source={`property:${p.slug}`} />
@@ -107,9 +108,9 @@ function FurnitureGallery({ images, title }: { images: string[]; title: string }
   const [i, setI] = useState(0);
   const shown = images[Math.min(i, images.length - 1)];
   return <>
-    <div className="property-image"><img src={shown} alt={title} loading="lazy" /></div>
+    <div className="property-image"><img src={sized(shown, 1000)} alt={title} loading="lazy" decoding="async" /></div>
     {images.length > 1 && <div className="thumb-row" role="group" aria-label={`${title} photos`}>{images.map((src, k) => (
-      <button key={k} type="button" className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={`Show photo ${k + 1} of ${images.length}`} aria-pressed={k === i}><img src={src} alt="" loading="lazy" /></button>))}</div>}
+      <button key={k} type="button" className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={`Show photo ${k + 1} of ${images.length}`} aria-pressed={k === i}><img src={sized(src, 200)} alt="" loading="lazy" decoding="async" /></button>))}</div>}
   </>;
 }
 
@@ -140,7 +141,7 @@ export function PreviousJobs() {
       <div className="filter-tabs">{(c.jobs.some(j => j.category === "Furniture") ? ["All", "Builds", "Furniture"] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
       <JobsCarousel key={filter} jobs={shown} />
-      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={j.image} /> : <img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" />}</div>
+      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={j.image} /> : <img src={sized(j.image, 800)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" decoding="async" />}</div>
         <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
     </section>
   </>;
@@ -161,16 +162,16 @@ export function ProjectUpdates() {
     <section className="section"><SectionIntro eyebrow={pr.project.name} title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
       <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
       <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>
-      <div className="journal-detail"><img src={stageImage(st.image, sel % 2 ? ph.property2 : ph.property3)} alt={`${st.title} at ${pr.project.name}`} />
+      <div className="journal-detail"><img decoding="async" src={sized(stageImage(st.image, sel % 2 ? ph.property2 : ph.property3), 1200)} alt={`${st.title} at ${pr.project.name}`} />
         <div><span className="eyebrow">Stage 0{sel + 1} · {state}</span><h3>{st.title}</h3>
           <div className="progress-line" aria-hidden="true" style={{ margin: "14px 0" }}><span style={{ width: `${pct}%` }} /></div>
           <p>{st.note || (sel < cur ? "This stage is complete." : sel === cur ? `Work on this stage is ${pct}% done.` : "This stage is upcoming.")}</p></div></div>
       {pr.gallery.some(g => g.stage === sel) && <div className="stage-gallery" aria-label={`${st.title} photos`}>{pr.gallery.filter(g => g.stage === sel).map(g => (
-        <figure key={g.id}><img src={g.image} alt={g.title} loading="lazy" /><figcaption><strong>{g.title}</strong><span>{g.taken_on ? formatDate(g.taken_on) : ""}{g.taken_on ? " · " : ""}{g.level}% of this stage done</span><p>{g.description}</p></figcaption></figure>))}</div>}
+        <figure key={g.id}><img src={sized(g.image, 800)} alt={g.title} loading="lazy" decoding="async" /><figcaption><strong>{g.title}</strong><span>{g.taken_on ? formatDate(g.taken_on) : ""}{g.taken_on ? " · " : ""}{g.level}% of this stage done</span><p>{g.description}</p></figcaption></figure>))}</div>}
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Project update" title="Latest updates" />
       <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
-        <article key={u.id} className="update-item"><img src={stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" />
+        <article key={u.id} className="update-item"><img src={sized(stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3), 700)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" decoding="async" />
           <div><span className="eyebrow">{pr.project.name} · {formatDate(u.posted_on)}</span><h3>{u.title || pr.stages[u.stage]?.title}</h3><p>{u.body}</p>{!c.hidden.aryaLuxe && <Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link>}</div></article>))}</div>
     </section>
     <section className="section"><SectionIntro eyebrow="Stay informed" title="Get project updates" text="Message us on WhatsApp to receive new progress reports." /><Button asChild><Link to="/contact">Register Interest</Link></Button></section>
@@ -204,7 +205,7 @@ function AryaLuxePage() {
     {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title="Features and amenities" />
       <div className="value-grid">{a.highlights.map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div></section>}
     {gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
-      <div className="stage-gallery">{gallery.map(g => <figure key={g.id}><img src={g.image} alt={g.caption || pr.project.name} loading="lazy" />{g.caption && <figcaption><p>{g.caption}</p></figcaption>}</figure>)}</div></section>}
+      <div className="stage-gallery">{gallery.map(g => <figure key={g.id}><img src={sized(g.image, 900)} alt={g.caption || pr.project.name} loading="lazy" decoding="async" />{g.caption && <figcaption><p>{g.caption}</p></figcaption>}</figure>)}</div></section>}
     {a.video && <section className="section"><SectionIntro eyebrow="Film" title={`See ${pr.project.name}`} />
       <div className="arya-video"><LazyVideo src={a.video} title={`${pr.project.name} film`} /></div></section>}
     <section className="section tinted"><SectionIntro eyebrow="Interested?" title={a.cta.title} text={a.cta.text} />
