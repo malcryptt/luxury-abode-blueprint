@@ -156,6 +156,7 @@ export default function Arya() {
           <div className="adm-grid two">
             {a.units.map((u, i) => (
               <div key={u.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14, alignContent: "start" }}>
+                <ImagePicker label="Photo of this apartment type" value={u.image} onChange={(url) => set({ units: a.units.map((x, j) => (j === i ? { ...x, image: url } : x)) })} />
                 <Field label="Tab name"><input type="text" maxLength={40} value={u.label} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} /></Field>
                 <div className="adm-grid two">
                   <Field label="How many"><input type="text" maxLength={40} value={u.count} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, count: e.target.value } : x)) })} /></Field>
@@ -167,7 +168,7 @@ export default function Arya() {
               </div>
             ))}
           </div>
-          <div className="adm-actions"><button type="button" className="adm-btn ghost" disabled={a.units.length >= ARYA_LIMITS.units} onClick={() => set({ units: [...a.units, { id: newId(), label: "", count: "", size: "", description: "", features: "" }] })}><Plus size={16} /> Add an apartment type</button><span className="adm-muted">{a.units.length} of {ARYA_LIMITS.units} used</span></div>
+          <div className="adm-actions"><button type="button" className="adm-btn ghost" disabled={a.units.length >= ARYA_LIMITS.units} onClick={() => set({ units: [...a.units, { id: newId(), label: "", count: "", size: "", image: "", description: "", features: "" }] })}><Plus size={16} /> Add an apartment type</button><span className="adm-muted">{a.units.length} of {ARYA_LIMITS.units} used</span></div>
         </section>
 
         <section className="adm-panel">
