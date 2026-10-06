@@ -51,12 +51,34 @@ export const placeholders = { property1, property2, property3, furniture1, furni
 
 const defaults: SiteContent = {
   arya: {
-    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja." },
-    facts: [], highlights: [], gallery: [], video: "",
+    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja. Stone, dark cladding and planted terraces give the building a calm, modern character, with a rooftop lounge, courtyard pool and covered parking designed around everyday comfort. Images shown are architectural renders." },
+    facts: [
+      { id: "f1", label: "Location", value: "Gwarinpa, Abuja" },
+      { id: "f2", label: "Status", value: "Under construction" },
+      { id: "f3", label: "Developer", value: "WSL Realty" },
+    ],
+    highlights: [
+      { id: "h1", title: "Rooftop lounge", description: "A landscaped rooftop terrace with generous seating, made for slow evenings above the city." },
+      { id: "h2", title: "Private courtyard pool", description: "A quiet plunge pool framed by timber decking and planting, tucked away from the street." },
+      { id: "h3", title: "Covered parking", description: "A sheltered, well-lit parking level with polished floors and direct access to the residences." },
+      { id: "h4", title: "Green terraces", description: "Planted balconies and roof gardens soften the building and bring greenery to every level." },
+      { id: "h5", title: "Architectural lighting", description: "Warm integrated light lines trace the building after dark and give it a distinctive night-time presence." },
+    ],
+    gallery: [
+      { id: "g1", image: "/arya/front-elevation-day.webp", caption: "Front elevation: clean lines, stone and dark cladding" },
+      { id: "g2", image: "/arya/street-golden-hour.webp", caption: "The residences at golden hour" },
+      { id: "g3", image: "/arya/night-corner.webp", caption: "Corner view with architectural lighting at dusk" },
+      { id: "g4", image: "/arya/rooftop-lounge.webp", caption: "Rooftop lounge and terrace" },
+      { id: "g5", image: "/arya/rooftop-walkway.webp", caption: "Landscaped rooftop walkway" },
+      { id: "g6", image: "/arya/courtyard-pool.webp", caption: "Private courtyard pool" },
+      { id: "g7", image: "/arya/parking-sunset.webp", caption: "Covered parking at sunset" },
+      { id: "g8", image: "/arya/parking-interior.webp", caption: "Parking level interior" },
+    ],
+    video: "",
     cta: { title: "Register your interest", text: "Units are limited. Speak to our team about pricing and availability." },
   },
   hidden: { properties: false, furniture: false, aryaLuxe: false },
-  images: { homeFeature: "", about: "", aryaBanner: "" },
+  images: { homeFeature: "/arya/street-golden-hour.webp", about: "", aryaBanner: "/arya/banner-night-elevation.webp" },
   pages: {
     properties: { title: "Properties", text: "Explore our available properties." },
     furniture: { title: "Furniture", text: "Bespoke pieces made with the same care as our homes." },
