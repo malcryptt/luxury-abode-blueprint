@@ -45,7 +45,7 @@ service cloud.firestore {
     }
 
     // Team. Read your own record (the app uses it to learn your role); admins read all.
-    // Admins can add, change and remove other people, never themselves, and never the owner account
+    // Admins can add, change and remove other people, never themselves, and never the technical admin account
     // (hello@zexlabs.com.ng). The limits of 3 admins and 10 people are enforced in the Team page.
     match /staff/{uid} {
       allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
