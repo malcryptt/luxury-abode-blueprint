@@ -7,9 +7,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { usableImage, type ProjectUpdateRow } from "@/lib/db";
-import { MAX_GALLERY, MAX_UPDATES, deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectDetails, saveProjectGallery, saveProjectProgress, saveProjectUpdate, type GalleryItem } from "@/lib/projects";
+import { MAX_GALLERY, MAX_UPDATES, deleteProjectUpdate, fetchProject, formatDate, overallPercent, saveProjectGallery, saveProjectProgress, saveProjectUpdate, type GalleryItem } from "@/lib/projects";
 import { ImagePicker } from "@/components/admin/ImagePicker";
-import { PageSwitches } from "@/components/admin/PageSwitches";
 
 const SLUG = "arya-luxe";
 const KEY = ["admin", "project", SLUG];
@@ -31,9 +30,6 @@ export default function Projects() {
   const [editing, setEditing] = useState<UpdateDraft | null>(null);
   const [savingUpdate, setSavingUpdate] = useState(false);
   const [toDelete, setToDelete] = useState<ProjectUpdateRow | null>(null);
-  const [details, setDetails] = useState({ name: "", location: "", summary: "" });
-  const [detailsOk, setDetailsOk] = useState("");
-  const [savingDetails, setSavingDetails] = useState(false);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [galleryOk, setGalleryOk] = useState("[]");
   const [savingGallery, setSavingGallery] = useState(false);
@@ -44,8 +40,6 @@ export default function Projects() {
     setCurrent(data.project.current_stage);
     setStages(s);
     setSaved(JSON.stringify([data.project.current_stage, s]));
-    const d = { name: data.project.name, location: data.project.location, summary: data.project.summary };
-    setDetails(d); setDetailsOk(JSON.stringify(d));
     setGallery(data.gallery.map((g) => ({ ...g })));
     setGalleryOk(JSON.stringify(data.gallery));
   }, [data]);
@@ -99,26 +93,6 @@ export default function Projects() {
     }
   };
 
-  const detailsDirty = JSON.stringify(details) !== detailsOk;
-  const saveDetails = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!details.name.trim()) return toast.error("Give the project a name");
-    if (!details.location.trim()) return toast.error("Give the project a location");
-    if (!details.summary.trim()) return toast.error("Write a short summary of the project");
-    setSavingDetails(true);
-    try {
-      const d = { name: details.name.trim(), location: details.location.trim(), summary: details.summary.trim() };
-      await saveProjectDetails(SLUG, d);
-      setDetails(d); setDetailsOk(JSON.stringify(d));
-      toast.success("Project details updated");
-      refresh();
-    } catch {
-      toast.error("Could not save the project details. Please try again.");
-    } finally {
-      setSavingDetails(false);
-    }
-  };
-
   const galleryDirty = JSON.stringify(gallery) !== galleryOk;
   const setG = (i: number, patch: Partial<GalleryItem>) => setGallery(gallery.map((g, j) => (j === i ? { ...g, ...patch } : g)));
   const saveGallery = async () => {
@@ -160,23 +134,10 @@ export default function Projects() {
     <>
       <div className="adm-head">
         <div>
-          <h1>Projects</h1>
-          <p>Show visitors how far {data.project.name} has got. The build progress, photos and progress updates below appear on the Project Updates page. The name, summary and banner appear on the Home and Arya Luxe pages.</p>
+          <h1>Project progress</h1>
+          <p>Show visitors how far {data.project.name} has got. The build progress, photos and progress updates below appear on the Project Updates page. The Arya Luxe page itself (its photos and description) is edited under Arya Luxe.</p>
         </div>
       </div>
-
-      <PageSwitches only={["aryaLuxe"]} title="Arya Luxe page" sub="Switch the Arya Luxe page off to take it out of the menu and hide the Arya Luxe feature on the Home page. The Project Updates page stays on." />
-
-      <form className="adm-panel" onSubmit={saveDetails} noValidate>
-        <h2>Project details</h2>
-        <p className="sub">The name, location and summary shown on the Home page and at the top of the Arya Luxe page.</p>
-        <div className="adm-grid two">
-          <label className="adm-field"><span>Project name</span><input type="text" maxLength={80} value={details.name} onChange={(e) => setDetails({ ...details, name: e.target.value })} /></label>
-          <label className="adm-field"><span>Location</span><input type="text" maxLength={100} value={details.location} onChange={(e) => setDetails({ ...details, location: e.target.value })} /></label>
-        </div>
-        <label className="adm-field" style={{ marginTop: 14 }}><span>Summary</span><textarea rows={3} maxLength={600} value={details.summary} onChange={(e) => setDetails({ ...details, summary: e.target.value })} /><small>{details.summary.length} of 600 characters</small></label>
-        <div className="adm-actions"><button className="adm-btn" disabled={savingDetails || !detailsDirty}><Save size={16} /> {savingDetails ? "Saving…" : "Save details"}</button>{!detailsDirty && !savingDetails && <span className="adm-muted">No changes to save</span>}</div>
-      </form>
 
       <section className="adm-panel">
         <h2>Build progress</h2>

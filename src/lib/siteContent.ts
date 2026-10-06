@@ -10,15 +10,26 @@ import furniture3 from "@/assets/furniture-3.jpg";
 
 export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string; hidden?: boolean }
 export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string; hidden?: boolean }
-export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; hidden?: boolean }
+export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; video?: string; hidden?: boolean }
 export type PageKey = "properties" | "furniture" | "jobs" | "updates" | "contact";
 export const PAGE_LABELS: Record<PageKey, string> = { properties: "Properties", furniture: "Furniture", jobs: "Previous Jobs", updates: "Project Updates", contact: "Contact" };
 /** Pages the team can switch off. true = hidden from the public site. */
 export interface PageVisibility { properties: boolean; furniture: boolean; aryaLuxe: boolean }
 export const HIDEABLE_LABELS: Record<keyof PageVisibility, string> = { properties: "Properties", furniture: "Furniture", aryaLuxe: "Arya Luxe" };
+/** Everything on the Arya Luxe page except the name, location and summary (those live on the project). */
+export interface SiteArya {
+  about: { title: string; text: string };
+  facts: { id: string; label: string; value: string }[];
+  highlights: { id: string; title: string; description: string }[];
+  gallery: { id: string; image: string; caption: string }[];
+  video: string;
+  cta: { title: string; text: string };
+}
+export const ARYA_LIMITS = { facts: 8, highlights: 8, gallery: 20 } as const;
 export interface SiteImages { homeFeature: string; about: string; aryaBanner: string }
 export const IMAGE_LABELS: Record<keyof SiteImages, string> = { homeFeature: "Home page: Arya Luxe feature photo", about: "About page: photo beside Our story", aryaBanner: "Arya Luxe page: banner photo" };
 export interface SiteContent {
+  arya: SiteArya;
   images: SiteImages;
   hidden: PageVisibility;
   jobs: SiteJob[];
@@ -39,6 +50,11 @@ export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 export const placeholders = { property1, property2, property3, furniture1, furniture2, furniture3 };
 
 const defaults: SiteContent = {
+  arya: {
+    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja." },
+    facts: [], highlights: [], gallery: [], video: "",
+    cta: { title: "Register your interest", text: "Units are limited. Speak to our team about pricing and availability." },
+  },
   hidden: { properties: false, furniture: false, aryaLuxe: false },
   images: { homeFeature: "", about: "", aryaBanner: "" },
   pages: {

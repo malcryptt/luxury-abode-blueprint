@@ -6,6 +6,8 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/client";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import { PageSwitches } from "@/components/admin/PageSwitches";
+import { VideoPicker } from "@/components/admin/VideoPicker";
+import { MAX_JOB_VIDEOS } from "@/lib/upload";
 import { LIMITS, fetchSiteContent, placeholders, slugify, type SiteFurniture, type SiteJob, type SiteProperty } from "@/lib/siteContent";
 
 type Kind = "properties" | "furniture" | "jobs";
@@ -37,6 +39,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
   const [busy, setBusy] = useState(false);
   useEffect(() => { const d = toDraft(initial); setDraft(d); setSaved(d); }, [initial]); // eslint-disable-line react-hooks/exhaustive-deps
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const videoCount = kind === "jobs" ? draft.filter((x) => (x as SiteJob).video).length : 0;
 
   const patch = (i: number, p: Partial<SiteProperty & SiteFurniture & SiteJob>) => setDraft(draft.map((x, j) => (j === i ? { ...x, ...p } : x)) as Item[]);
   const add = () => setDraft([...draft, (isProp
@@ -61,7 +64,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
       if (!x.location.trim()) return toast.error(`"${label}" needs a location`);
       if (hasPrice && !(x as SiteProperty).price?.trim()) return toast.error(`"${label}" needs a price`);
       if (!x.description.trim()) return toast.error(`"${label}" needs a description`);
-      if (!x.hidden && !photos.some(Boolean)) return toast.error(`"${label}" needs a photo (or hide it until it has one)`);
+      if (!x.hidden && !photos.some(Boolean)) return toast.error(`"${label}" needs a photo (or hide it until it has one)${kind === "jobs" ? ". The photo is also the still picture shown before a video is played" : ""}`);
       if (!single && photos.some((p) => p === "")) return toast.error(`"${label}" has an empty photo slot. Add a photo or remove the slot`);
     }
     const used = new Set<string>();
@@ -75,6 +78,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
         (item as SiteProperty).slug = s;
       }
       if (!item.hidden) delete item.hidden;
+      if (kind === "jobs" && !(item as SiteJob).video) delete (item as SiteJob).video;
       return item;
     });
     setBusy(true);
@@ -107,7 +111,13 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
           <div className="adm-grid" style={{ marginTop: 14 }}>
             <Field label="Description"><textarea rows={3} maxLength={1000} value={x.description} onChange={(e) => patch(i, { description: e.target.value })} /></Field>
             {single ? (
-              <ImagePicker label="Photo" value={(x as SiteProperty).image} onChange={(url) => patch(i, { image: url })} />
+              <>
+                <ImagePicker label="Photo" value={(x as SiteProperty).image} onChange={(url) => patch(i, { image: url })} />
+                {kind === "jobs" && (
+                  <VideoPicker label="Video (optional)" value={(x as SiteJob).video ?? ""} onChange={(url) => patch(i, { video: url })}
+                    disabled={videoCount >= MAX_JOB_VIDEOS} disabledReason={`Previous Jobs can hold ${MAX_JOB_VIDEOS} videos and all ${MAX_JOB_VIDEOS} are used. Remove one to add another.`} />
+                )}
+              </>
             ) : (
               <>
                 {(x as SiteFurniture).images.map((img, k) => (

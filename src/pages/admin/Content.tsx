@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db } from "@/integrations/firebase/client";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import { PageSwitches } from "@/components/admin/PageSwitches";
+import { useSection } from "./useSection";
 import { IMAGE_LABELS, PAGE_LABELS, fetchSiteContent, type PageKey, type SiteContent } from "@/lib/siteContent";
 
 const MIN_VALUES = 3;
@@ -15,11 +13,6 @@ type Hero = SiteContent["hero"];
 type About = SiteContent["about"];
 type Contact = SiteContent["contact"];
 type Service = SiteContent["services"][number];
-
-/** Writes one section. setDoc creates it if it does not exist yet. */
-async function saveSection(section: string, content: unknown) {
-  await setDoc(doc(db, "content", section), { value: content, updated_at: serverTimestamp() });
-}
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return <label className="adm-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
@@ -32,32 +25,6 @@ function SaveBar({ busy, dirty, label }: { busy: boolean; dirty: boolean; label:
       {!dirty && !busy && <span className="adm-muted">No changes to save</span>}
     </div>
   );
-}
-
-/** Shared behaviour for one editable section: local draft, dirty flag, save + refresh the public site cache. */
-function useSection<T>(section: string, initial: T | undefined) {
-  const qc = useQueryClient();
-  const [draft, setDraft] = useState<T | undefined>(initial);
-  const [saved, setSaved] = useState<T | undefined>(initial);
-  const [busy, setBusy] = useState(false);
-  useEffect(() => { setDraft(initial); setSaved(initial); }, [initial]);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
-  const save = async (e: React.FormEvent, ok: string) => {
-    e.preventDefault();
-    if (draft === undefined) return;
-    setBusy(true);
-    try {
-      await saveSection(section, draft);
-      setSaved(draft);
-      qc.invalidateQueries({ queryKey: ["site-content"] });
-      toast.success(ok);
-    } catch {
-      toast.error("Could not save. Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-  return { draft: (draft ?? initial) as T, setDraft: setDraft as (v: T) => void, dirty, busy, save };
 }
 
 function ValuesForm({ section, initial, title, sub, ok }: { section: string; initial: Service[] | undefined; title: string; sub: string; ok: string }) {
@@ -177,9 +144,9 @@ export default function Content() {
 
       <form className="adm-panel" onSubmit={(e) => images.save(e, "Site photos updated")}>
         <h2>Site photos</h2>
-        <p className="sub">Photos used around the website. Use Remove to go back to the standard photo. The Home page top photo is not editable here.</p>
+        <p className="sub">Photos used around the website. Use Remove to go back to the standard photo. The Home page top photo is not editable here, and the Arya Luxe banner is edited on the Arya Luxe page.</p>
         <div className="adm-grid two">
-          {(Object.keys(IMAGE_LABELS) as (keyof SiteContent["images"])[]).map((k) => (
+          {(Object.keys(IMAGE_LABELS) as (keyof SiteContent["images"])[]).filter((k) => k !== "aryaBanner").map((k) => (
             <ImagePicker key={k} label={IMAGE_LABELS[k]} value={images.draft[k]} onChange={(url) => images.setDraft({ ...images.draft, [k]: url })} />
           ))}
         </div>
