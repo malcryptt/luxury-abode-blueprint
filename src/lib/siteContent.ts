@@ -23,11 +23,11 @@ export interface SiteArya {
   highlights: { id: string; title: string; description: string }[];
   gallery: { id: string; image: string; caption: string }[];
   /** The apartment types on offer (shown as tabs). features: one per line. */
-  units: { id: string; label: string; description: string; features: string }[];
+  units: { id: string; label: string; count: string; size: string; description: string; features: string }[];
   video: string;
   cta: { title: string; text: string };
 }
-export const ARYA_LIMITS = { facts: 8, highlights: 8, gallery: 20, units: 4 } as const;
+export const ARYA_LIMITS = { facts: 8, highlights: 16, gallery: 20, units: 4 } as const;
 export interface SiteImages { homeFeature: string; about: string; aryaBanner: string }
 export const IMAGE_LABELS: Record<keyof SiteImages, string> = { homeFeature: "Home page: Arya Luxe feature photo", about: "About page: photo beside Our story", aryaBanner: "Arya Luxe page: banner photo" };
 export interface SiteContent {
@@ -56,19 +56,26 @@ export const placeholders = { property1, property2, property3, furniture1, furni
 
 const defaults: SiteContent = {
   arya: {
-    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja. Stone, dark cladding and planted terraces give the building a calm, modern character, with a rooftop lounge, courtyard pool and covered parking designed around everyday comfort. The foundation is complete and the superstructure is now starting, so you can buy into the vision while it rises. Images shown are architectural renders." },
+    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja. Stone, dark cladding and planted terraces give the building a calm, modern character, with nine fully furnished smart apartments, private rooftops, a gym, a pool and basement parking designed around everyday comfort. The foundation is complete and the superstructure is now starting, so you can buy into the vision while it rises. Images shown are architectural renders." },
     facts: [
       { id: "f1", label: "Location", value: "Gwarinpa, Abuja" },
       { id: "f2", label: "Status", value: "Off-plan · foundation complete" },
-      { id: "f3", label: "Configurations", value: "3 and 4-bedroom smart apartments" },
+      { id: "f3", label: "Configurations", value: "6 three-bedroom and 3 four-bedroom smart apartments" },
       { id: "f4", label: "Developer", value: "WSL Realty" },
     ],
     highlights: [
-      { id: "h1", title: "Rooftop lounge", description: "A landscaped rooftop terrace with generous seating, made for slow evenings above the city." },
-      { id: "h2", title: "Private courtyard pool", description: "A quiet plunge pool framed by timber decking and planting, tucked away from the street." },
-      { id: "h3", title: "Covered parking", description: "A sheltered, well-lit parking level with polished floors and direct access to the residences." },
-      { id: "h4", title: "Green terraces", description: "Planted balconies and roof gardens soften the building and bring greenery to every level." },
-      { id: "h5", title: "Architectural lighting", description: "Warm integrated light lines trace the building after dark and give it a distinctive night-time presence." },
+      { id: "h1", title: "Fully furnished smart apartments", description: "Every apartment is delivered fully furnished and fully automated." },
+      { id: "h2", title: "Basement parking", description: "Secure parking in the basement level." },
+      { id: "h3", title: "Concierge", description: "A concierge service for residents and their guests." },
+      { id: "h4", title: "EV charging points", description: "Charging points for electric vehicles." },
+      { id: "h5", title: "Private rooftop", description: "Each apartment has its own private rooftop." },
+      { id: "h6", title: "Lift", description: "Lift access to every floor." },
+      { id: "h7", title: "External storage", description: "Private storage for each apartment, located in the basement." },
+      { id: "h8", title: "Concealed AC", description: "Air conditioning is concealed for clean, uninterrupted interiors." },
+      { id: "h9", title: "15 KVA solar", description: "A 15 KVA solar installation for reliable, efficient power." },
+      { id: "h10", title: "30 kW battery", description: "A 30 kW battery system to keep the building powered." },
+      { id: "h11", title: "Gym", description: "A residents' gym within the building." },
+      { id: "h12", title: "Pool", description: "A swimming pool for residents." },
     ],
     gallery: [
       { id: "g1", image: "/arya/front-elevation-day.webp", caption: "Front elevation: clean lines, stone and dark cladding" },
@@ -81,8 +88,8 @@ const defaults: SiteContent = {
       { id: "g8", image: "/arya/parking-interior.webp", caption: "Parking level interior" },
     ],
     units: [
-      { id: "u3", label: "3-Bedroom", description: "One wing of Arya Luxe is made up of 3-bedroom smart apartments, planned around light, calm and easy family living.", features: "Fully automated smart-home system\nSmart lighting, climate and security control\nBalcony living and planted terraces\nAccess to the rooftop lounge, courtyard pool and covered parking" },
-      { id: "u4", label: "4-Bedroom", description: "The opposite wing holds the larger 4-bedroom smart apartments, with more space for family, guests and entertaining.", features: "Fully automated smart-home system\nSmart lighting, climate and security control\nLarger living and entertaining spaces\nAccess to the rooftop lounge, courtyard pool and covered parking" },
+      { id: "u3", label: "3-Bedroom", count: "6 apartments", size: "320 m²", description: "One side of Arya Luxe holds six 3-bedroom smart apartments of 320 m² each, delivered fully furnished.", features: "Fully furnished and fully automated\nPrivate rooftop for your own use\nExternal storage in the basement\nConcealed air conditioning" },
+      { id: "u4", label: "4-Bedroom", count: "3 apartments", size: "400 m²", description: "The opposite side holds three 4-bedroom smart apartments of 400 m² each, delivered fully furnished.", features: "Fully furnished and fully automated\nPrivate rooftop for your own use\nExternal storage in the basement\nConcealed air conditioning" },
     ],
     video: "",
     cta: { title: "Register your interest", text: "Units are limited. Speak to our team about pricing and availability." },
@@ -107,7 +114,7 @@ const defaults: SiteContent = {
   about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
   contact: { phone: "08028081047", email: "Warosynergylimited@gmail.com", address: "Abuja, Nigeria", whatsapp: "2348028081047" },
   properties: [
-    { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "Off-plan 3 and 4-bedroom smart apartments. Foundation complete, superstructure starting.", price: "Price on request", image: "/arya/street-golden-hour.webp" },
+    { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "Off-plan 3 and 4-bedroom fully furnished smart apartments. Foundation complete, superstructure starting.", price: "Price on request", image: "/arya/street-golden-hour.webp" },
   ],
   promise: [
     { id: "craft", title: "Craft", description: "A heritage in bespoke furniture shapes every finish." },

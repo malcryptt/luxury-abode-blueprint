@@ -182,7 +182,7 @@ function AryaUnits({ units }: { units: SiteArya["units"] }) {
   const u = units[Math.min(i, units.length - 1)];
   return <div className="arya-units">
     <div role="tablist" aria-label="Apartment type" className="arya-unit-tabs">{units.map((x, k) => <button key={x.id} type="button" role="tab" aria-selected={k === i} className={k === i ? "active" : ""} onClick={() => setI(k)}>{x.label}</button>)}</div>
-    <div role="tabpanel" className="arya-unit-panel"><p>{u.description}</p>
+    <div role="tabpanel" className="arya-unit-panel"><p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
       <ul>{u.features.split(/\n+/).map(t => t.trim()).filter(Boolean).map((t, k) => <li key={k}>{t}</li>)}</ul></div>
   </div>;
 }
@@ -199,9 +199,9 @@ function AryaLuxePage() {
     {a.facts.length > 0 && <section className="arya-facts" aria-label="Key facts"><dl>{a.facts.map(f => <div key={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl></section>}
     {(a.about.title || paras.length > 0) && <section className="section arya-about"><SectionIntro eyebrow="The building" title={a.about.title} />
       <div className="arya-text">{paras.map((t, i) => <p key={i}>{t}</p>)}</div></section>}
-    {a.units.length > 0 && <section className="section"><SectionIntro eyebrow="Apartments" title="Two configurations, fully smart" />
+    {a.units.length > 0 && <section className="section"><SectionIntro eyebrow="Apartments" title="3 and 4-bedroom smart apartments" />
       <AryaUnits units={a.units} /></section>}
-    {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title={`What makes ${pr.project.name} special`} />
+    {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title="Features and amenities" />
       <div className="value-grid">{a.highlights.map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div></section>}
     {gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
       <div className="stage-gallery">{gallery.map(g => <figure key={g.id}><img src={g.image} alt={g.caption || pr.project.name} loading="lazy" />{g.caption && <figcaption><p>{g.caption}</p></figcaption>}</figure>)}</div></section>}
