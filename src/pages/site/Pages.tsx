@@ -203,7 +203,8 @@ function AryaLuxePage() {
     {c.loaded && a.units.length > 0 && <section className="section"><SectionIntro eyebrow="Apartments" title="3 and 4-bedroom smart apartments" />
       <AryaUnits units={a.units} /></section>}
     {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title="Features and amenities" />
-      <div className="value-grid">{a.highlights.map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div></section>}
+      {a.highlights.some(h => h.image) && <div className="arya-feature-photos">{a.highlights.filter(h => h.image).map(h => <figure key={h.id}><img src={sized(h.image, 900)} alt={h.title} loading="lazy" decoding="async" /><figcaption><h3>{h.title}</h3><p>{h.description}</p></figcaption></figure>)}</div>}
+      {a.highlights.some(h => !h.image) && <div className="value-grid">{a.highlights.filter(h => !h.image).map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div>}</section>}
     {c.loaded && gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
       <div className="stage-gallery">{gallery.map(g => <figure key={g.id}><img src={sized(g.image, 900)} alt={g.caption || pr.project.name} loading="lazy" decoding="async" />{g.caption && <figcaption><p>{g.caption}</p></figcaption>}</figure>)}</div></section>}
     {a.video && <section className="section"><SectionIntro eyebrow="Film" title={`See ${pr.project.name}`} />

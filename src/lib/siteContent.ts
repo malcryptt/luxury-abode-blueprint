@@ -20,7 +20,7 @@ export const HIDEABLE_LABELS: Record<keyof PageVisibility, string> = { propertie
 export interface SiteArya {
   about: { title: string; text: string };
   facts: { id: string; label: string; value: string }[];
-  highlights: { id: string; title: string; description: string }[];
+  highlights: { id: string; title: string; description: string; image?: string }[];
   gallery: { id: string; image: string; caption: string }[];
   /** The apartment types on offer (shown as tabs). features: one per line. */
   units: { id: string; label: string; count: string; size: string; image: string; description: string; features: string }[];
@@ -65,17 +65,17 @@ const defaults: SiteContent = {
     ],
     highlights: [
       { id: "h1", title: "Fully furnished smart apartments", description: "Every apartment is delivered fully furnished and fully automated." },
-      { id: "h2", title: "Basement parking", description: "Secure parking in the basement level." },
+      { id: "h2", title: "Basement parking", description: "Secure parking in the basement level.", image: "/arya/parking-interior.webp" },
       { id: "h3", title: "Concierge", description: "A concierge service for residents and their guests." },
       { id: "h4", title: "EV charging points", description: "Charging points for electric vehicles." },
-      { id: "h5", title: "Private rooftop", description: "Each apartment has its own private rooftop." },
+      { id: "h5", title: "Private rooftop", description: "Each apartment has its own private rooftop.", image: "/arya/rooftop-lounge.webp" },
       { id: "h6", title: "Lift", description: "Lift access to every floor." },
       { id: "h7", title: "External storage", description: "Private storage for each apartment, located in the basement." },
       { id: "h8", title: "Concealed AC", description: "Air conditioning is concealed for clean, uninterrupted interiors." },
       { id: "h9", title: "15 KVA solar", description: "A 15 KVA solar installation for reliable, efficient power." },
       { id: "h10", title: "30 kW battery", description: "A 30 kW battery system to keep the building powered." },
       { id: "h11", title: "Gym", description: "A residents' gym within the building." },
-      { id: "h12", title: "Pool", description: "A swimming pool for residents." },
+      { id: "h12", title: "Pool", description: "A swimming pool for residents.", image: "/arya/courtyard-pool.webp" },
     ],
     gallery: [
       { id: "g1", image: "/arya/front-elevation-day.webp", caption: "Front elevation: clean lines, stone and dark cladding" },
