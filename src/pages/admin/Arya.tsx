@@ -133,10 +133,11 @@ export default function Arya() {
 
         <section className="adm-panel">
           <h2>Features</h2>
-          <p className="sub">The things that make the building special, each with a title and a description. Optional; up to {ARYA_LIMITS.highlights}. The section is hidden when there are none.</p>
+          <p className="sub">The things that make the building special, each with a title, a description and an optional photo. Optional; up to {ARYA_LIMITS.highlights}. The section is hidden when there are none.</p>
           <div className="adm-grid">
             {a.highlights.map((h, i) => (
               <div key={h.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14 }}>
+                <ImagePicker label={`Feature ${i + 1} photo (optional)`} value={h.image || ""} onChange={(url) => set({ highlights: a.highlights.map((x, j) => (j === i ? { ...x, image: url } : x)) })} />
                 <Field label={`Feature ${i + 1} title`}><input type="text" maxLength={80} value={h.title} onChange={(e) => set({ highlights: a.highlights.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)) })} /></Field>
                 <Field label="Description" hint={`${h.description.length} of 1,000 characters`}><textarea rows={3} maxLength={1000} value={h.description} onChange={(e) => set({ highlights: a.highlights.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} /></Field>
                 <div className="adm-actions" style={{ marginTop: 0 }}>
