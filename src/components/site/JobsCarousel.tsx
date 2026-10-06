@@ -33,8 +33,11 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
   const goTo = useCallback((i: number) => {
     const el = track.current;
     if (!el || !n) return;
-    const next = ((i % n) + n) % n;
-    el.scrollTo({ left: next * el.clientWidth, behavior: reduced ? "auto" : "smooth" });
+    // Going on from the last photo carries on forwards into a copy of the first one (see the clone slide below); the
+    // jump back to the real first photo happens unseen once the scroll has settled.
+    const forward = i === n && n > 1;
+    const next = forward ? 0 : ((i % n) + n) % n;
+    el.scrollTo({ left: (forward ? n : next) * el.clientWidth, behavior: reduced ? "auto" : "smooth" });
     setIndex(next);
   }, [n, reduced]);
 
@@ -46,7 +49,9 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
     settle.current = setTimeout(() => {
       const el = track.current;
       if (!el || !el.clientWidth) return;
-      setIndex(Math.min(n - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth))));
+      const at = Math.round(el.scrollLeft / el.clientWidth);
+      if (n > 1 && at >= n) { el.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior }); setIndex(0); return; }
+      setIndex(Math.min(n - 1, Math.max(0, at)));
     }, 140);
   };
   useEffect(() => () => clearTimeout(settle.current), []);
@@ -86,16 +91,18 @@ export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
       onKeyDown={(e) => { if (e.key === "ArrowRight") { touched(); goTo(index + 1); } if (e.key === "ArrowLeft") { touched(); goTo(index - 1); } }}
     >
       <div className="jc-track" ref={track} onScroll={onScroll} aria-live={auto ? "off" : "polite"} tabIndex={0}>
-        {jobs.map((j, i) => (
-          <figure className="jc-slide" key={j.id} aria-roledescription="slide" aria-label={`${i + 1} of ${n}`}>
+        {(n > 1 ? [...jobs, jobs[0]] : jobs).map((j, i) => {
+          const clone = i === n;
+          return (
+          <figure className="jc-slide" key={clone ? "clone" : j.id} aria-roledescription="slide" aria-label={`${(clone ? 0 : i) + 1} of ${n}`} aria-hidden={clone || undefined} data-clone={clone || undefined}>
             <div className="jc-media">
               {j.video
                 ? <LazyVideo src={j.video} title={j.title} poster={sized(j.image, 1200)} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />
-                : <><img className="jc-bg" src={sized(j.image, 400)} alt="" aria-hidden="true" loading="lazy" decoding="async" draggable={false} /><img className="jc-photo" src={sized(j.image, 1200)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} /></>}
+                : <><img className="jc-bg" src={sized(j.image, 400)} alt="" aria-hidden="true" loading="lazy" decoding="async" draggable={false} /><img className="jc-photo" src={sized(j.image, 1200)} alt={clone ? "" : `${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} /></>}
             </div>
             <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption>
-          </figure>
-        ))}
+          </figure>);
+        })}
       </div>
       {n > 1 && <>
         <div className="jc-bar">

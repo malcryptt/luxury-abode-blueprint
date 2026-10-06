@@ -183,7 +183,7 @@ function AryaUnits({ units }: { units: SiteArya["units"] }) {
   const u = units[Math.min(i, units.length - 1)];
   return <div className="arya-units">
     <div role="tablist" aria-label="Apartment type" className="arya-unit-tabs">{units.map((x, k) => <button key={x.id} type="button" role="tab" aria-selected={k === i} className={k === i ? "active" : ""} onClick={() => setI(k)}>{x.label}</button>)}</div>
-    <div role="tabpanel" className="arya-unit-panel"><p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
+    <div role="tabpanel" className="arya-unit-panel">{u.image && <img className="arya-unit-img" src={sized(u.image, 1200)} alt={`${u.label} apartment`} loading="lazy" decoding="async" />}<p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
       <ul>{u.features.split(/\n+/).map(t => t.trim()).filter(Boolean).map((t, k) => <li key={k}>{t}</li>)}</ul></div>
   </div>;
 }
