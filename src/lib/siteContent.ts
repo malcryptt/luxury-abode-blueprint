@@ -117,9 +117,11 @@ const defaults: SiteContent = {
     { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "Off-plan 3 and 4-bedroom fully furnished smart apartments. Foundation complete, superstructure starting.", price: "Price on request", image: "/arya/street-golden-hour.webp" },
   ],
   promise: [
-    { id: "craft", title: "Craft", description: "A heritage in bespoke furniture shapes every finish." },
-    { id: "clarity", title: "Clarity", description: "Transparent progress updates at every stage." },
-    { id: "longevity", title: "Longevity", description: "Homes built with materials and methods that last." },
+    { id: "thought", title: "Thought through", description: "We consider the details others overlook, from the quality behind the walls to the roads, schools, healthcare, security and everyday conveniences around your home." },
+    { id: "purpose", title: "Built with purpose", description: "Every space is designed to be beautiful, functional and sustainable, not simply built to be sold." },
+    { id: "home", title: "Made to feel at home", description: "Comfort is not an afterthought. From the architecture to the interiors and furnishings, every detail is considered to create a space that feels complete, calm and distinctly yours." },
+    { id: "trust", title: "Experience you can trust", description: "Seven years of creating furniture, interiors, remodels and exceptional spaces have taught us what it takes to get the details right. Now, we bring that experience to every property we build." },
+    { id: "foundation", title: "From foundation to finish", description: "We bring design, construction, finishing, interiors and furnishing together under one vision, so you don't have to coordinate the pieces yourself." },
   ],
   services: [
     { id: "quality", title: "Quality", description: "No shortcuts on materials or workmanship." },

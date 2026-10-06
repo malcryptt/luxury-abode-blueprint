@@ -51,7 +51,7 @@ export function Home() {
         <div className="project-links"><Button asChild><Link to="/arya-luxe">Discover {pr.project.name} <ArrowUpRight size={16} /></Link></Button><Link className="text-link" to="/project-updates">Follow The Build</Link></div></div>
     </section>
     }
-    <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Realty" />
+    <section className="section why"><SectionIntro eyebrow="Our promise" title="We think beyond the building" />
       <div className="value-grid">{c.promise.map(v => <div key={v.id}><h3>{v.title}</h3><p>{v.description}</p></div>)}</div>
       <div className="section-link"><Button asChild><Link to="/contact">Enquire Now</Link></Button></div>
     </section>
@@ -196,7 +196,7 @@ function AryaLuxePage() {
   const paras = (a.about.text || "").split(/\n+/).map(t => t.trim()).filter(Boolean);
   return <>
     <Seo route="/arya-luxe" />
-    <PageHero eyebrow={pr.project.location} title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
+    <PageHero eyebrow="" title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
     {a.facts.length > 0 && <section className="arya-facts" aria-label="Key facts"><dl>{a.facts.map(f => <div key={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl></section>}
     {(a.about.title || paras.length > 0) && <section className="section arya-about"><SectionIntro eyebrow="The building" title={a.about.title} />
       <div className="arya-text">{paras.map((t, i) => <p key={i}>{t}</p>)}</div></section>}
