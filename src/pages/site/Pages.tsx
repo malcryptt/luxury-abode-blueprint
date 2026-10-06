@@ -7,6 +7,8 @@ import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
 import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty, type PageVisibility } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
+import { JobsCarousel } from "@/components/site/JobsCarousel";
+import { LazyVideo } from "@/components/site/LazyVideo";
 import NotFound from "@/pages/NotFound";
 import { useProject, stageImage, formatDate } from "@/lib/projects";
 import { useSession } from "@/lib/staff";
@@ -45,9 +47,7 @@ export function Home() {
     }
     {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image"><img src={c.images.homeFeature || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
       <div className="project-copy"><span className="eyebrow">Featured project</span><h2>{pr.project.name}</h2><p>{pr.project.summary}</p>
-        <div className="progress-line" role="progressbar" aria-label="Arya Luxe progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pr.percent}%` }} /></div>
-        <div className="progress-meta"><span>Current stage</span><strong>{pr.stages[pr.project.current_stage].title} · {pr.percent}% complete</strong></div>
-        <Link className="text-link" to="/project-updates">Follow The Build <ArrowUpRight size={16} /></Link></div>
+        <div className="project-links"><Button asChild><Link to="/arya-luxe">Discover {pr.project.name} <ArrowUpRight size={16} /></Link></Button><Link className="text-link" to="/project-updates">Follow The Build</Link></div></div>
     </section>
     }
     <section className="section why"><SectionIntro eyebrow="Our promise" title="Why WSL Realty" />
@@ -139,7 +139,8 @@ export function PreviousJobs() {
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
       <div className="filter-tabs">{["All", "Builds", "Furniture"].map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
-      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img"><img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" /></div>
+      <JobsCarousel key={filter} jobs={shown} />
+      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={j.image} /> : <img src={j.image} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" />}</div>
         <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
     </section>
   </>;
@@ -180,14 +181,24 @@ export function AryaLuxe() { return <Gate page="aryaLuxe"><AryaLuxePage /></Gate
 function AryaLuxePage() {
   const c = useSiteContent();
   const { data: pr } = useProject("arya-luxe");
+  const a = c.arya;
+  const gallery = a.gallery.filter(g => g.image);
+  const paras = (a.about.text || "").split(/\n+/).map(t => t.trim()).filter(Boolean);
   return <>
     <Seo route="/arya-luxe" />
     <PageHero eyebrow={pr.project.location} title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
-    <section className="section"><SectionIntro eyebrow="Build progress" title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Photos, stages and progress reports are on the Project Updates page.`} />
-      <Button asChild variant="outline"><Link to="/project-updates">See Project Updates <ArrowUpRight size={16} /></Link></Button>
-    </section>
-    <section className="section tinted"><SectionIntro eyebrow="Interested?" title="Register your interest" text="Units are limited. Speak to our team about pricing and availability." />
-      <EnquiryButton label="Register Interest" topic="Arya Luxe (Gwarinpa, Abuja)" heading="Arya Luxe" source="project:arya-luxe" defaultMessage="Hello, I'd like to register my interest in Arya Luxe." /></section>
+    {a.facts.length > 0 && <section className="arya-facts" aria-label="Key facts"><dl>{a.facts.map(f => <div key={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl></section>}
+    {(a.about.title || paras.length > 0) && <section className="section arya-about"><SectionIntro eyebrow="The building" title={a.about.title} />
+      <div className="arya-text">{paras.map((t, i) => <p key={i}>{t}</p>)}</div></section>}
+    {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title={`What makes ${pr.project.name} special`} />
+      <div className="value-grid">{a.highlights.map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div></section>}
+    {gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
+      <div className="stage-gallery">{gallery.map(g => <figure key={g.id}><img src={g.image} alt={g.caption || pr.project.name} loading="lazy" />{g.caption && <figcaption><p>{g.caption}</p></figcaption>}</figure>)}</div></section>}
+    {a.video && <section className="section"><SectionIntro eyebrow="Film" title={`See ${pr.project.name}`} />
+      <div className="arya-video"><LazyVideo src={a.video} title={`${pr.project.name} film`} /></div></section>}
+    <section className="section tinted"><SectionIntro eyebrow="Interested?" title={a.cta.title} text={a.cta.text} />
+      <div className="arya-cta"><EnquiryButton label="Register Interest" topic={`${pr.project.name} (${pr.project.location})`} heading={pr.project.name} source="project:arya-luxe" defaultMessage={`Hello, I'd like to register my interest in ${pr.project.name}.`} />
+        <Link className="text-link" to="/project-updates">Follow the construction <ArrowUpRight size={14} /></Link></div></section>
   </>;
 }
 

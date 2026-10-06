@@ -10,6 +10,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Enquiries from "./pages/admin/Enquiries";
 import Content from "./pages/admin/Content";
 import Media from "./pages/admin/Media";
+import Arya from "./pages/admin/Arya";
 import Listings from "./pages/admin/Listings";
 import Projects from "./pages/admin/Projects";
 import Team from "./pages/admin/Team";
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="projects" element={<Projects />} />
             <Route path="content" element={<Content />} />
             <Route path="media" element={<Media />} />
+            <Route path="arya" element={<Arya />} />
             <Route path="team" element={<Team />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>

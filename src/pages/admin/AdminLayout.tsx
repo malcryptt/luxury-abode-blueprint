@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
-import { Building2, ExternalLink, FileText, Hammer, Images, Inbox, LayoutDashboard, LogOut, Menu, Users, X } from "lucide-react";
+import { Building2, ExternalLink, FileText, Building, Hammer, Images, Inbox, LayoutDashboard, LogOut, Menu, Users, X } from "lucide-react";
 import { onAuthStateChanged, signOut as fbSignOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/integrations/firebase/client";
@@ -83,7 +83,8 @@ export default function AdminLayout() {
     { to: "/admin", end: true, label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/enquiries", end: false, label: "Enquiries", icon: Inbox, count: newCount },
     { to: "/admin/listings", end: false, label: "Listings", icon: Building2 },
-    { to: "/admin/projects", end: false, label: "Projects", icon: Hammer },
+    { to: "/admin/arya", end: false, label: "Arya Luxe", icon: Building },
+    { to: "/admin/projects", end: false, label: "Project progress", icon: Hammer },
     { to: "/admin/content", end: false, label: "Page text", icon: FileText },
     { to: "/admin/media", end: false, label: "Media", icon: Images },
     ...(ctx.role === "admin" ? [{ to: "/admin/team", end: false, label: "Team", icon: Users }] : []),

@@ -25,7 +25,7 @@ Firestore → **Rules** tab → paste the contents of `firestore.rules` → **Pu
 
 ## 4. Photo uploads (Cloudinary, free)
 1. Sign up at cloudinary.com (email only). On the dashboard, copy your **Cloud name**.
-2. **Settings → Upload → Upload presets → Add upload preset**: Signing mode **Unsigned**, folder `wsl-realty`, allowed formats `jpg,png,webp,avif`. Save and copy the preset name.
+2. **Settings → Upload → Upload presets → Add upload preset**: Signing mode **Unsigned**, folder `wsl-realty`, allowed formats `jpg,png,webp,avif,gif,mp4,webm,mov`, max file size 30 MB. Save and copy the preset name.
 3. Put both in `.env` and in Vercel environment variables, then redeploy:
 ```
 VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -61,7 +61,7 @@ Done in code: security headers and a strict Content-Security-Policy (`vercel.jso
 Things only you can switch on (all free, no card):
 
 1. **Republish `firestore.rules`** after every change to that file.
-2. **Cloudinary upload preset** (Settings → Upload → your `wsl-realty` preset): set *Allowed formats* to `jpg,png,webp,avif,gif`, *Folder* to `wsl-realty`, and a *Max file size* of about 10 MB. Keep it Unsigned. Without these anyone who finds the preset name can upload arbitrary files to your account.
+2. **Cloudinary upload preset** (Settings → Upload → your `wsl-realty` preset): set *Allowed formats* to `jpg,png,webp,avif,gif,mp4,webm,mov`, *Folder* to `wsl-realty`, and a *Max file size* of **30 MB** (photos are shrunk to well under 1 MB before upload, so this limit is really for videos). Keep it Unsigned. Without these anyone who finds the preset name can upload arbitrary files to your account.
 3. **Firebase Authentication → Settings → Password policy**: require at least 8 characters, a letter and a number.
 4. **Firebase App Check** (stops bots flooding enquiries and using up your free quota):
    1. Go to https://www.google.com/recaptcha/admin, register the site with **reCAPTCHA v3** for `wslproperties.com.ng` (and your `*.vercel.app` URL while testing). Copy the **site key** and **secret key**.
@@ -86,3 +86,11 @@ Limits on how much one visitor can send, with no extra service or card:
 - **Signed-in customers:** Firebase enforces the same limits itself (`limits/...` documents in `firestore.rules`), so they hold even if someone bypasses the website. Team replies are never limited.
 - **Signed-out visitors** are limited by the browser only. Someone who clears their browser data or calls Firebase directly can get around it; the hidden honeypot field catches simple bots. If spam ever gets through, add Cloudflare Turnstile.
 - To change the numbers, edit `RATE` in `src/lib/rateLimit.ts` and the matching numbers in `firestore.rules`, then republish the rules.
+
+
+## Videos (Previous Jobs and the Arya Luxe page)
+- **Limits the admin enforces before uploading:** MP4, WebM or MOV, at most **30 MB** and **60 seconds** each. Previous Jobs holds up to **6** videos and the Arya Luxe page **1**. To change them, edit `MAX_VIDEO_MB`, `MAX_VIDEO_SECONDS` and `MAX_JOB_VIDEOS` in `src/lib/upload.ts` (and the preset's max file size in Cloudinary).
+- **Why the site stays fast:** a video is never downloaded with the page. Visitors see a still picture and a play button, and the video only loads when they press play. Cloudinary also re-encodes it smaller (up to 960 px wide, best format for each browser) when it is first played, so the first play of a new video can take a few extra seconds.
+- **Before uploading:** trim and export phone videos at 720p. A 30-second 720p clip is usually 10 to 20 MB.
+- **Cloudinary free plan:** videos use your monthly bandwidth quota faster than photos. Keep clips short and few.
+- **Cloudinary preset:** it must allow the `mp4,webm,mov` formats (see the security checklist above) or video uploads are refused.
