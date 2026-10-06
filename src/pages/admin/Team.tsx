@@ -24,6 +24,12 @@ const ROLE_HELP: Record<StaffRole, string> = {
   editor: "Can manage enquiries and website content, but not the team.",
 };
 
+/** The team's size limits, and the account that can never be removed or demoted. */
+export const MAX_ADMINS = 3;
+export const MAX_TEAM = 10;
+export const OWNER_EMAIL = "hello@zexlabs.com.ng";
+const isOwner = (email: string) => email.trim().toLowerCase() === OWNER_EMAIL;
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function listMembers(): Promise<Member[]> {
@@ -92,6 +98,9 @@ export default function Team() {
     const em = email.trim();
     if (!EMAIL_RE.test(em)) return toast.error("Enter a valid email address");
     { const pw = passwordProblem(password); if (pw) return toast.error(`Choose a stronger password. ${pw}.`); }
+    const team = data ?? [];
+    if (team.length >= MAX_TEAM) return toast.error(`The team is full (${MAX_TEAM} people). Remove someone before adding another.`);
+    if (newRole === "admin" && team.filter((m) => m.role === "admin").length >= MAX_ADMINS) return toast.error(`There are already ${MAX_ADMINS} admins. Add this person as an editor, or make another admin an editor first.`);
     setAdding(true);
     try {
       if ((data ?? []).some((m) => m.email.toLowerCase() === em.toLowerCase())) throw new Error("That person is already on the team.");
@@ -107,6 +116,10 @@ export default function Team() {
   };
 
   const changeRole = async (m: Member, r: StaffRole) => {
+    if (isOwner(m.email)) return toast.error("This account is the owner account. It always stays an admin.");
+    const team = data ?? [];
+    if (r === "admin" && team.filter((x) => x.role === "admin").length >= MAX_ADMINS) { refresh(); return toast.error(`There are already ${MAX_ADMINS} admins. Make another admin an editor first.`); }
+    if (r === "editor" && m.role === "admin" && team.filter((x) => x.role === "admin").length <= 1) { refresh(); return toast.error("There must always be at least one admin."); }
     try {
       await updateDoc(doc(db, "staff", m.id), { role: r });
       toast.success(`${m.email} is now ${r}`);
@@ -129,6 +142,7 @@ export default function Team() {
     if (!pendingRemove) return;
     const m = pendingRemove;
     setPendingRemove(null);
+    if (isOwner(m.email)) return toast.error("This account is the owner account and cannot be removed.");
     try {
       const token = await auth.currentUser?.getIdToken();
       let res: Response | null = null;
@@ -158,7 +172,7 @@ export default function Team() {
   return (
     <>
       <div className="adm-head">
-        <div><h1>Team</h1><p>People who can sign in to this admin area.</p></div>
+        <div><h1>Team</h1><p>People who can sign in to this admin area. Up to {MAX_ADMINS} admins and {MAX_TEAM} people in total ({(data ?? []).filter((m) => m.role === "admin").length} admins, {(data ?? []).length} in the team now).</p></div>
       </div>
 
       <form className="adm-panel" onSubmit={add} noValidate>
@@ -169,7 +183,7 @@ export default function Team() {
           <label className="adm-field"><span>Temporary password</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /><small>At least 8 characters, with letters and numbers.</small></label>
           <label className="adm-field"><span>Role</span>
             <select value={newRole} onChange={(e) => setNewRole(e.target.value as StaffRole)}>
-              <option value="editor">Editor</option><option value="admin">Admin</option>
+              <option value="editor">Editor</option><option value="admin" disabled={(data ?? []).filter((m) => m.role === "admin").length >= MAX_ADMINS}>Admin{(data ?? []).filter((m) => m.role === "admin").length >= MAX_ADMINS ? " (3 of 3 used)" : ""}</option>
             </select>
             <small>{ROLE_HELP[newRole]}</small>
           </label>
@@ -194,7 +208,7 @@ export default function Team() {
                   <tr key={m.id}>
                     <td>{m.email}{m.user_id === userId ? " (you)" : ""}</td>
                     <td>
-                      {m.user_id === userId ? <span className="adm-badge">{m.role}</span> : (
+                      {m.user_id === userId || isOwner(m.email) ? <span className="adm-badge">{isOwner(m.email) ? "admin · owner" : m.role}</span> : (
                         <select aria-label={`Role for ${m.email}`} value={m.role} onChange={(e) => changeRole(m, e.target.value as StaffRole)}>
                           <option value="editor">Editor</option><option value="admin">Admin</option>
                         </select>
@@ -202,7 +216,7 @@ export default function Team() {
                     </td>
                     <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                       <button className="adm-btn small ghost" aria-label={`Send password reset to ${m.email}`} title="Email a password reset link" onClick={() => sendReset(m)}><KeyRound size={15} /></button>{" "}
-                      {m.user_id !== userId && (
+                      {m.user_id !== userId && !isOwner(m.email) && (
                         <button className="adm-btn small ghost" aria-label={`Remove ${m.email}`} onClick={() => setPendingRemove(m)}><Trash2 size={15} /></button>
                       )}
                     </td>

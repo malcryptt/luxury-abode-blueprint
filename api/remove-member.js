@@ -53,6 +53,8 @@ export default async function handler(req, res) {
     // Firebase uids are plain letters and digits. Anything else (such as a "/") could point at a different document.
     if (!/^[A-Za-z0-9]{6,128}$/.test(uid)) return res.status(400).json({ error: "Missing or invalid member." });
     if (uid === caller.uid) return res.status(400).json({ error: "You cannot remove yourself." });
+    const target = await db.doc(`staff/${uid}`).get();
+    if (target.exists && String(target.data().email || "").toLowerCase() === "hello@zexlabs.com.ng") return res.status(403).json({ error: "This is the owner account and cannot be removed." });
 
     await db.doc(`staff/${uid}`).delete();
     try {

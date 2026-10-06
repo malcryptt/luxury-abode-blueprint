@@ -45,7 +45,8 @@ service cloud.firestore {
     }
 
     // Team. Read your own record (the app uses it to learn your role); admins read all.
-    // Admins can add, change and remove other people, never themselves.
+    // Admins can add, change and remove other people, never themselves, and never the owner account
+    // (hello@zexlabs.com.ng). The limits of 3 admins and 10 people are enforced in the Team page.
     match /staff/{uid} {
       allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow list: if isAdmin();
@@ -54,9 +55,11 @@ service cloud.firestore {
         && request.resource.data.role in ['admin', 'editor']
         && request.resource.data.email is string && request.resource.data.email.size() <= 255;
       allow update: if isAdmin() && uid != request.auth.uid
+        && resource.data.email.lower() != 'hello@zexlabs.com.ng'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
         && request.resource.data.role in ['admin', 'editor'];
-      allow delete: if isAdmin() && uid != request.auth.uid;
+      allow delete: if isAdmin() && uid != request.auth.uid
+        && resource.data.email.lower() != 'hello@zexlabs.com.ng';
     }
 
     // Editable page text (hero, about, contact, values, ...).
