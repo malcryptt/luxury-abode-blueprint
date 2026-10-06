@@ -37,16 +37,16 @@ export function Home() {
   const { data: pr } = useProject("arya-luxe");
   return <>
     <Seo route="/" />
-    <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" /><div className="hero-shade" />
+    <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" fetchPriority="high" decoding="async" /><div className="hero-shade" />
       <div className="hero-copy"><h1>{c.hero.title}</h1><p>{c.hero.subtitle}</p>
         <div className="hero-actions"><Button asChild>{c.hidden.properties ? <Link to="/contact">Enquire Now <ArrowUpRight size={16} /></Link> : <Link to="/properties">View Properties <ArrowUpRight size={16} /></Link>}</Button><Link className="text-link light" to="/project-updates">See Our Progress</Link></div></div>
     </section>
     {!c.hidden.properties && <section className="section"><SectionIntro eyebrow="Available now" title="Featured properties" text="Explore our available properties." />
-      <div className="property-grid scroll-x">{c.properties.slice(0, 3).map(p => <PropertyTile key={p.id} p={p} />)}</div>
+      <div className="property-grid scroll-x">{c.loaded && c.properties.slice(0, 3).map(p => <PropertyTile key={p.id} p={p} />)}</div>
       <div className="section-link"><Link className="text-link" to="/properties">View All Properties <ArrowUpRight size={16} /></Link></div>
     </section>
     }
-    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image"><img decoding="async" src={sized(c.images.homeFeature, 1200) || ph.property3} alt={`${pr.project.name} construction`} /><span className="project-label">Currently building</span></div>
+    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image">{c.loaded && <img decoding="async" src={sized(c.images.homeFeature, 1400) || ph.property3} alt={`${pr.project.name} construction`} />}<span className="project-label">Currently building</span></div>
       <div className="project-copy"><span className="eyebrow">Featured project</span><h2>{pr.project.name}</h2><p>{pr.project.summary}</p>
         <div className="project-links"><Button asChild><Link to="/arya-luxe">Discover {pr.project.name} <ArrowUpRight size={16} /></Link></Button><Link className="text-link" to="/project-updates">Follow The Build</Link></div></div>
     </section>
@@ -79,7 +79,7 @@ function PropertiesPage() {
   return <>
     <Seo route="/properties" />
     <PageHero eyebrow="A considered collection" title={c.pages.properties.title} text={c.pages.properties.text} />
-    <section className="section"><div className="property-grid">{c.properties.map(p => <PropertyTile key={p.id} p={p} />)}</div></section>
+    <section className="section"><div className="property-grid">{c.loaded && c.properties.map(p => <PropertyTile key={p.id} p={p} />)}</div></section>
   </>;
 }
 
@@ -88,11 +88,11 @@ function PropertyDetailPage() {
   const { slug } = useParams();
   const c = useSiteContent();
   const p = c.properties.find(x => x.slug === slug);
-  if (!p) return <NotFound />;
+  if (!p) return c.loaded ? <NotFound /> : <section className="section" aria-busy="true" />;
   const others = c.properties.filter(x => x.slug !== slug).slice(0, 3);
   return <>
     <Seo property={p} />
-    <section className="detail"><img className="detail-image" src={sized(p.image, 1600)} alt={p.title} />
+    <section className="detail"><img className="detail-image" src={sized(p.image, 1400)} alt={p.title} />
       <div className="detail-copy"><span className="eyebrow">Featured property</span><h1>{p.title}</h1><p className="detail-loc"><MapPin size={16} /> {p.location}</p>
         <strong className="detail-price">{p.price}</strong><p>{p.description}</p>
         <div className="hero-actions"><EnquiryButton topic={`${p.title} (${p.location})`} heading={p.title} source={`property:${p.slug}`} />
@@ -108,9 +108,9 @@ function FurnitureGallery({ images, title }: { images: string[]; title: string }
   const [i, setI] = useState(0);
   const shown = images[Math.min(i, images.length - 1)];
   return <>
-    <div className="property-image"><img src={sized(shown, 1000)} alt={title} loading="lazy" decoding="async" /></div>
+    <div className="property-image"><img src={sized(shown, 900)} alt={title} loading="lazy" decoding="async" /></div>
     {images.length > 1 && <div className="thumb-row" role="group" aria-label={`${title} photos`}>{images.map((src, k) => (
-      <button key={k} type="button" className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={`Show photo ${k + 1} of ${images.length}`} aria-pressed={k === i}><img src={sized(src, 200)} alt="" loading="lazy" decoding="async" /></button>))}</div>}
+      <button key={k} type="button" className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={`Show photo ${k + 1} of ${images.length}`} aria-pressed={k === i}><img src={sized(src, 400)} alt="" loading="lazy" decoding="async" /></button>))}</div>}
   </>;
 }
 
@@ -120,7 +120,7 @@ function FurniturePage() {
   return <>
     <Seo route="/furniture" />
     <PageHero eyebrow="Handcrafted" title={c.pages.furniture.title} text={c.pages.furniture.text} />
-    <section className="section"><div className="property-grid scroll-x">{c.furniture.map(f => (
+    <section className="section"><div className="property-grid scroll-x">{c.loaded && c.furniture.map(f => (
       <article key={f.id} className="property-card">
         <FurnitureGallery images={f.images} title={f.title} />
         <div className="property-info"><div><h3>{f.title}</h3><p>{f.location}</p></div><strong>{f.price}</strong></div>
@@ -139,9 +139,9 @@ export function PreviousJobs() {
     <PageHero eyebrow="Portfolio" title={c.pages.jobs.title} text={c.pages.jobs.text} />
     <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
       <div className="filter-tabs">{(["Builds", "Furniture"].filter(k => c.jobs.some(j => j.category === k)).length > 1 ? ["All", "Builds", "Furniture"] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
-      {shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
-      <JobsCarousel key={filter} jobs={shown} />
-      <div className="jobs-grid">{shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={j.image} /> : <img src={sized(j.image, 800)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" decoding="async" />}</div>
+      {c.loaded && shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
+      {c.loaded && <JobsCarousel key={filter} jobs={shown} />}
+      <div className="jobs-grid">{c.loaded && shown.map(j => <figure key={j.id} className="job-card"><div className="job-img">{j.video ? <LazyVideo src={j.video} title={j.title} poster={sized(j.image, 900)} /> : <img src={sized(j.image, 900)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" decoding="async" />}</div>
         <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
     </section>
   </>;
@@ -162,16 +162,16 @@ export function ProjectUpdates() {
     <section className="section"><SectionIntro eyebrow={pr.project.name} title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
       <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
       <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>
-      <div className="journal-detail"><img decoding="async" src={sized(stageImage(st.image, sel % 2 ? ph.property2 : ph.property3), 1200)} alt={`${st.title} at ${pr.project.name}`} />
+      <div className="journal-detail"><img decoding="async" src={sized(stageImage(st.image, sel % 2 ? ph.property2 : ph.property3), 1400)} alt={`${st.title} at ${pr.project.name}`} />
         <div><span className="eyebrow">Stage 0{sel + 1} · {state}</span><h3>{st.title}</h3>
           <div className="progress-line" aria-hidden="true" style={{ margin: "14px 0" }}><span style={{ width: `${pct}%` }} /></div>
           <p>{st.note || (sel < cur ? "This stage is complete." : sel === cur ? `Work on this stage is ${pct}% done.` : "This stage is upcoming.")}</p></div></div>
       {pr.gallery.some(g => g.stage === sel) && <div className="stage-gallery" aria-label={`${st.title} photos`}>{pr.gallery.filter(g => g.stage === sel).map(g => (
-        <figure key={g.id}><img src={sized(g.image, 800)} alt={g.title} loading="lazy" decoding="async" /><figcaption><strong>{g.title}</strong><span>{g.taken_on ? formatDate(g.taken_on) : ""}{g.taken_on ? " · " : ""}{g.level}% of this stage done</span><p>{g.description}</p></figcaption></figure>))}</div>}
+        <figure key={g.id}><img src={sized(g.image, 900)} alt={g.title} loading="lazy" decoding="async" /><figcaption><strong>{g.title}</strong><span>{g.taken_on ? formatDate(g.taken_on) : ""}{g.taken_on ? " · " : ""}{g.level}% of this stage done</span><p>{g.description}</p></figcaption></figure>))}</div>}
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Project update" title="Latest updates" />
       <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
-        <article key={u.id} className="update-item"><img src={sized(stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3), 700)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" decoding="async" />
+        <article key={u.id} className="update-item"><img src={sized(stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3), 900)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" decoding="async" />
           <div><span className="eyebrow">{pr.project.name} · {formatDate(u.posted_on)}</span><h3>{u.title || pr.stages[u.stage]?.title}</h3><p>{u.body}</p>{!c.hidden.aryaLuxe && <Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link>}</div></article>))}</div>
     </section>
     <section className="section"><SectionIntro eyebrow="Stay informed" title="Get project updates" text="Message us on WhatsApp to receive new progress reports." /><Button asChild><Link to="/contact">Register Interest</Link></Button></section>
@@ -183,7 +183,7 @@ function AryaUnits({ units }: { units: SiteArya["units"] }) {
   const u = units[Math.min(i, units.length - 1)];
   return <div className="arya-units">
     <div role="tablist" aria-label="Apartment type" className="arya-unit-tabs">{units.map((x, k) => <button key={x.id} type="button" role="tab" aria-selected={k === i} className={k === i ? "active" : ""} onClick={() => setI(k)}>{x.label}</button>)}</div>
-    <div role="tabpanel" className="arya-unit-panel">{u.image && <img className="arya-unit-img" src={sized(u.image, 1200)} alt={`${u.label} apartment`} loading="lazy" decoding="async" />}<p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
+    <div role="tabpanel" className="arya-unit-panel">{u.image && <img className="arya-unit-img" src={sized(u.image, 1400)} alt={`${u.label} apartment`} loading="lazy" decoding="async" />}<p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
       <ul>{u.features.split(/\n+/).map(t => t.trim()).filter(Boolean).map((t, k) => <li key={k}>{t}</li>)}</ul></div>
   </div>;
 }
@@ -196,15 +196,15 @@ function AryaLuxePage() {
   const paras = (a.about.text || "").split(/\n+/).map(t => t.trim()).filter(Boolean);
   return <>
     <Seo route="/arya-luxe" />
-    <PageHero eyebrow="" title={pr.project.name} text={pr.project.summary} image={c.images.aryaBanner || ph.property1} />
+    <PageHero eyebrow="" title={pr.project.name} text={pr.project.summary} image={c.loaded ? (c.images.aryaBanner || ph.property1) : undefined} />
     {a.facts.length > 0 && <section className="arya-facts" aria-label="Key facts"><dl>{a.facts.map(f => <div key={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl></section>}
     {(a.about.title || paras.length > 0) && <section className="section arya-about"><SectionIntro eyebrow="The building" title={a.about.title} />
       <div className="arya-text">{paras.map((t, i) => <p key={i}>{t}</p>)}</div></section>}
-    {a.units.length > 0 && <section className="section"><SectionIntro eyebrow="Apartments" title="3 and 4-bedroom smart apartments" />
+    {c.loaded && a.units.length > 0 && <section className="section"><SectionIntro eyebrow="Apartments" title="3 and 4-bedroom smart apartments" />
       <AryaUnits units={a.units} /></section>}
     {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title="Features and amenities" />
       <div className="value-grid">{a.highlights.map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div></section>}
-    {gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
+    {c.loaded && gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
       <div className="stage-gallery">{gallery.map(g => <figure key={g.id}><img src={sized(g.image, 900)} alt={g.caption || pr.project.name} loading="lazy" decoding="async" />{g.caption && <figcaption><p>{g.caption}</p></figcaption>}</figure>)}</div></section>}
     {a.video && <section className="section"><SectionIntro eyebrow="Film" title={`See ${pr.project.name}`} />
       <div className="arya-video"><LazyVideo src={a.video} title={`${pr.project.name} film`} /></div></section>}
