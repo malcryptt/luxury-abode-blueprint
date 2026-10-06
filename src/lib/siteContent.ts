@@ -22,10 +22,12 @@ export interface SiteArya {
   facts: { id: string; label: string; value: string }[];
   highlights: { id: string; title: string; description: string }[];
   gallery: { id: string; image: string; caption: string }[];
+  /** The apartment types on offer (shown as tabs). features: one per line. */
+  units: { id: string; label: string; description: string; features: string }[];
   video: string;
   cta: { title: string; text: string };
 }
-export const ARYA_LIMITS = { facts: 8, highlights: 8, gallery: 20 } as const;
+export const ARYA_LIMITS = { facts: 8, highlights: 8, gallery: 20, units: 4 } as const;
 export interface SiteImages { homeFeature: string; about: string; aryaBanner: string }
 export const IMAGE_LABELS: Record<keyof SiteImages, string> = { homeFeature: "Home page: Arya Luxe feature photo", about: "About page: photo beside Our story", aryaBanner: "Arya Luxe page: banner photo" };
 export interface SiteContent {
@@ -51,12 +53,39 @@ export const placeholders = { property1, property2, property3, furniture1, furni
 
 const defaults: SiteContent = {
   arya: {
-    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja." },
-    facts: [], highlights: [], gallery: [], video: "",
+    about: { title: "About the building", text: "Arya Luxe is a private collection of contemporary residences currently under construction in Gwarinpa, Abuja. Stone, dark cladding and planted terraces give the building a calm, modern character, with a rooftop lounge, courtyard pool and covered parking designed around everyday comfort. The foundation is complete and the superstructure is now starting, so you can buy into the vision while it rises. Images shown are architectural renders." },
+    facts: [
+      { id: "f1", label: "Location", value: "Gwarinpa, Abuja" },
+      { id: "f2", label: "Status", value: "Off-plan · foundation complete" },
+      { id: "f3", label: "Configurations", value: "3 and 4-bedroom smart apartments" },
+      { id: "f4", label: "Developer", value: "WSL Realty" },
+    ],
+    highlights: [
+      { id: "h1", title: "Rooftop lounge", description: "A landscaped rooftop terrace with generous seating, made for slow evenings above the city." },
+      { id: "h2", title: "Private courtyard pool", description: "A quiet plunge pool framed by timber decking and planting, tucked away from the street." },
+      { id: "h3", title: "Covered parking", description: "A sheltered, well-lit parking level with polished floors and direct access to the residences." },
+      { id: "h4", title: "Green terraces", description: "Planted balconies and roof gardens soften the building and bring greenery to every level." },
+      { id: "h5", title: "Architectural lighting", description: "Warm integrated light lines trace the building after dark and give it a distinctive night-time presence." },
+    ],
+    gallery: [
+      { id: "g1", image: "/arya/front-elevation-day.webp", caption: "Front elevation: clean lines, stone and dark cladding" },
+      { id: "g2", image: "/arya/street-golden-hour.webp", caption: "The residences at golden hour" },
+      { id: "g3", image: "/arya/night-corner.webp", caption: "Corner view with architectural lighting at dusk" },
+      { id: "g4", image: "/arya/rooftop-lounge.webp", caption: "Rooftop lounge and terrace" },
+      { id: "g5", image: "/arya/rooftop-walkway.webp", caption: "Landscaped rooftop walkway" },
+      { id: "g6", image: "/arya/courtyard-pool.webp", caption: "Private courtyard pool" },
+      { id: "g7", image: "/arya/parking-sunset.webp", caption: "Covered parking at sunset" },
+      { id: "g8", image: "/arya/parking-interior.webp", caption: "Parking level interior" },
+    ],
+    units: [
+      { id: "u3", label: "3-Bedroom", description: "One wing of Arya Luxe is made up of 3-bedroom smart apartments, planned around light, calm and easy family living.", features: "Fully automated smart-home system\nSmart lighting, climate and security control\nBalcony living and planted terraces\nAccess to the rooftop lounge, courtyard pool and covered parking" },
+      { id: "u4", label: "4-Bedroom", description: "The opposite wing holds the larger 4-bedroom smart apartments, with more space for family, guests and entertaining.", features: "Fully automated smart-home system\nSmart lighting, climate and security control\nLarger living and entertaining spaces\nAccess to the rooftop lounge, courtyard pool and covered parking" },
+    ],
+    video: "",
     cta: { title: "Register your interest", text: "Units are limited. Speak to our team about pricing and availability." },
   },
-  hidden: { properties: false, furniture: false, aryaLuxe: false },
-  images: { homeFeature: "", about: "", aryaBanner: "" },
+  hidden: { properties: false, furniture: true, aryaLuxe: false },
+  images: { homeFeature: "/arya/street-golden-hour.webp", about: "", aryaBanner: "/arya/banner-night-elevation.webp" },
   pages: {
     properties: { title: "Properties", text: "Explore our available properties." },
     furniture: { title: "Furniture", text: "Bespoke pieces made with the same care as our homes." },
@@ -65,6 +94,8 @@ const defaults: SiteContent = {
     contact: { title: "Contact Us", text: "For property enquiries, project information or partnerships, our team is ready to help." },
   },
   jobs: [
+    { id: "j-katsina", category: "Builds", title: "Katsina Government House", location: "Katsina State", description: "Remodelling and finishing works for the Katsina State Government House.", image: property1 },
+    { id: "j-bayelsa", category: "Builds", title: "Bayelsa Government House", location: "Bayelsa State", description: "Remodelling and finishing works for the Bayelsa State Government House.", image: property2 },
     { id: "j1", category: "Builds", title: "Residential build", location: "Abuja", description: "A family home delivered with considered finishes throughout.", image: property1 },
     { id: "j2", category: "Furniture", title: "Bespoke bed set", location: "Abuja", description: "Handcrafted to the client's room and taste.", image: furniture1 },
     { id: "j3", category: "Builds", title: "Contemporary apartment", location: "Abuja", description: "An apartment planned around light and calm.", image: property2 },
@@ -76,9 +107,7 @@ const defaults: SiteContent = {
   about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
   contact: { phone: "08028081047", email: "Warosynergylimited@gmail.com", address: "Abuja, Nigeria", whatsapp: "2348028081047" },
   properties: [
-    { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "A private collection of contemporary residences currently under construction.", price: "Price on request", image: property1 },
-    { id: "2", slug: "4-bedroom-smart-home", title: "4 Bedroom Smart Home", location: "Gwarinpa, Abuja", description: "A fully automated family home with premium finishes throughout.", price: "₦95,000,000", image: property2 },
-    { id: "3", slug: "the-palm-residence", title: "The Palm Residence", location: "Jabi, Abuja", description: "A 3-bedroom apartment designed around light and calm.", price: "₦72,000,000", image: property3 },
+    { id: "1", slug: "arya-luxe", title: "Arya Luxe", location: "Gwarinpa, Abuja", description: "Off-plan 3 and 4-bedroom smart apartments. Foundation complete, superstructure starting.", price: "Price on request", image: "/arya/street-golden-hour.webp" },
   ],
   promise: [
     { id: "craft", title: "Craft", description: "A heritage in bespoke furniture shapes every finish." },
@@ -108,6 +137,7 @@ export async function fetchSiteContent(): Promise<SiteContent> {
       const v = d.data().value as unknown;
       if (v == null) return;
       if (Array.isArray(v)) { if (v.length || d.id === "properties" || d.id === "furniture" || d.id === "jobs") c[d.id] = v; }
+      else if (d.id === "hidden" && typeof v === "object") c.hidden = { ...(c.hidden as object), ...Object.fromEntries(Object.entries(v).filter(([, x]) => typeof x === "boolean")) };
       else if (typeof v === "object") c[d.id] = { ...(c[d.id] as object), ...Object.fromEntries(Object.entries(v).filter(([, x]) => x)) };
     });
   } catch {

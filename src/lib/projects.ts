@@ -30,7 +30,7 @@ export function overallPercent(current: number, stages: { stage: number; progres
 }
 
 const DEFAULT_PROJECT = { slug: "arya-luxe", name: "Arya Luxe", location: "Gwarinpa, Abuja", summary: "A private collection of contemporary residences, built with clarity, quality and a long view.", current_stage: 1 };
-const defaultStages = (): StageData[] => DEFAULT_STAGE_TITLES.map((title, stage) => ({ stage, title, note: "", image: "", progress: stage < 1 ? 100 : 0 }));
+const defaultStages = (): StageData[] => DEFAULT_STAGE_TITLES.map((title, stage) => ({ stage, title, note: stage === 0 ? "Foundation complete." : stage === 1 ? "Superstructure and vertical construction are commencing." : "", image: "", progress: stage < 1 ? 100 : 0 }));
 
 const FALLBACK: ProjectData = {
   gallery: [],

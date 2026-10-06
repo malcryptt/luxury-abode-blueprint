@@ -74,6 +74,7 @@ export default function Arya() {
     if (!a.about.text.trim()) { e.preventDefault(); return toast.error("Write something about the building"); }
     if (a.facts.some((f) => !f.label.trim() || !f.value.trim())) { e.preventDefault(); return toast.error("Every key fact needs a label and a value, or remove it"); }
     if (a.highlights.some((h) => !h.title.trim() || !h.description.trim())) { e.preventDefault(); return toast.error("Every feature needs a title and a description, or remove it"); }
+    if (a.units.some((u) => !u.label.trim() || !u.description.trim())) { e.preventDefault(); return toast.error("Every apartment type needs a tab name and a description, or remove it"); }
     if (a.gallery.some((g) => !g.image)) { e.preventDefault(); return toast.error("A gallery slot is missing its photo. Add a photo or remove the slot"); }
     if (!a.cta.title.trim() || !a.cta.text.trim()) { e.preventDefault(); return toast.error("The enquiry section needs a heading and some text"); }
     arya.save(e, "Arya Luxe page updated");
@@ -147,6 +148,22 @@ export default function Arya() {
             ))}
           </div>
           <div className="adm-actions"><button type="button" className="adm-btn ghost" disabled={a.highlights.length >= ARYA_LIMITS.highlights} onClick={() => set({ highlights: [...a.highlights, { id: newId(), title: "", description: "" }] })}><Plus size={16} /> Add a feature</button><span className="adm-muted">{a.highlights.length} of {ARYA_LIMITS.highlights} used</span></div>
+        </section>
+
+        <section className="adm-panel">
+          <h2>Apartment types</h2>
+          <p className="sub">The configurations on offer (for example 3-Bedroom and 4-Bedroom), shown as tabs. Up to {ARYA_LIMITS.units}. Put one feature per line.</p>
+          <div className="adm-grid two">
+            {a.units.map((u, i) => (
+              <div key={u.id} className="adm-grid" style={{ border: "1px solid var(--a-line)", padding: 14, alignContent: "start" }}>
+                <Field label="Tab name"><input type="text" maxLength={40} value={u.label} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} /></Field>
+                <Field label="Description"><textarea rows={3} maxLength={600} value={u.description} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} /></Field>
+                <Field label="Features (one per line)"><textarea rows={5} maxLength={1000} value={u.features} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, features: e.target.value } : x)) })} /></Field>
+                <div className="adm-actions" style={{ marginTop: 0 }}><button type="button" className="adm-btn small ghost" onClick={() => set({ units: a.units.filter((_, j) => j !== i) })}><Trash2 size={14} /> Remove</button></div>
+              </div>
+            ))}
+          </div>
+          <div className="adm-actions"><button type="button" className="adm-btn ghost" disabled={a.units.length >= ARYA_LIMITS.units} onClick={() => set({ units: [...a.units, { id: newId(), label: "", description: "", features: "" }] })}><Plus size={16} /> Add an apartment type</button><span className="adm-muted">{a.units.length} of {ARYA_LIMITS.units} used</span></div>
         </section>
 
         <section className="adm-panel">

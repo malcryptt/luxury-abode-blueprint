@@ -4,7 +4,7 @@ import { ArrowUpRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
-import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty, type PageVisibility } from "@/lib/siteContent";
+import { useSiteContent, placeholders as ph, whatsappLink, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { JobsCarousel } from "@/components/site/JobsCarousel";
@@ -177,6 +177,15 @@ export function ProjectUpdates() {
   </>;
 }
 
+function AryaUnits({ units }: { units: SiteArya["units"] }) {
+  const [i, setI] = useState(0);
+  const u = units[Math.min(i, units.length - 1)];
+  return <div className="arya-units">
+    <div role="tablist" aria-label="Apartment type" className="arya-unit-tabs">{units.map((x, k) => <button key={x.id} type="button" role="tab" aria-selected={k === i} className={k === i ? "active" : ""} onClick={() => setI(k)}>{x.label}</button>)}</div>
+    <div role="tabpanel" className="arya-unit-panel"><p>{u.description}</p>
+      <ul>{u.features.split(/\n+/).map(t => t.trim()).filter(Boolean).map((t, k) => <li key={k}>{t}</li>)}</ul></div>
+  </div>;
+}
 export function AryaLuxe() { return <Gate page="aryaLuxe"><AryaLuxePage /></Gate>; }
 function AryaLuxePage() {
   const c = useSiteContent();
@@ -190,6 +199,8 @@ function AryaLuxePage() {
     {a.facts.length > 0 && <section className="arya-facts" aria-label="Key facts"><dl>{a.facts.map(f => <div key={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl></section>}
     {(a.about.title || paras.length > 0) && <section className="section arya-about"><SectionIntro eyebrow="The building" title={a.about.title} />
       <div className="arya-text">{paras.map((t, i) => <p key={i}>{t}</p>)}</div></section>}
+    {a.units.length > 0 && <section className="section"><SectionIntro eyebrow="Apartments" title="Two configurations, fully smart" />
+      <AryaUnits units={a.units} /></section>}
     {a.highlights.length > 0 && <section className="section tinted"><SectionIntro eyebrow="Features" title={`What makes ${pr.project.name} special`} />
       <div className="value-grid">{a.highlights.map(h => <div key={h.id}><h3>{h.title}</h3><p>{h.description}</p></div>)}</div></section>}
     {gallery.length > 0 && <section className="section"><SectionIntro eyebrow="Gallery" title={`Inside ${pr.project.name}`} />
