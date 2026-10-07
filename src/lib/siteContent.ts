@@ -46,7 +46,7 @@ export interface SiteContent {
 }
 
 /** Most items each admin-managed list may hold. Also enforced in firestore.rules. */
-export const LIMITS = { properties: 25, furniture: 30, jobs: 30, projects: 20, projectImages: 20 } as const;
+export const LIMITS = { properties: 25, furniture: 30, jobs: 15, projects: 20, projectImages: 20 } as const;
 
 /** Phone number in international form for tel: links (08028081047 becomes +2348028081047). */
 export const telHref = (n: string) => { const d = (n || "").replace(/[^\d+]/g, ""); return "tel:" + (d.startsWith("0") ? "+234" + d.slice(1) : d); };
