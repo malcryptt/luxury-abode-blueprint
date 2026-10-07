@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
 import { sized } from "@/lib/img";
+
+const FOUNDATION_PHOTO = "/arya/foundation-aerial.webp"; // shown for the foundation stage until a photo is uploaded in the admin
 import { useSiteContent, placeholders as ph, whatsappLink, telHref, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
@@ -162,7 +164,7 @@ export function ProjectUpdates() {
     <section className="section"><SectionIntro eyebrow={pr.project.name} title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
       <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
       <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>
-      <div className="journal-detail"><img decoding="async" src={sized(stageImage(st.image, sel % 2 ? ph.property2 : ph.property3), 1400)} alt={`${st.title} at ${pr.project.name}`} />
+      <div className="journal-detail"><img decoding="async" src={sized(stageImage(st.image, sel === 0 ? FOUNDATION_PHOTO : sel % 2 ? ph.property2 : ph.property3), 1400)} alt={`${st.title} at ${pr.project.name}`} />
         <div><span className="eyebrow">Stage 0{sel + 1} · {state}</span><h3>{st.title}</h3>
           <div className="progress-line" aria-hidden="true" style={{ margin: "14px 0" }}><span style={{ width: `${pct}%` }} /></div>
           <p>{st.note || (sel < cur ? "This stage is complete." : sel === cur ? `Work on this stage is ${pct}% done.` : "This stage is upcoming.")}</p></div></div>
@@ -171,7 +173,7 @@ export function ProjectUpdates() {
     </section>
     <section className="section tinted"><SectionIntro eyebrow="Project update" title="Latest updates" />
       <div className="update-list">{pr.updates.length === 0 && <p>{loaded ? "No updates have been posted yet. Check back soon." : "Loading updates…"}</p>}{pr.updates.map(u => (
-        <article key={u.id} className="update-item"><img src={sized(stageImage(u.images?.[0], u.stage % 2 ? ph.property2 : ph.property3), 900)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" decoding="async" />
+        <article key={u.id} className="update-item"><img src={sized(stageImage(u.images?.[0], u.stage === 0 ? FOUNDATION_PHOTO : u.stage % 2 ? ph.property2 : ph.property3), 900)} alt={pr.stages[u.stage]?.title ?? "Project update"} loading="lazy" decoding="async" />
           <div><span className="eyebrow">{pr.project.name} · {formatDate(u.posted_on)}</span><h3>{u.title || pr.stages[u.stage]?.title}</h3><p>{u.body}</p>{!c.hidden.aryaLuxe && <Link className="text-link" to="/arya-luxe">View Project <ArrowUpRight size={14} /></Link>}</div></article>))}</div>
     </section>
     <section className="section"><SectionIntro eyebrow="Stay informed" title="Get project updates" text="Message us on WhatsApp to receive new progress reports." /><Button asChild><Link to="/contact">Register Interest</Link></Button></section>
