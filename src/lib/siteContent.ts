@@ -95,7 +95,7 @@ const defaults: SiteContent = {
     cta: { title: "Register your interest", text: "Units are limited. Speak to our team about pricing and availability." },
   },
   hidden: { properties: false, furniture: true, aryaLuxe: false },
-  images: { homeFeature: "/arya/street-golden-hour.webp", about: "", aryaBanner: "/arya/banner-night-elevation.webp" },
+  images: { homeFeature: "/arya/street-golden-hour.webp", about: "/arya/about-dining.webp", aryaBanner: "/arya/banner-night-elevation.webp" },
   pages: {
     properties: { title: "Properties", text: "Explore our available properties." },
     furniture: { title: "Furniture", text: "Bespoke pieces made with the same care as our homes." },
