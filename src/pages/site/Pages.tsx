@@ -62,7 +62,7 @@ export function About() {
   const c = useSiteContent();
   return <>
     <Seo route="/about" />
-    <PageHero eyebrow="Company" title={c.about.title} text="A property developer with roots in making." />
+    <PageHero eyebrow="Company" title={c.about.title} text="Building luxury. Refining the experience." />
     <section className="section about-section"><div className="about-image"><img src={c.images.about || ph.furniture1} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
         <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><span>{t}</span></div>)}</div></div>
