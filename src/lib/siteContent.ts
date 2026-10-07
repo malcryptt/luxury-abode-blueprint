@@ -156,6 +156,17 @@ export async function fetchSiteContent(): Promise<SiteContent> {
   } catch {
     // Offline or not set up yet: the built-in content is shown.
   }
+  // The 320 and 400 on the apartment types are prices in millions of naira, not square metres. Earlier saved text said "m²".
+  const units = (c as unknown as SiteContent).arya?.units;
+  if (Array.isArray(units)) {
+    for (const u of units) {
+      const m = /^\s*(\d+)\s*m(?:²|2)\s*$/i.exec(u.size ?? "");
+      if (!m) continue;
+      u.size = `₦${m[1]} million per unit`;
+      u.description = (u.description ?? "").replace(/\bof\s+(\d+)\s*m(?:²|2)\s*each/gi, `at ₦$1 million per unit`);
+      u.count = (u.count ?? "").replace(/^\s*(\d+)\s*(?:units?|apartments?)\s*$/i, "$1 units available");
+    }
+  }
   return c as unknown as SiteContent;
 }
 
