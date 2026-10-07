@@ -88,8 +88,8 @@ const defaults: SiteContent = {
       { id: "g8", image: "/arya/parking-interior.webp", caption: "Parking level interior" },
     ],
     units: [
-      { id: "u3", label: "3-Bedroom", count: "6 apartments", size: "320 m²", image: "/arya/front-elevation-day.webp", description: "One side of Arya Luxe holds six 3-bedroom smart apartments of 320 m² each, delivered fully furnished.", features: "Fully furnished and fully automated\nPrivate rooftop for your own use\nExternal storage in the basement\nConcealed air conditioning" },
-      { id: "u4", label: "4-Bedroom", count: "3 apartments", size: "400 m²", image: "/arya/night-corner.webp", description: "The opposite side holds three 4-bedroom smart apartments of 400 m² each, delivered fully furnished.", features: "Fully furnished and fully automated\nPrivate rooftop for your own use\nExternal storage in the basement\nConcealed air conditioning" },
+      { id: "u3", label: "3-Bedroom", count: "6 units available", size: "₦320 million per unit", image: "/arya/front-elevation-day.webp", description: "One side of Arya Luxe holds six 3-bedroom smart apartments at ₦320 million per unit, delivered fully furnished.", features: "Fully furnished and fully automated\nPrivate rooftop for your own use\nExternal storage in the basement\nConcealed air conditioning" },
+      { id: "u4", label: "4-Bedroom", count: "3 units available", size: "₦400 million per unit", image: "/arya/night-corner.webp", description: "The opposite side holds three 4-bedroom smart apartments at ₦400 million per unit, delivered fully furnished.", features: "Fully furnished and fully automated\nPrivate rooftop for your own use\nExternal storage in the basement\nConcealed air conditioning" },
     ],
     video: "",
     cta: { title: "Register your interest", text: "Units are limited. Speak to our team about pricing and availability." },

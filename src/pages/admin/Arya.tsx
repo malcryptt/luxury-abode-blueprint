@@ -160,8 +160,8 @@ export default function Arya() {
                 <ImagePicker label="Photo of this apartment type" value={u.image} onChange={(url) => set({ units: a.units.map((x, j) => (j === i ? { ...x, image: url } : x)) })} />
                 <Field label="Tab name"><input type="text" maxLength={40} value={u.label} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} /></Field>
                 <div className="adm-grid two">
-                  <Field label="How many"><input type="text" maxLength={40} value={u.count} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, count: e.target.value } : x)) })} /></Field>
-                  <Field label="Size of each"><input type="text" maxLength={40} value={u.size} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, size: e.target.value } : x)) })} /></Field>
+                  <Field label="Units available"><input type="text" maxLength={40} value={u.count} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, count: e.target.value } : x)) })} /></Field>
+                  <Field label="Price per unit"><input type="text" maxLength={40} value={u.size} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, size: e.target.value } : x)) })} /></Field>
                 </div>
                 <Field label="Description"><textarea rows={3} maxLength={600} value={u.description} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} /></Field>
                 <Field label="Features (one per line)"><textarea rows={5} maxLength={1000} value={u.features} onChange={(e) => set({ units: a.units.map((x, j) => (j === i ? { ...x, features: e.target.value } : x)) })} /></Field>
