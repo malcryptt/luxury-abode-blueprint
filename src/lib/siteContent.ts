@@ -46,7 +46,7 @@ export interface SiteContent {
 }
 
 /** Most items each admin-managed list may hold. Also enforced in firestore.rules. */
-export const LIMITS = { properties: 25, furniture: 30, jobs: 30, projects: 20, projectImages: 20 } as const;
+export const LIMITS = { properties: 25, furniture: 30, jobs: 15, projects: 20, projectImages: 20 } as const;
 
 /** Phone number in international form for tel: links (08028081047 becomes +2348028081047). */
 export const telHref = (n: string) => { const d = (n || "").replace(/[^\d+]/g, ""); return "tel:" + (d.startsWith("0") ? "+234" + d.slice(1) : d); };
@@ -111,6 +111,8 @@ const defaults: SiteContent = {
     { id: "pj5", category: "Furniture", title: "Dining room", location: "", description: "A dining set with upholstered chairs against a timber-panelled wall.", image: "/jobs/dining-room.webp" },
     { id: "pj6", category: "Furniture", title: "Family lounge", location: "", description: "A relaxed lounge with deep sofas, layered curtains and soft lighting.", image: "/jobs/family-lounge.webp" },
     { id: "pj7", category: "Furniture", title: "Executive lounge", location: "", description: "Leather and wood armchairs arranged for conversation, with built-in display shelving.", image: "/jobs/executive-lounge.webp" },
+    { id: "pj8", category: "Builds", title: "Interior finishing", location: "", description: "A finished room with a recessed tray ceiling, painted walls and a custom steel window grille.", image: "/jobs/interior-finishing.webp" },
+    { id: "pj9", category: "Builds", title: "Window and ceiling detail", location: "", description: "A tall feature window with a patterned steel grille beneath a stepped ceiling with recessed spotlights.", image: "/jobs/window-and-ceiling-detail.webp" },
   ],
   hero: { title: "Luxury Homes, Built With Craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
   about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },

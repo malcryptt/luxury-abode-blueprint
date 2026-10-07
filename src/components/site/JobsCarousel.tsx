@@ -12,7 +12,8 @@ const EVERY_MS = 3000;
  * as soon as they let go. It can also be stepped with the arrows and dots. It does not move by itself for visitors who
  * ask their device for reduced motion.
  */
-export function JobsCarousel({ jobs }: { jobs: SiteJob[] }) {
+export function JobsCarousel({ jobs: all }: { jobs: SiteJob[] }) {
+  const jobs = all.slice(0, 15); // the slideshow never shows more than 15
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [hold, setHold] = useState(false);       // a finger or the mouse button is down on it
