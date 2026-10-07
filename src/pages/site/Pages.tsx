@@ -65,7 +65,7 @@ export function About() {
   return <>
     <Seo route="/about" />
     <PageHero eyebrow="Company" title={c.about.title} text="Building luxury. Refining the experience." />
-    <section className="section about-section"><div className="about-image"><img src={c.images.about || ph.furniture1} alt="Crafted interior detail" /></div>
+    <section className="section about-section"><div className="about-image"><img src={c.images.about || "/arya/about-dining.webp"} alt="Crafted interior detail" /></div>
       <div className="about-copy"><SectionIntro eyebrow="Since the beginning" title="Our story" text={c.about.description} />
         <div className="timeline">{["Founded", "Bespoke furniture", "Real estate", "Today"].map((t, i) => <div key={t} className={i === 2 ? "active" : ""}><span>{t}</span></div>)}</div></div>
     </section>
