@@ -154,7 +154,10 @@ export function ProjectUpdates() {
   const { data: pr, loaded } = useProject("arya-luxe");
   const cur = pr.project.current_stage;
   const [picked, setPicked] = useState<number | null>(null);
-  const sel = picked ?? cur;
+  // A stage tab only appears once an update has been posted for it in the admin, and goes away when that update is deleted.
+  const shown = Array.from(new Set<number>(pr.updates.map(u => u.stage))).filter(i => pr.stages[i]).sort((x, y) => x - y);
+  const tabs = shown.length ? shown : [cur];
+  const sel = picked !== null && tabs.includes(picked) ? picked : tabs[tabs.length - 1];
   const st = pr.stages[sel];
   const state = sel < cur ? "complete" : sel === cur ? "in progress" : "upcoming";
   const pct = sel < cur ? 100 : sel === cur ? st.progress : 0;
@@ -163,7 +166,7 @@ export function ProjectUpdates() {
     <PageHero eyebrow="Construction journal" title={c.pages.updates.title} text={c.pages.updates.text} />
     <section className="section"><SectionIntro eyebrow={pr.project.name} title="Follow the build" text={`${pr.project.name} is ${pr.percent}% complete. Now at: ${pr.stages[cur].title}.`} />
       <div className="progress-line" role="progressbar" aria-label="Overall progress" aria-valuenow={pr.percent} aria-valuemin={0} aria-valuemax={100} style={{ marginBottom: 28 }}><span style={{ width: `${pr.percent}%` }} /></div>
-      <div className="stage-tabs">{pr.stages.map((s, i) => <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>)}</div>
+      <div className="stage-tabs" hidden={tabs.length < 2}>{tabs.map(i => { const s = pr.stages[i]; return <button key={s.stage} className={`${sel === i ? "active" : ""} ${i < cur ? "done" : ""}`} onClick={() => setPicked(i)} aria-pressed={sel === i}><span>0{i + 1}</span>{s.title}</button>; })}</div>
       <div className="journal-detail"><img decoding="async" src={sized(stageImage(st.image, sel === 0 ? FOUNDATION_PHOTO : sel % 2 ? ph.property2 : ph.property3), 1400)} alt={`${st.title} at ${pr.project.name}`} />
         <div><span className="eyebrow">Stage 0{sel + 1} · {state}</span><h3>{st.title}</h3>
           <div className="progress-line" aria-hidden="true" style={{ margin: "14px 0" }}><span style={{ width: `${pct}%` }} /></div>
