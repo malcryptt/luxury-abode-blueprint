@@ -370,3 +370,6 @@ button.lazy-video.play:focus-visible { outline: 3px solid #e7d1aa; outline-offse
 .arya-feature-photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; margin: 0 0 14px; }
 .arya-feature-photos h3 { margin: 0 0 6px; font-size: clamp(20px, 2.2vw, 26px); font-weight: 500; color: var(--navy); }
 .arya-feature-photos p { margin: 0; color: #5e6265; line-height: 1.7; }
+
+/* Every page and section heading on the public site starts each word with a capital. */
+.wsl-site h1, .wsl-site h2, .wsl-site h3, .wsl-site h4 { text-transform: capitalize; }
