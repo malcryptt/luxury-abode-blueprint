@@ -373,3 +373,10 @@ button.lazy-video.play:focus-visible { outline: 3px solid #e7d1aa; outline-offse
 
 /* Every page and section heading on the public site starts each word with a capital. */
 .wsl-site h1, .wsl-site h2, .wsl-site h3, .wsl-site h4 { text-transform: capitalize; }
+
+.cookie-notice { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 60; max-width: 720px; margin: 0 auto; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 16px 20px; background: var(--navy, #1b2b4a); color: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+.cookie-notice p { margin: 0; font-size: 14px; line-height: 1.6; flex: 1 1 280px; }
+.cookie-notice a { color: #e7d1aa; text-decoration: underline; }
+.cookie-notice button { padding: 10px 20px; font-size: 14px; border: 1px solid #e7d1aa; cursor: pointer; }
+.cookie-notice .cookie-accept { background: #e7d1aa; color: #1b2b4a; margin-left: 8px; }
+.cookie-notice .cookie-decline { background: transparent; color: #fff; }
