@@ -12,6 +12,7 @@ import {
 } from "@/lib/enquiries";
 import { checkRate, RATE_REJECTED } from "@/lib/rateLimit";
 import { whatsappLink } from "@/lib/siteContent";
+import { track } from "@/lib/analytics";
 import { auth } from "@/integrations/firebase/client";
 import { Link } from "react-router-dom";
 import { RepliesPanel } from "@/components/site/RepliesPanel";
@@ -94,6 +95,7 @@ export function EnquiryForm({ source, whatsapp, topic, showInterest, defaultMess
     const res = await submitEnquiry(result.data, how === "chat" ? source.slice(0, 120 - CHAT_SUFFIX.length) + CHAT_SUFFIX : source);
     if (!res.ok && res.error === RATE_REJECTED) { setLimitError(res.error); setPhase("idle"); return; }
     setSaved(res.ok);
+    if (res.ok) track("generate_lead", { method: how, page_path: window.location.pathname });
     setPhase("sent");
   };
 

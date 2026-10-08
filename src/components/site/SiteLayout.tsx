@@ -6,6 +6,7 @@ import { Menu, ChevronRight, LayoutDashboard, LogIn, LogOut, Inbox, ArrowUpRight
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@/assets/wsl-logo.png";
+import { CookieNotice } from "./CookieNotice";
 
 import { useSiteContent, type PageVisibility } from "@/lib/siteContent";
 export { Seo } from "./Seo";
@@ -32,6 +33,7 @@ export function SiteLayout() {
 
   return (
     <div className="wsl-site">
+      <CookieNotice />
       <header className="site-header">
         <Link className="wordmark" to="/"><img src={logo} alt="WSL Realty" /><span>WSL <b>REALTY</b></span></Link>
         <nav className="desktop-nav" aria-label="Primary">

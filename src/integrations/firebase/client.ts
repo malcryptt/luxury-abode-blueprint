@@ -12,6 +12,7 @@ export const firebaseConfig: FirebaseOptions = {
   projectId: env.VITE_FIREBASE_PROJECT_ID || "not-configured",
   messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: env.VITE_FIREBASE_APP_ID,
+  measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || "G-1B44M4ZTBE",
 };
 
 /** False until the VITE_FIREBASE_* variables are filled in. Public pages then fall back to built-in content. */
