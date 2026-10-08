@@ -58,7 +58,7 @@ export function SiteLayout() {
       </header>
       <main className="page-fade" key={pathname}><Outlet /></main>
       <footer className="site-footer">
-        <div><Link className="wordmark" to="/"><img src={logo} alt="" /><span>WSL <b>REALTY</b></span></Link><p>Luxury homes, built with craft. Abuja, Nigeria.</p></div>
+        <div><Link className="wordmark" to="/"><img src={logo} alt="" /><span>WSL <b>REALTY</b></span></Link><p>Luxury homes, built with you in mind. Abuja, Nigeria.</p></div>
         <nav aria-label="Footer">{links.map(([l, to]) => <Link key={to} to={to}>{l}</Link>)}</nav>
         <div className="socials">
           <a href="https://www.instagram.com/warohomes" target="_blank" rel="noreferrer" aria-label="Instagram: @warohomes" title="@warohomes"><Instagram size={18} /></a>

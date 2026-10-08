@@ -64,7 +64,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
       if (!x.location.trim()) return toast.error(`"${label}" needs a location`);
       if (hasPrice && !(x as SiteProperty).price?.trim()) return toast.error(`"${label}" needs a price`);
       if (!x.description.trim()) return toast.error(`"${label}" needs a description`);
-      if (!x.hidden && !photos.some(Boolean)) return toast.error(`"${label}" needs a photo (or hide it until it has one)${kind === "jobs" ? ". The photo is also the still picture shown before a video is played" : ""}`);
+      if (!x.hidden && !photos.some(Boolean)) return toast.error(`"${label}" needs a photo (or hide it until it has one)${kind === "jobs" ? "" : ""}`);
       if (!single && photos.some((p) => p === "")) return toast.error(`"${label}" has an empty photo slot. Add a photo or remove the slot`);
     }
     const used = new Set<string>();
@@ -114,7 +114,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
               <>
                 <ImagePicker label="Photo" value={(x as SiteProperty).image} onChange={(url) => patch(i, { image: url })} />
                 {kind === "jobs" && (
-                  <VideoPicker label="Video (optional)" value={(x as SiteJob).video ?? ""} onChange={(url) => patch(i, { video: url })}
+                  <VideoPicker label="Video (optional, shown beside the photo)" value={(x as SiteJob).video ?? ""} onChange={(url) => patch(i, { video: url })}
                     disabled={videoCount >= MAX_JOB_VIDEOS} disabledReason={`Previous Jobs can hold ${MAX_JOB_VIDEOS} videos and all ${MAX_JOB_VIDEOS} are used. Remove one to add another.`} />
                 )}
               </>
