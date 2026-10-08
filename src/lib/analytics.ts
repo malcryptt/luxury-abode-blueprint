@@ -1,8 +1,6 @@
-import type { Analytics } from "firebase/analytics";
-import { app } from "@/integrations/firebase/client";
 
 /**
- * Google Analytics (GA4) through Firebase. Nothing is loaded or sent until the visitor presses Accept
+ * Google Analytics (GA4), loaded directly with Google's tag. Nothing is loaded or sent until the visitor presses Accept
  * on the cookie notice (see CookieNotice). The measurement ID is a public identifier, not a secret.
  */
 export const MEASUREMENT_ID = (import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string | undefined) || "G-1B44M4ZTBE";
@@ -15,40 +13,40 @@ export function getConsent(): Consent {
 }
 export function setConsent(v: "granted" | "denied") {
   try { localStorage.setItem(KEY, v); } catch { /* the choice just is not remembered */ }
-  if (v === "granted") void start(); else stop();
+  if (v === "granted") { setDisabled(false); start(); } else setDisabled(true);
 }
 
-let instance: Promise<Analytics | null> | null = null;
+type Gtag = (...args: unknown[]) => void;
+declare global { interface Window { dataLayer?: unknown[]; gtag?: Gtag } }
 
-function start(): Promise<Analytics | null> {
-  if (!instance) {
-    instance = (async () => {
-      try {
-        const m = await import("firebase/analytics");
-        if (!(await m.isSupported())) return null;
-        // Page views are sent by hand on every route change (the site is a single-page app).
-        const a = m.initializeAnalytics(app, { config: { send_page_view: false } });
-        m.setAnalyticsCollectionEnabled(a, true);
-        return a;
-      } catch { return null; }
-    })();
-  }
-  return instance;
-}
+let loaded = false;
+const disableKey = `ga-disable-${MEASUREMENT_ID}`;
+const setDisabled = (v: boolean) => { (window as unknown as Record<string, unknown>)[disableKey] = v; };
 
-function stop() {
-  if (!instance) return;
-  instance.then(async (a) => { if (a) (await import("firebase/analytics")).setAnalyticsCollectionEnabled(a, false); }).catch(() => {});
+/** Loads Google's own tag (gtag.js) directly. It needs only the measurement ID, nothing else from Firebase. */
+function start() {
+  if (loaded || typeof document === "undefined") return;
+  loaded = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() { (window.dataLayer as unknown[]).push(arguments); };
+  window.gtag("js", new Date());
+  // Page views are sent by hand on every route change (the site is a single-page app).
+  window.gtag("config", MEASUREMENT_ID, { send_page_view: false, anonymize_ip: true });
+  const el = document.createElement("script");
+  el.async = true;
+  el.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(MEASUREMENT_ID)}`;
+  document.head.appendChild(el);
 }
 
 /** Start Analytics at page load only if the visitor already accepted on an earlier visit. */
 export function initAnalytics() {
-  if (getConsent() === "granted") void start();
+  if (getConsent() === "granted") start();
 }
 
 export function track(name: string, params?: Record<string, string | number | boolean>) {
   if (getConsent() !== "granted") return;
-  start().then(async (a) => { if (a) (await import("firebase/analytics")).logEvent(a, name, params); }).catch(() => {});
+  start();
+  window.gtag?.("event", name, params);
 }
 
 export function trackPage(path: string) {
