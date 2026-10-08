@@ -114,7 +114,7 @@ const defaults: SiteContent = {
     { id: "pj8", category: "Builds", title: "Interior finishing", location: "", description: "A finished room with a recessed tray ceiling, painted walls and a custom steel window grille.", image: "/jobs/interior-finishing.webp" },
     { id: "pj9", category: "Builds", title: "Window and ceiling detail", location: "", description: "A tall feature window with a patterned steel grille beneath a stepped ceiling with recessed spotlights.", image: "/jobs/window-and-ceiling-detail.webp" },
   ],
-  hero: { title: "Luxury Homes, Built With Craft", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
+  hero: { title: "Luxury Homes, Built With You In Mind", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
   about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
   contact: { phone: "08028081047", email: "Warosynergylimited@gmail.com", address: "Abuja, Nigeria", whatsapp: "2348028081047" },
   properties: [

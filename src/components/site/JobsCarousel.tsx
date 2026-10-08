@@ -96,10 +96,9 @@ export function JobsCarousel({ jobs: all }: { jobs: SiteJob[] }) {
           const clone = i === n;
           return (
           <figure className="jc-slide" key={clone ? "clone" : j.id} aria-roledescription="slide" aria-label={`${(clone ? 0 : i) + 1} of ${n}`} aria-hidden={clone || undefined} data-clone={clone || undefined}>
-            <div className="jc-media">
-              {j.video
-                ? <LazyVideo src={j.video} title={j.title} poster={sized(j.image, 1200)} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />
-                : <img className="jc-photo" src={sized(j.image, 900)} alt={clone ? "" : `${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} />}
+            <div className={`jc-media${j.video ? " both" : ""}`}>
+              <img className="jc-photo" src={sized(j.image, 900)} alt={clone ? "" : `${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} />
+              {j.video && <LazyVideo src={j.video} title={j.title} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />}
             </div>
             <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption>
           </figure>);

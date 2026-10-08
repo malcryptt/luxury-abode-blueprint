@@ -11,7 +11,7 @@ export const STATIC_ROUTES = [
   {
     path: "/",
     title: "Luxury Homes in Abuja",
-    description: "WSL Realty develops luxury homes in Abuja, built with craft — from Arya Luxe in Gwarinpa to bespoke furniture.",
+    description: "WSL Realty develops luxury homes in Abuja, built with you in mind — from Arya Luxe in Gwarinpa to bespoke furniture.",
     crumb: "Home",
     changefreq: "weekly",
     priority: "1.0",

@@ -332,10 +332,13 @@ textarea.enq-input { min-height: 96px; resize: vertical; line-height: 1.6; }
 .jc-dots button.on { background: var(--navy); transform: scale(1.25); }
 .jc-btn { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--line); background: #fff; color: var(--navy); cursor: pointer; }
 .jc-btn:hover { background: var(--navy); color: #fff; }
-@media (max-width: 600px) { .jc-media { aspect-ratio: 4 / 3; } }
+@media (max-width: 600px) { .jc-media { aspect-ratio: 4 / 3; } .jc-media.both { aspect-ratio: auto; grid-template-columns: 1fr; } .jc-media.both > * { aspect-ratio: 4 / 3; } }
 
 /* Lazy video (poster first, video only after pressing play) */
 .lazy-video { width: 100%; height: 100%; display: block; background: #111; object-fit: cover; }
+.jc-media.both { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.jc-media.both .jc-photo { object-fit: cover; }
+.job-img.both { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
 .jc-media .lazy-video { background: transparent; }
 button.lazy-video.play { position: relative; padding: 0; border: 0; cursor: pointer; overflow: hidden; }
 button.lazy-video.play img { width: 100%; height: 100%; object-fit: cover; display: block; }
