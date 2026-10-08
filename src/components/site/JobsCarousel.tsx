@@ -98,7 +98,9 @@ export function JobsCarousel({ jobs: all }: { jobs: SiteJob[] }) {
           <figure className="jc-slide" key={clone ? "clone" : j.id} aria-roledescription="slide" aria-label={`${(clone ? 0 : i) + 1} of ${n}`} aria-hidden={clone || undefined} data-clone={clone || undefined}>
             <div className={`jc-media${j.video ? " both" : ""}`}>
               <img className="jc-photo" src={sized(j.image, 900)} alt={clone ? "" : `${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} />
+              {j.imageTag && <span className="media-tag left">{j.imageTag}</span>}
               {j.video && <LazyVideo src={j.video} title={j.title} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />}
+              {j.video && j.videoTag && <span className="media-tag right">{j.videoTag}</span>}
             </div>
             <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption>
           </figure>);

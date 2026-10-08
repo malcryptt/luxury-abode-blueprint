@@ -10,7 +10,7 @@ import furniture3 from "@/assets/furniture-3.jpg";
 
 export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string; hidden?: boolean }
 export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string; hidden?: boolean }
-export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; video?: string; hidden?: boolean }
+export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; video?: string; imageTag?: string; videoTag?: string; hidden?: boolean }
 export type PageKey = "properties" | "furniture" | "jobs" | "updates" | "contact";
 export const PAGE_LABELS: Record<PageKey, string> = { properties: "Properties", furniture: "Furniture", jobs: "Previous Jobs", updates: "Project Updates", contact: "Contact" };
 /** Pages the team can switch off. true = hidden from the public site. */
