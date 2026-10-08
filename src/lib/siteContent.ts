@@ -10,7 +10,13 @@ import furniture3 from "@/assets/furniture-3.jpg";
 
 export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string; hidden?: boolean }
 export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string; hidden?: boolean }
-export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; video?: string; imageTag?: string; videoTag?: string; hidden?: boolean }
+export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; video?: string; imageTag?: string; videoTag?: string; media?: JobMedia[]; hidden?: boolean }
+/** One picture or video shown for a previous job. A job shows one or two of these side by side, in any mix of photos and videos. */
+export interface JobMedia { kind: "photo" | "video"; url: string; tag?: string }
+/** What a job shows. Older jobs saved as one photo plus an optional video read as the same thing. */
+export const jobMedia = (j: SiteJob): JobMedia[] => (j.media?.length
+  ? j.media.filter((m) => m.url).slice(0, 2)
+  : [{ kind: "photo" as const, url: j.image, tag: j.imageTag }, ...(j.video ? [{ kind: "video" as const, url: j.video, tag: j.videoTag }] : [])]);
 export type PageKey = "properties" | "furniture" | "jobs" | "updates" | "contact";
 export const PAGE_LABELS: Record<PageKey, string> = { properties: "Properties", furniture: "Furniture", jobs: "Previous Jobs", updates: "Project Updates", contact: "Contact" };
 /** Pages the team can switch off. true = hidden from the public site. */

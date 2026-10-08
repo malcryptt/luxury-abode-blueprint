@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import { PageSwitches } from "@/components/admin/PageSwitches";
 import { VideoPicker } from "@/components/admin/VideoPicker";
-import { ARYA_LIMITS, fetchSiteContent, type SiteArya, type SiteImages } from "@/lib/siteContent";
+import { ARYA_LIMITS, fetchSiteContent, jobMedia, type SiteArya, type SiteImages } from "@/lib/siteContent";
 import { fetchProject, saveProjectDetails } from "@/lib/projects";
 import { useSection } from "./useSection";
 
@@ -42,7 +42,7 @@ export default function Arya() {
   const set = (p: Partial<SiteArya>) => arya.setDraft({ ...a, ...p });
   const hasProject = !!proj.data;
   const topDirty = JSON.stringify(d) !== dSaved || images.dirty;
-  const jobVideos = site.data.jobs.filter((j) => j.video).length;
+  const jobVideos = site.data.jobs.reduce((n, j) => n + jobMedia(j).filter((m) => m.kind === "video").length, 0);
 
   const saveTop = async (e: React.FormEvent) => {
     e.preventDefault();
