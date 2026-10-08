@@ -49,7 +49,7 @@ export async function uploadImage(file: File): Promise<string> {
 /* ---------- Video ---------- */
 
 /** Biggest video the admin may upload, and the longest. Both keep the site fast and stay inside Cloudinary's free plan. */
-export const MAX_VIDEO_MB = 30;
+export const MAX_VIDEO_MB = 100;
 export const MAX_VIDEO_SECONDS = 60;
 /** Most videos Previous Jobs may hold (the Arya Luxe page has one more of its own). */
 export const MAX_JOB_VIDEOS = 6;

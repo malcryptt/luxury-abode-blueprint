@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Play } from "lucide-react";
+import { Play, Volume2, VolumeX } from "lucide-react";
 import { videoPoster } from "@/lib/upload";
 
 /**
@@ -10,16 +10,21 @@ import { videoPoster } from "@/lib/upload";
 export function LazyVideo({ src, title, poster, onPlay, onEnd }: { src: string; title: string; poster?: string; onPlay?: () => void; onEnd?: () => void }) {
   const [on, setOn] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true); // always starts silent; the visitor can turn the sound on
   const ref = useRef<HTMLVideoElement>(null);
   const still = poster || videoPoster(src);
   if (on) {
     const toggle = () => { const v = ref.current; if (!v) return; if (v.paused) v.play().catch(() => {}); else v.pause(); };
+    const mute = () => { const v = ref.current; if (!v) return; v.muted = !v.muted; setMuted(v.muted); };
     return (
-      <button type="button" className="lazy-video play playing" onClick={toggle} aria-label={paused ? `Play video: ${title}` : `Pause video: ${title}`}>
-        <video ref={ref} className="lazy-video" src={src} poster={still || undefined} autoPlay playsInline preload="metadata" aria-label={title}
-          onPlay={() => { setPaused(false); onPlay?.(); }} onPause={() => { setPaused(true); onEnd?.(); }} onEnded={() => { setPaused(true); onEnd?.(); }} />
-        {paused && <span className="lazy-video-btn" aria-hidden="true"><Play size={26} fill="currentColor" /></span>}
-      </button>
+      <div className="lazy-video lv-wrap">
+        <button type="button" className="lazy-video play playing" onClick={toggle} aria-label={paused ? `Play video: ${title}` : `Pause video: ${title}`}>
+          <video ref={ref} className="lazy-video" src={src} poster={still || undefined} autoPlay muted playsInline preload="metadata" aria-label={title}
+            onPlay={() => { setPaused(false); onPlay?.(); }} onPause={() => { setPaused(true); onEnd?.(); }} onEnded={() => { setPaused(true); onEnd?.(); }} />
+          {paused && <span className="lazy-video-btn" aria-hidden="true"><Play size={26} fill="currentColor" /></span>}
+        </button>
+        <button type="button" className="lv-mute" onClick={mute} aria-label={muted ? "Turn sound on" : "Turn sound off"}>{muted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
+      </div>
     );
   }
   return (
