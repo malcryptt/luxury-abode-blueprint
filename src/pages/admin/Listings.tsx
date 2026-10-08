@@ -78,7 +78,13 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
         (item as SiteProperty).slug = s;
       }
       if (!item.hidden) delete item.hidden;
-      if (kind === "jobs" && !(item as SiteJob).video) delete (item as SiteJob).video;
+      if (kind === "jobs") {
+        const j = item as SiteJob;
+        if (!j.video) { delete j.video; delete j.videoTag; }
+        j.imageTag = j.imageTag?.trim(); j.videoTag = j.videoTag?.trim();
+        if (!j.imageTag) delete j.imageTag;
+        if (!j.videoTag) delete j.videoTag;
+      }
       return item;
     });
     setBusy(true);
@@ -97,6 +103,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
 
   return (
     <form onSubmit={save} noValidate>
+      {kind === "jobs" && <datalist id="job-tags">{["Rendered", "Under construction", "Completed", "Site progress", "Before", "After"].map((t) => <option key={t} value={t} />)}</datalist>}
       {draft.length === 0 && <p className="adm-muted">Nothing here yet. Add your first {noun}.</p>}
       {draft.map((x, i) => (
         <div key={x.id} className="adm-panel" style={x.hidden ? { opacity: .7 } : undefined}>
@@ -113,10 +120,12 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
             {single ? (
               <>
                 <ImagePicker label="Photo" value={(x as SiteProperty).image} onChange={(url) => patch(i, { image: url })} />
+                {kind === "jobs" && <Field label="Photo tag" hint='A small label on the picture, e.g. Rendered, Under construction, Completed'><input type="text" list="job-tags" maxLength={30} value={(x as SiteJob).imageTag ?? ""} onChange={(e) => patch(i, { imageTag: e.target.value })} placeholder="Optional" /></Field>}
                 {kind === "jobs" && (
                   <VideoPicker label="Video (optional, shown beside the photo)" value={(x as SiteJob).video ?? ""} onChange={(url) => patch(i, { video: url })}
                     disabled={videoCount >= MAX_JOB_VIDEOS} disabledReason={`Previous Jobs can hold ${MAX_JOB_VIDEOS} videos and all ${MAX_JOB_VIDEOS} are used. Remove one to add another.`} />
                 )}
+                {kind === "jobs" && (x as SiteJob).video && <Field label="Video tag" hint='A small label on the picture, e.g. Rendered, Under construction, Completed'><input type="text" list="job-tags" maxLength={30} value={(x as SiteJob).videoTag ?? ""} onChange={(e) => patch(i, { videoTag: e.target.value })} placeholder="Optional" /></Field>}
               </>
             ) : (
               <>

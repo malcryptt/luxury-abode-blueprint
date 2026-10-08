@@ -336,6 +336,11 @@ textarea.enq-input { min-height: 96px; resize: vertical; line-height: 1.6; }
 
 /* Lazy video (poster first, video only after pressing play) */
 .lazy-video { width: 100%; height: 100%; display: block; background: #111; object-fit: cover; }
+.media-tag { position: absolute; top: 10px; z-index: 2; padding: 5px 11px; background: rgba(15, 24, 36, .78); color: #e7d1aa; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+.media-tag.left { left: 10px; } .media-tag.right { right: 10px; }
+.job-img { position: relative; }
+.jc-media.both .media-tag.right, .job-img.both .media-tag.right { left: calc(50% + 10px); right: auto; }
+@media (max-width: 600px) { .jc-media.both .media-tag.right { left: 10px; top: calc(50% + 10px); } }
 .jc-media.both { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
 .jc-media.both .jc-photo { object-fit: cover; }
 .job-img.both { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
