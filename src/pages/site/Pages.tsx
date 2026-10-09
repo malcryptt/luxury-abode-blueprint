@@ -138,7 +138,7 @@ export function PreviousJobs() {
   const shown = filter === "All" ? c.jobs : c.jobs.filter(j => j.category === filter);
   return <>
     <Seo route="/previous-jobs" />
-    <PageHero eyebrow="Portfolio" title={c.pages.jobs.title} text={c.pages.jobs.text} />
+    <PageHero eyebrow="" title={c.pages.jobs.title} text={c.pages.jobs.text} />
     <section className="section"><SectionIntro title="Our previous work" />
       <div className="filter-tabs">{(["Builds", "Furniture", "Interior"].filter(k => c.jobs.some(j => j.category === k)).length > 1 ? ["All", ...["Builds", "Furniture", "Interior"].filter(k => c.jobs.some(j => j.category === k))] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {c.loaded && shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
