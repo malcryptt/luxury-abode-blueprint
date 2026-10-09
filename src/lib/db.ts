@@ -39,7 +39,7 @@ export interface JobRow {
   id: string;
   image: string;
   caption: string;
-  category: "Builds" | "Furniture";
+  category: "Builds" | "Furniture" | "Interior";
   published: boolean;
   sort_order: number;
   created_at: string;

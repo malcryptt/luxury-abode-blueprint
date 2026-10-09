@@ -52,7 +52,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
   const add = () => setDraft([...draft, (isProp
     ? { id: newId(), slug: "", title: "", location: "", description: "", price: "", image: "" }
     : kind === "jobs"
-      ? { id: newId(), category: "Builds", title: "", location: "", description: "", image: "" }
+      ? { id: newId(), category: "", title: "", location: "", description: "", image: "" }
       : { id: newId(), title: "", location: "", description: "", price: "", images: [] }) as Item]);
   const move = (i: number, d: number) => {
     const j = i + d;
@@ -122,7 +122,7 @@ function ListEditor({ kind, initial }: { kind: Kind; initial: Item[] }) {
             <Field label="Title"><input type="text" maxLength={100} value={x.title} onChange={(e) => patch(i, { title: e.target.value })} /></Field>
             <Field label="Location"><input type="text" maxLength={100} value={x.location} onChange={(e) => patch(i, { location: e.target.value })} /></Field>
             {hasPrice && <Field label="Price" hint='Free text, e.g. "₦95,000,000" or "Price on request"'><input type="text" maxLength={60} value={(x as SiteProperty).price} onChange={(e) => patch(i, { price: e.target.value })} /></Field>}
-            {kind === "jobs" && <Field label="Type"><select value={(x as SiteJob).category} onChange={(e) => patch(i, { category: e.target.value as SiteJob["category"] })}><option value="Builds">Build</option><option value="Furniture">Furniture</option></select></Field>}
+            {kind === "jobs" && <Field label="Type (optional)"><select value={(x as SiteJob).category ?? ""} onChange={(e) => patch(i, { category: e.target.value as SiteJob["category"] })}><option value="">None (leave blank)</option><option value="Builds">Build</option><option value="Furniture">Furniture</option><option value="Interior">Interior</option></select></Field>}
           </div>
           <div className="adm-grid" style={{ marginTop: 14 }}>
             <Field label="Description"><textarea rows={3} maxLength={1000} value={x.description} onChange={(e) => patch(i, { description: e.target.value })} /></Field>

@@ -10,9 +10,11 @@ import furniture3 from "@/assets/furniture-3.jpg";
 
 export interface SiteProperty { id: string; image: string; title: string; location: string; description: string; price: string; slug: string; hidden?: boolean }
 export interface SiteFurniture { id: string; images: string[]; title: string; location: string; description: string; price: string; hidden?: boolean }
-export interface SiteJob { id: string; category: "Builds" | "Furniture"; title: string; location: string; description: string; image: string; video?: string; imageTag?: string; videoTag?: string; media?: JobMedia[]; hidden?: boolean }
+export interface SiteJob { id: string; category: "Builds" | "Furniture" | "Interior" | ""; title: string; location: string; description: string; image: string; video?: string; imageTag?: string; videoTag?: string; media?: JobMedia[]; hidden?: boolean }
 /** One picture or video shown for a previous job. A job shows one or two of these side by side, in any mix of photos and videos. */
 export interface JobMedia { kind: "photo" | "video"; url: string; tag?: string }
+/** The small type label on a job ("Build", "Furniture" or "Interior"). Empty when the team left the type blank. */
+export const jobKind = (j: SiteJob) => (j.category === "Builds" ? "Build" : j.category === "Furniture" ? "Furniture" : j.category === "Interior" ? "Interior" : "");
 /** What a job shows. Older jobs saved as one photo plus an optional video read as the same thing. */
 export const jobMedia = (j: SiteJob): JobMedia[] => (j.media?.length
   ? j.media.filter((m) => m.url).slice(0, 2)
@@ -117,8 +119,8 @@ const defaults: SiteContent = {
     { id: "pj5", category: "Furniture", title: "Dining room", location: "", description: "A dining set with upholstered chairs against a timber-panelled wall.", image: "/jobs/dining-room.webp" },
     { id: "pj6", category: "Furniture", title: "Family lounge", location: "", description: "A relaxed lounge with deep sofas, layered curtains and soft lighting.", image: "/jobs/family-lounge.webp" },
     { id: "pj7", category: "Furniture", title: "Executive lounge", location: "", description: "Leather and wood armchairs arranged for conversation, with built-in display shelving.", image: "/jobs/executive-lounge.webp" },
-    { id: "pj8", category: "Builds", title: "Interior finishing", location: "", description: "A finished room with a recessed tray ceiling, painted walls and a custom steel window grille.", image: "/jobs/interior-finishing.webp" },
-    { id: "pj9", category: "Builds", title: "Window and ceiling detail", location: "", description: "A tall feature window with a patterned steel grille beneath a stepped ceiling with recessed spotlights.", image: "/jobs/window-and-ceiling-detail.webp" },
+    { id: "pj8", category: "Interior", title: "Interior finishing", location: "", description: "A finished room with a recessed tray ceiling, painted walls and a custom steel window grille.", image: "/jobs/interior-finishing.webp" },
+    { id: "pj9", category: "Interior", title: "Window and ceiling detail", location: "", description: "A tall feature window with a patterned steel grille beneath a stepped ceiling with recessed spotlights.", image: "/jobs/window-and-ceiling-detail.webp" },
   ],
   hero: { title: "Luxury Homes, Built With You In Mind", subtitle: "We develop considered spaces for living well — from the first line on paper to the final finish." },
   about: { title: "About WSL Realty", description: "WSL Realty is a Nigerian property development company with roots in making. We bring the same discipline, detail and care to every home we deliver." },
