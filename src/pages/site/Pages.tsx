@@ -7,7 +7,7 @@ import { Seo, PageHero, SectionIntro } from "@/components/site/SiteLayout";
 import { sized } from "@/lib/img";
 
 const FOUNDATION_PHOTO = "/arya/foundation-aerial.webp"; // shown for the foundation stage until a photo is uploaded in the admin
-import { useSiteContent, jobMedia, placeholders as ph, whatsappLink, telHref, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
+import { useSiteContent, jobMedia, jobKind, placeholders as ph, whatsappLink, telHref, slugify, SiteProperty, type PageVisibility, type SiteArya } from "@/lib/siteContent";
 import { EnquiryButton } from "@/components/site/EnquiryDialog";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { JobsCarousel } from "@/components/site/JobsCarousel";
@@ -139,12 +139,12 @@ export function PreviousJobs() {
   return <>
     <Seo route="/previous-jobs" />
     <PageHero eyebrow="Portfolio" title={c.pages.jobs.title} text={c.pages.jobs.text} />
-    <section className="section"><SectionIntro eyebrow="Proof of craft" title="Our previous work" />
-      <div className="filter-tabs">{(["Builds", "Furniture"].filter(k => c.jobs.some(j => j.category === k)).length > 1 ? ["All", "Builds", "Furniture"] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
+    <section className="section"><SectionIntro title="Our previous work" />
+      <div className="filter-tabs">{(["Builds", "Furniture", "Interior"].filter(k => c.jobs.some(j => j.category === k)).length > 1 ? ["All", ...["Builds", "Furniture", "Interior"].filter(k => c.jobs.some(j => j.category === k))] : []).map(x => <button key={x} className={filter === x ? "active" : ""} onClick={() => setFilter(x)}>{x}</button>)}</div>
       {c.loaded && shown.length === 0 && <p className="empty-note">New work will be added here soon.</p>}
       {c.loaded && <JobsCarousel key={filter} jobs={shown} />}
-      <div className="jobs-grid">{c.loaded && shown.map(j => <figure key={j.id} className="job-card"><div className={`job-img${jobMedia(j).length > 1 ? " both" : ""}`}>{jobMedia(j).map((m, k) => <div className="job-cell" key={k}>{m.kind === "video" ? <LazyVideo src={m.url} title={j.title} /> : <img src={sized(m.url, 900)} alt={`${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading="lazy" decoding="async" />}{m.tag && <span className="media-tag">{m.tag}</span>}</div>)}</div>
-        <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
+      <div className="jobs-grid">{c.loaded && shown.map(j => <figure key={j.id} className="job-card"><div className={`job-img${jobMedia(j).length > 1 ? " both" : ""}`}>{jobMedia(j).map((m, k) => <div className="job-cell" key={k}>{m.kind === "video" ? <LazyVideo src={m.url} title={j.title} /> : <img src={sized(m.url, 900)} alt={`${j.title}${jobKind(j) ? `, ${jobKind(j).toLowerCase()}` : ""} by WSL Realty`} loading="lazy" decoding="async" />}{m.tag && <span className="media-tag">{m.tag}</span>}</div>)}</div>
+        <figcaption>{(jobKind(j) || j.location) && <small>{[jobKind(j), j.location].filter(Boolean).join(" · ")}</small>}<h3>{j.title}</h3><p>{j.description}</p></figcaption></figure>)}</div>
     </section>
   </>;
 }

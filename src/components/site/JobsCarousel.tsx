@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { sized } from "@/lib/img";
 import { LazyVideo } from "@/components/site/LazyVideo";
-import { jobMedia, type SiteJob } from "@/lib/siteContent";
+import { jobKind, jobMedia, type SiteJob } from "@/lib/siteContent";
 
 const EVERY_MS = 3000;
 
@@ -101,12 +101,12 @@ export function JobsCarousel({ jobs: all }: { jobs: SiteJob[] }) {
                 <div className="jc-cell" key={k}>
                   {m.kind === "video"
                     ? <LazyVideo src={m.url} title={j.title} onPlay={() => setPlaying(true)} onEnd={() => setPlaying(false)} />
-                    : <img className="jc-photo" src={sized(m.url, 900)} alt={clone ? "" : `${j.title}, ${j.category === "Builds" ? "build" : "furniture"} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} />}
+                    : <img className="jc-photo" src={sized(m.url, 900)} alt={clone ? "" : `${j.title}${jobKind(j) ? `, ${jobKind(j).toLowerCase()}` : ""} by WSL Realty`} loading={i < 1 ? "eager" : "lazy"} decoding="async" draggable={false} />}
                   {m.tag && <span className="media-tag">{m.tag}</span>}
                 </div>
               ))}
             </div>
-            <figcaption><small>{j.category === "Builds" ? "Build" : "Furniture"}{j.location ? ` · ${j.location}` : ""}</small><h3>{j.title}</h3><p>{j.description}</p></figcaption>
+            <figcaption>{(jobKind(j) || j.location) && <small>{[jobKind(j), j.location].filter(Boolean).join(" · ")}</small>}<h3>{j.title}</h3><p>{j.description}</p></figcaption>
           </figure>);
         })}
       </div>
