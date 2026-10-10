@@ -39,7 +39,7 @@ export function Home() {
   const { data: pr } = useProject("arya-luxe");
   return <>
     <Seo route="/" />
-    <section className="hero"><img src={heroImage} alt="Contemporary luxury home in Abuja" fetchPriority="high" decoding="async" /><div className="hero-shade" />
+    <section className="hero"><img src={heroImage} alt="Luxury home in Abuja by WSL Realty" fetchPriority="high" decoding="async" /><div className="hero-shade" />
       <div className="hero-copy"><h1>{c.hero.title}</h1><p>{c.hero.subtitle}</p>
         <div className="hero-actions"><Button asChild>{c.hidden.properties ? <Link to="/contact">Enquire Now <ArrowUpRight size={16} /></Link> : <Link to="/properties">View Properties <ArrowUpRight size={16} /></Link>}</Button><Link className="text-link light" to="/project-updates">See Our Progress</Link></div></div>
     </section>
@@ -48,7 +48,7 @@ export function Home() {
       <div className="section-link"><Link className="text-link" to="/properties">View All Properties <ArrowUpRight size={16} /></Link></div>
     </section>
     }
-    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image">{c.loaded && <img decoding="async" src={sized(c.images.homeFeature, 1400) || ph.property3} alt={`${pr.project.name} construction`} />}<span className="project-label">Currently building</span></div>
+    {!c.hidden.aryaLuxe && <section className="project-feature"><div className="project-image">{c.loaded && <img decoding="async" src={sized(c.images.homeFeature, 1400) || ph.property3} alt={`${pr.project.name} off-plan apartments under construction in Gwarinpa, Abuja`} />}<span className="project-label">Currently building</span></div>
       <div className="project-copy"><span className="eyebrow">Featured project</span><h2>{pr.project.name}</h2><p>{pr.project.summary}</p>
         <div className="project-links"><Button asChild><Link to="/arya-luxe">Discover {pr.project.name} <ArrowUpRight size={16} /></Link></Button><Link className="text-link" to="/project-updates">Follow The Build</Link></div></div>
     </section>
@@ -188,7 +188,7 @@ function AryaUnits({ units }: { units: SiteArya["units"] }) {
   const u = units[Math.min(i, units.length - 1)];
   return <div className="arya-units">
     <div role="tablist" aria-label="Apartment type" className="arya-unit-tabs">{units.map((x, k) => <button key={x.id} type="button" role="tab" aria-selected={k === i} className={k === i ? "active" : ""} onClick={() => setI(k)}>{x.label}</button>)}</div>
-    <div role="tabpanel" className="arya-unit-panel">{u.image && <img className="arya-unit-img" src={sized(u.image, 1400)} alt={`${u.label} apartment`} loading="lazy" decoding="async" />}<p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
+    <div role="tabpanel" className="arya-unit-panel">{u.image && <img className="arya-unit-img" src={sized(u.image, 1400)} alt={`${u.label} smart apartment at Arya Luxe, Gwarinpa, Abuja`} loading="lazy" decoding="async" />}<p className="arya-unit-stats">{[u.count, u.size].filter(Boolean).join(" · ")}</p><p>{u.description}</p>
       <ul>{u.features.split(/\n+/).map(t => t.trim()).filter(Boolean).map((t, k) => <li key={k}>{t}</li>)}</ul></div>
   </div>;
 }
